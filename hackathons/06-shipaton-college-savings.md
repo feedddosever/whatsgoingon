@@ -8,28 +8,39 @@ egress-blocked in this container).
 
 ---
 
-## Why the normal blocker doesn't apply
+## Store strategy — CORRECTED (Galaxy Store changes this)
 
-Main categories require a **first store release between Aug 1 and Sept 30**, and
-RevenueCat says submit for review a week early. In 13 days that's dead — Apple
-review plus Google Play's 12-tester / 14-day closed-testing rule for new personal
-developer accounts makes it arithmetically impossible.
+An earlier version of this file said the store-release categories were
+unreachable. **That was wrong.** Confirmed:
 
-**Next Gen removes exactly that.** Confirmed requirements:
+- Supported stores are **App Store, Google Play, _and Samsung Galaxy Store_**.
+- **RevenueCat natively supports Samsung IAP** — Android SDK 10.7.0+, **React Native SDK 10.3.0+**.
+- Samsung sponsors a **"Best App for Galaxy"** category: publish to Galaxy Store in-window, give a live listing URL, and describe Galaxy-specific optimization (foldables, Samsung features).
+- **Galaxy Store has no equivalent of Google Play's 12-tester / 14-day closed-testing rule** — that policy is Google's, for new personal developer accounts. It's the thing that made a Sept 30 Play release impossible; Galaxy Store routes around it entirely.
+
+**But the beta shortcut is dead:** TestFlight and testing-track builds explicitly
+do **not** count as a release. First *public* version must go live Aug 1–Sept 30.
+
+**Two known Galaxy Store risks:**
+1. Review turnaround (typically days, not hours) — submit by ~Sept 25, not Sept 29.
+2. **Galaxy Store test purchases require a physical Galaxy device** with a Samsung account. No emulator support. If there's no Galaxy hardware on hand, IAP cannot be verified end-to-end.
+
+## Next Gen — the guaranteed floor
+
+Confirmed requirements:
 
 - Demo video + **public open-source repo with a license file**
 - **No store release, no paid developer account**
-- Verifiable **academic email** on Devpost (high school, college, bootcamp)
+- Verifiable **academic email** on Devpost — ✅ confirmed available
 - Store submission is *allowed but not judged* in this category
 - **RevenueCat SDK is still mandatory** — all submissions must use it for IAP, subscriptions, or ads
 
-So the path is real. One open question for Kei: **do you have a verifiable
-academic email?** Everything below depends on it.
+This is a mobile event. Expo / React Native, not web.
 
-Also note: this is a **mobile** event. RevenueCat is mobile IAP — Expo/React
-Native, not a web app.
-
----
+**Strategy: Next Gen is the floor, Galaxy Store is the multiplier.**
+Next Gen alone needs no store at all. Publishing to Galaxy Store additionally
+unlocks Peace Prize, Design Award, HAMM and Best App for Galaxy — all of which
+require an in-window store release.
 
 ## Category fit — this is the strong part
 
