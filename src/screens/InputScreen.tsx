@@ -276,6 +276,18 @@ export function InputScreen(
 
   const target = institutions.find(i => i.id === value.target_institution_id);
 
+  // 32 campuses is more than anyone wants to scroll past to reach the one they
+  // already have in mind. The chosen campus always stays visible, so a search
+  // typed after choosing cannot make the selection look lost.
+  const [campusQuery, setCampusQuery] = useState<string>('');
+  const q = campusQuery.trim().toLowerCase();
+  const visibleInstitutions = q === ''
+    ? institutions
+    : institutions.filter(i =>
+        i.id === value.target_institution_id ||
+        i.name.toLowerCase().includes(q) ||
+        i.system.toLowerCase().includes(q));
+
   const patch = (next: Partial<StudentInput>): void => onChange({ ...value, ...next });
 
   const toggleCredit = (id: string): void => {
@@ -449,6 +461,19 @@ export function InputScreen(
         {/* 1 — target */}
         <Text style={styles.qNum}>1</Text>
         <Text style={styles.qText}>Where are you trying to graduate from?</Text>
+        <Text style={styles.qHintText}>
+          All 9 UC and 23 CSU campuses. Type to narrow the list.
+        </Text>
+        <TextInput
+          style={styles.search}
+          value={campusQuery}
+          onChangeText={setCampusQuery}
+          placeholder="Search campuses"
+          placeholderTextColor={theme.color.textMuted}
+          accessibilityLabel="Search campuses by name"
+          autoCorrect={false}
+          clearButtonMode="while-editing"
+        />
         {institutions.length === 0 ? (
           <Text style={styles.empty}>
             No campuses are loaded, so nothing can be priced. This is a problem with the app, not
@@ -456,7 +481,13 @@ export function InputScreen(
           </Text>
         ) : (
           <View style={styles.instGrid} accessibilityRole="radiogroup">
-            {institutions.map(inst => (
+            {visibleInstitutions.length === 0 && (
+              <Text style={styles.empty}>
+                No campus matches “{campusQuery.trim()}”. Clear the search to see all
+                {' '}{institutions.length}.
+              </Text>
+            )}
+            {visibleInstitutions.map(inst => (
               <InstitutionCard
                 key={inst.id}
                 inst={inst}
@@ -678,6 +709,17 @@ const styles = StyleSheet.create({
     paddingBottom: theme.space.xl,
   },
 
+  qHintText: {
+    ...theme.font.small, color: theme.color.textMuted,
+    marginTop: theme.space.xs, marginBottom: theme.space.sm,
+  },
+  search: {
+    ...theme.font.body, color: theme.color.text,
+    borderWidth: 1, borderColor: theme.color.border, borderRadius: theme.radius.md,
+    backgroundColor: theme.color.surface,
+    paddingHorizontal: theme.space.md, paddingVertical: theme.space.sm,
+    marginBottom: theme.space.sm,
+  },
   backRow: { paddingVertical: theme.space.xs, marginBottom: theme.space.xs },
   backText: { ...theme.font.body, color: theme.color.textMuted },
   kicker: {

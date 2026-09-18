@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, BackHandler, Platform, StyleSheet } from 'react-native';
+import { ActivityIndicator, Alert, BackHandler, Platform, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,6 +13,7 @@ import { RoutesScreen } from './src/screens/RoutesScreen.tsx';
 import { RouteDetailScreen } from './src/screens/RouteDetailScreen.tsx';
 import { PlanMapScreen } from './src/screens/PlanMapScreen.tsx';
 import { exportAdvisorPacket } from './src/packet/advisorPacket.ts';
+import { clearPlan, loadPlan, savePlan } from './src/storage.ts';
 import { PaywallScreen } from './src/screens/PaywallScreen.tsx';
 import { NATIVE_API_KEY, WEB_API_KEY } from './src/purchases/config.ts';
 import {
@@ -69,6 +70,41 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [priceLabel, setPriceLabel] = useState<string | null>(null);
+  /** Gate the first render so a restored plan does not flash onboarding first. */
+  const [restoring, setRestoring] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const saved = await loadPlan();
+      if (!alive) { return; }
+      if (saved !== null && saved.target_institution_id !== '') {
+        // They already built a plan. Drop them back into it rather than making
+        // them answer four questions again to reach the thing they came for.
+        setInput(saved);
+        setSelectedKind('cheapest');
+        setScreen('map');
+      }
+      setRestoring(false);
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  // Persist every edit. A plan is built over weeks — a policy checked, an
+  // advisor asked, one line changed — so losing it on close would make the
+  // editing pointless. Never persist the empty starting state over a real plan.
+  useEffect(() => {
+    if (restoring) return;
+    if (input.target_institution_id === '') return;
+    void savePlan(input);
+  }, [input, restoring]);
+
+  const startOver = useCallback(() => {
+    void clearPlan();
+    setInput(EMPTY_INPUT);
+    setSelectedKind(null);
+    setScreen('profile');
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -214,7 +250,13 @@ export default function App() {
   }, []);
 
   let body = null;
-  if (paywallOpen) {
+  if (restoring) {
+    body = (
+      <View style={styles.centre}>
+        <ActivityIndicator color={theme.color.accent} />
+      </View>
+    );
+  } else if (paywallOpen) {
     body = (
       <PaywallScreen
         savingUsd={selected === null ? 0 : routeSaving(california, input, selected)}
@@ -238,6 +280,7 @@ export default function App() {
         choiceFor={(areaId) => input.plan_overrides?.[areaId]}
         onChoose={setOverride}
         onOpenDetail={() => setScreen('detail')}
+        onStartOver={startOver}
         onBack={() => setScreen('routes')}
       />
     );
@@ -302,4 +345,5 @@ export default function App() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.color.bg },
+  centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

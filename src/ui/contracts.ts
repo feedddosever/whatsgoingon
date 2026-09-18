@@ -47,6 +47,8 @@ export interface PlanMapScreenProps {
   /** null resets the requirement back to our recommendation. */
   onChoose: (areaId: string, choice: AreaChoice | null) => void;
   onOpenDetail: () => void;
+  /** Clears the saved plan and returns to the first question. */
+  onStartOver: () => void;
   onBack: () => void;
 }
 

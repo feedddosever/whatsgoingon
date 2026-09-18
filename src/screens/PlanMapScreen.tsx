@@ -87,7 +87,7 @@ function Option({
 export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
   const {
     institution, route, areas, profile,
-    optionsFor, choiceFor, onChoose, onOpenDetail, onBack,
+    optionsFor, choiceFor, onChoose, onOpenDetail, onStartOver, onBack,
   } = props;
 
   const [open, setOpen] = useState<string | null>(null);
@@ -279,6 +279,12 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
         <Pressable onPress={onOpenDetail} accessibilityRole="button" style={styles.cta}>
           <Text style={styles.ctaText}>See the full breakdown</Text>
         </Pressable>
+        <Text style={styles.savedNote}>
+          Saved on this device. Come back and change it any time.
+        </Text>
+        <Pressable onPress={onStartOver} accessibilityRole="button" hitSlop={8} style={styles.reset}>
+          <Text style={styles.resetText}>Start a new plan</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -383,4 +389,8 @@ const styles = StyleSheet.create({
     paddingVertical: theme.space.md, alignItems: 'center',
   },
   ctaText: { ...theme.font.heading, color: theme.color.bg },
+  savedNote: {
+    ...theme.font.small, color: theme.color.textMuted,
+    textAlign: 'center', marginTop: theme.space.sm,
+  },
 });
