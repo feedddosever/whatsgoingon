@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { planRoute, planAllRoutes } from './engine.ts';
-import { loadCalifornia } from './load.ts';
+import { california } from './dataset.ts';
 
-const ds = loadCalifornia();
+const ds = california;
 
 test('CLEP credit is excluded at a UC campus that does not accept it', () => {
   const route = planRoute(ds, {
@@ -82,7 +82,8 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
       max_transfer_units: null, accepts_clep: true,
       provenance: { source_url: '', as_of: '', confidence: 'published' as const },
     }],
-    areas: [{ id: '2', name: 'Math', required_units: 3 }],
+    areas: [{ id: '2', name: 'Math', required_units: 3,
+      provenance: { source_url: '', as_of: '', confidence: 'published' as const } }],
     creditSources: [
       { id: 'clep-fast', kind: 'clep' as const, name: 'Exam', cost_usd: 95,
         provenance: { source_url: '', as_of: '', confidence: 'published' as const } },

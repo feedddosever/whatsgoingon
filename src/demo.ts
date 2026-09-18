@@ -1,7 +1,7 @@
 import { planAllRoutes } from './engine.ts';
-import { loadCalifornia } from './load.ts';
+import { california } from './dataset.ts';
 
-const ds = loadCalifornia();
+const ds = california;
 const money = (n: number) => `$${n.toLocaleString('en-US')}`;
 
 function show(label: string, input: Parameters<typeof planAllRoutes>[1]) {

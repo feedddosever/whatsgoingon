@@ -2,9 +2,27 @@
   "name": "degree-route-planner",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
+  "main": "index.ts",
   "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "web": "expo start --web",
     "test": "node --test --experimental-strip-types src/*.test.ts",
-    "verify:data": "node --experimental-strip-types src/validate.ts"
+    "typecheck": "tsc --noEmit",
+    "demo": "node --experimental-strip-types src/demo.ts"
+  },
+  "dependencies": {
+    "expo": "~57.0.23",
+    "expo-print": "^57.0.2",
+    "expo-sharing": "^57.0.20",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-purchases": "^10.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.1",
+    "@types/react": "~19.2.2",
+    "typescript": "~6.0.3"
   }
 }
