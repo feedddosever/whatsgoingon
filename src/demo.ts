@@ -17,7 +17,7 @@ function show(label: string, input: Parameters<typeof planAllRoutes>[1]) {
   for (const r of planAllRoutes(ds, input)) {
     console.log(`\n  ── ${r.kind.toUpperCase().replace('_', '-')} — ${money(r.total_cost_usd)}, ${r.total_units} units`);
     for (const i of r.items) {
-      console.log(`     • ${i.label.padEnd(46)} ${money(i.cost_usd).padStart(6)}  area ${i.satisfies_area}  [${i.provenance.confidence}]`);
+      console.log(`     • ${i.label.padEnd(46)} ${money(i.cost_usd).padStart(6)}  area ${i.satisfies_areas.join("+")}  [${i.provenance.confidence}]`);
     }
     if (r.items.length === 0) console.log('     (nothing this route is willing to recommend)');
     for (const w of r.warnings) console.log(`     ⚠  [${w.kind}] ${w.message}`);

@@ -11,7 +11,8 @@ const CAL_GETC_SOURCE = {
   confidence: 'published' as const,
   note:
     'Cal-GETC v1.4, effective 2026, replaced IGETC and CSU GE Breadth under AB 928. ' +
-    'Area 1C (Oral Communication) is required for CSU and not for UC. ' +
+    'Area 1C (Oral Communication) is required for CSU and not for UC. Area 5 ' +
+    'totals 7 semester units across 5A, 5B and the 5C laboratory. ' +
     'CLEP cannot be used to satisfy any Cal-GETC area.',
 };
 
@@ -26,5 +27,8 @@ export const calGetcAreas: GeArea[] = [
   { id: "4", name: "Social & Behavioral Sciences", required_units: 6, applies_to: ['UC', 'CSU'], provenance: CAL_GETC_SOURCE },
   { id: "5A", name: "Physical Science", required_units: 3, applies_to: ['UC', 'CSU'], provenance: CAL_GETC_SOURCE },
   { id: "5B", name: "Biological Science", required_units: 3, applies_to: ['UC', 'CSU'], provenance: CAL_GETC_SOURCE },
+  // Area 5 totals 7 semester units across 5A, 5B and the laboratory. Several AP
+  // science exams clear their science area AND this lab in one sitting.
+  { id: "5C", name: "Laboratory Activity", required_units: 1, applies_to: ['UC', 'CSU'], provenance: CAL_GETC_SOURCE },
   { id: "6", name: "Ethnic Studies", required_units: 3, applies_to: ['UC', 'CSU'], provenance: CAL_GETC_SOURCE },
 ];

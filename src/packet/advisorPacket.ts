@@ -312,7 +312,7 @@ function itemHtml(item: PlanItem, n: number, named: AreaNamer): string {
           <td class="num">${n}</td>
           <td class="what">${esc(item.label)}${flagged ? '<span class="chip">confirm</span>' : ''}</td>
           <td class="fig">${item.units}</td>
-          <td>${esc(areaLabel(item.satisfies_area, named))}</td>
+          <td>${esc(item.satisfies_areas.map(a => areaLabel(a, named)).join(' + ')) || 'elective credit'}</td>
           <td class="fig">${money(item.cost_usd)}</td>
           <td class="conf${flagged ? ' weak' : ''}">${esc(confidenceLabel(item.provenance.confidence))}</td>
         </tr>
@@ -485,9 +485,9 @@ function confirmHtml(input: AdvisorPacketInput, named: AreaNamer): string {
 
   const entries: string[] = flagged.map(({ item, n }) => {
     const claim =
-      item.satisfies_area === null
+      item.satisfies_areas.length === 0
         ? `we expect ${units(item.units)} of elective credit, clearing no Cal-GETC area`
-        : `we expect it to clear ${esc(areaLabel(item.satisfies_area, named))} for ${units(item.units)}`;
+        : `we expect it to clear ${esc(item.satisfies_areas.map(a => areaLabel(a, named)).join(' and '))} for ${units(item.units)}`;
 
     return `
         <li>

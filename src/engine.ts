@@ -44,7 +44,7 @@ function toPlanItem(rule: AcceptanceRule, src: CreditSource, profile: StudentPro
     label: src.name,
     cost_usd: effectiveCost(src, profile),
     units: rule.units_granted,
-    satisfies_area: rule.satisfies_area,
+    satisfies_areas: rule.satisfies_areas,
     // The rule's provenance governs: what matters is what THIS school accepts,
     // not what the exam claims to be worth.
     provenance: rule.provenance,
@@ -141,7 +141,7 @@ function unmetAreas(ds: Dataset, inst: Institution, held: string[]): string[] {
     const src = byId(ds.creditSources, rule.credit_source_id);
     if (!src) continue;
     if (src.kind === 'clep' && !inst.accepts_clep) continue; // held, but worthless here
-    if (rule.satisfies_area) cleared.add(rule.satisfies_area);
+    for (const area of rule.satisfies_areas) cleared.add(area);
   }
   return areasRequiredBy(ds, inst).map(a => a.id).filter(id => !cleared.has(id));
 }
@@ -198,7 +198,7 @@ function heldCreditWarnings(
     }
 
     // A rule exists. Does any of it clear something we are planning against?
-    if (!rules.some(r => r.satisfies_area !== null)) {
+    if (!rules.some(r => r.satisfies_areas.length > 0)) {
       out.push({
         kind: 'credit_not_toward_ge',
         message:
@@ -224,7 +224,7 @@ export function optionsForArea(
   const inst = byId(ds.institutions, input.target_institution_id);
   if (!inst) return [];
   return candidatesFor(ds, inst, input.profile)
-    .filter(c => c.satisfies_area === areaId)
+    .filter(c => c.satisfies_areas.includes(areaId))
     .sort((a, b) => a.cost_usd - b.cost_usd);
 }
 
@@ -233,35 +233,49 @@ function pickPerArea(
   areas: string[],
   rank: (a: PlanItem, b: PlanItem) => number,
   overrides: Record<string, AreaChoice>,
-): { chosen: PlanItem[]; skipped: string[] } {
+): { chosen: PlanItem[]; skipped: string[]; cleared: Set<string> } {
   const chosen: PlanItem[] = [];
   const skipped: string[] = [];
+  const cleared = new Set<string>();
+  /**
+   * One exam, one use. AP English Literature clears 1A *or* 3B — the standard
+   * offers a choice, not two credits — so spending it on both would build a plan
+   * that cannot actually be executed.
+   */
+  const spent = new Set<string>();
 
   for (const area of areas) {
+    // Already covered by an earlier pick that cleared several areas at once,
+    // e.g. AP Biology carrying its own 5C laboratory.
+    if (cleared.has(area)) continue;
+
     const override = overrides[area];
     if (override?.kind === 'skip') {
       skipped.push(area);
       continue;
     }
 
-    const forArea = candidates.filter(c => c.satisfies_area === area);
+    const forArea = candidates.filter(
+      c => c.satisfies_areas.includes(area) && !spent.has(c.credit_source_id),
+    );
 
+    let picked: PlanItem | undefined;
     if (override?.kind === 'use') {
-      const picked = forArea.find(c => c.credit_source_id === override.credit_source_id);
       // A stale override — the student's choice is no longer offered here,
       // usually because they changed campus. Fall through to our own pick
       // rather than silently dropping the requirement.
-      if (picked !== undefined) {
-        chosen.push(picked);
-        continue;
-      }
+      picked = forArea.find(c => c.credit_source_id === override.credit_source_id);
     }
+    picked ??= [...forArea].sort(rank)[0];
 
-    const best = [...forArea].sort(rank)[0];
-    if (best !== undefined) chosen.push(best);
+    if (picked !== undefined) {
+      chosen.push(picked);
+      spent.add(picked.credit_source_id);
+      for (const a of picked.satisfies_areas) cleared.add(a);
+    }
   }
 
-  return { chosen, skipped };
+  return { chosen, skipped, cleared };
 }
 
 const RANKERS: Record<RouteKind, (a: PlanItem, b: PlanItem) => number> = {
@@ -291,11 +305,13 @@ export function planRoute(ds: Dataset, input: StudentInput, kind: RouteKind): Ro
   }
 
   const areas = unmetAreas(ds, inst, input.held_credit_ids);
-  const { chosen: items, skipped } = pickPerArea(
+  const { chosen: items, skipped, cleared } = pickPerArea(
     candidates, areas, RANKERS[kind], input.plan_overrides ?? {},
   );
 
-  const areasCleared = items.map(i => i.satisfies_area).filter((a): a is string => a !== null);
+  // Only the areas this campus actually requires: a rule may clear something
+  // that is not on this student's list, and counting it would inflate the plan.
+  const areasCleared = areas.filter(a => cleared.has(a));
   const areasUnmet = areas.filter(a => !areasCleared.includes(a) && !skipped.includes(a));
   const totalUnits = items.reduce((n, i) => n + i.units, 0);
 
@@ -424,14 +440,23 @@ export function pathwayCosts(ds: Dataset, input: StudentInput): PathwayCost[] {
   return kinds.map(kind => {
     let covered = 0;
     let total = 0;
+    const seen = new Set<string>();
+    const spentHere = new Set<string>();
     for (const area of required) {
+      if (seen.has(area)) continue; // cleared by an earlier multi-area pick
       const forArea = candidates
-        .filter(c => c.satisfies_area === area && inferKind(c) === kind)
+        .filter(c => c.satisfies_areas.includes(area) && inferKind(c) === kind
+          && !spentHere.has(c.credit_source_id))
         .sort((a, b) => a.cost_usd - b.cost_usd);
       const best = forArea[0];
       if (best !== undefined) {
-        covered += 1;
+        // Charged once even when it clears two requirements.
+        spentHere.add(best.credit_source_id);
         total += best.cost_usd;
+        for (const a of best.satisfies_areas) {
+          // Guard against counting an area twice when two picks overlap on it.
+          if (required.includes(a) && !seen.has(a)) { seen.add(a); covered += 1; }
+        }
       }
     }
     return {

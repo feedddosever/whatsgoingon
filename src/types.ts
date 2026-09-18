@@ -85,8 +85,17 @@ export interface AcceptanceRule {
   /** Minimum exam score required, where applicable. */
   min_score: number | null;
   units_granted: number;
-  /** Cal-GETC area cleared, or null if it lands as unassigned elective credit. */
-  satisfies_area: string | null;
+  /**
+   * The Cal-GETC areas this rule clears TOGETHER. Empty means the credit counts
+   * toward the degree but clears no requirement (CLEP at a CSU).
+   *
+   * A list because the standard has both cases and they are not the same thing:
+   * AP Biology clears 5B **and** the 5C laboratory in one sitting, while AP
+   * English Literature clears 1A **or** 3B — the student picks one. "And" is one
+   * rule with two areas; "or" is two rules with one area each, and the engine
+   * will not let the same exam be spent twice.
+   */
+  satisfies_areas: string[];
   provenance: Provenance;
 }
 
@@ -147,7 +156,7 @@ export interface PlanItem {
   label: string;
   cost_usd: number;
   units: number;
-  satisfies_area: string | null;
+  satisfies_areas: string[];
   provenance: Provenance;
 }
 

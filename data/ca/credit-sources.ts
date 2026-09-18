@@ -90,6 +90,105 @@ export const creditSources: CreditSource[] = [
     },
   },
 
+  {
+    id: 'ap-calculus-bc',
+    kind: 'ap',
+    name: 'AP Calculus BC (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+  {
+    id: 'ap-spanish',
+    kind: 'ap',
+    name: 'AP Spanish Language & Culture (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+  {
+    id: 'ap-european-history',
+    kind: 'ap',
+    name: 'AP European History (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+  {
+    id: 'ap-macroeconomics',
+    kind: 'ap',
+    name: 'AP Macroeconomics (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+  {
+    id: 'ap-microeconomics',
+    kind: 'ap',
+    name: 'AP Microeconomics (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+  {
+    id: 'ap-human-geography',
+    kind: 'ap',
+    name: 'AP Human Geography (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+  {
+    id: 'ap-comparative-government',
+    kind: 'ap',
+    name: 'AP Comparative Government & Politics (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+  {
+    id: 'ap-physics-1',
+    kind: 'ap',
+    name: 'AP Physics 1: Algebra-Based (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+  {
+    id: 'ap-environmental-science',
+    kind: 'ap',
+    name: 'AP Environmental Science (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
   // ---- CLEP: cannot satisfy Cal-GETC anywhere, and UC rejects it entirely ----
   {
     id: 'clep-college-composition',

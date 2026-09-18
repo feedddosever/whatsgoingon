@@ -122,11 +122,17 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
    * away from the finger that just tapped it. The map has to hold still while
    * it is being edited.
    */
-  const itemByArea = new Map(
-    route.items
-      .filter(i => i.satisfies_area !== null)
-      .map(i => [i.satisfies_area as string, i] as const),
-  );
+  // One item can clear several requirements at once — AP Biology carries its own
+  // 5C laboratory — so it is indexed under every area it covers.
+  // First item to cover an area owns it. Two science exams each carry a 5C
+  // laboratory, but only one of them is actually supplying it — saying "also
+  // clears the lab" on both is true of each exam and misleading about the plan.
+  const itemByArea = new Map<string, PlanItem>();
+  for (const i of route.items) {
+    for (const a of i.satisfies_areas) {
+      if (!itemByArea.has(a)) itemByArea.set(a, i);
+    }
+  }
   const skipped = new Set(route.areas_skipped);
 
   const branches: Branch[] = areas
@@ -240,6 +246,17 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
                             {b.item.cost_usd === 0 ? 'free' : money(b.item.cost_usd)}
                           </Text>
                         </View>
+                        {(() => {
+                          const alsoOwned = b.item.satisfies_areas.filter(
+                            a => a !== b.area.id && itemByArea.get(a) === b.item,
+                          );
+                          if (alsoOwned.length === 0) return null;
+                          return (
+                            <Text style={styles.alsoClears}>
+                              One sitting also clears {alsoOwned.map(a => nameFor(a)).join(', ')}
+                            </Text>
+                          );
+                        })()}
                         <Badge p={b.item.provenance} />
                       </>
                     ) : (
@@ -385,6 +402,7 @@ const styles = StyleSheet.create({
   chosenLabel: { ...theme.font.body, color: theme.color.text, flex: 1, fontWeight: '600' },
   chosenCost: { ...theme.font.body, color: theme.color.accent, fontWeight: '700' },
   statusText: { ...theme.font.body, marginTop: theme.space.xs },
+  alsoClears: { ...theme.font.small, color: theme.color.accent, marginTop: 2 },
   expandHint: { ...theme.font.small, color: theme.color.textMuted, marginTop: theme.space.sm },
 
   options: { marginTop: theme.space.sm, gap: theme.space.sm },

@@ -263,9 +263,9 @@ function ItemCard(
         {/* An item with no area still costs money — say where it lands. */}
         <View style={[styles.chip, styles.chipArea]}>
           <Text style={styles.chipText}>
-            {item.satisfies_area === null
+            {item.satisfies_areas.length === 0
               ? 'ELECTIVE · CLEARS NO AREA'
-              : areaLabel(item.satisfies_area, areaName(item.satisfies_area))}
+              : item.satisfies_areas.map(a => areaLabel(a, areaName(a))).join('  +  ')}
           </Text>
         </View>
         <SourceBadge p={item.provenance} />

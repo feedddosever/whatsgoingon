@@ -51,7 +51,7 @@ test('held CLEP credit does NOT clear an area at a UC campus', () => {
   }, 'cheapest');
 
   assert.ok(
-    route.items.some(i => i.satisfies_area === '1A'),
+    route.items.some(i => i.satisfies_areas.includes('1A')),
     'area 1A must still be planned for, since the CLEP credit is worthless here',
   );
 });
@@ -64,9 +64,9 @@ test('CLEP clears no Cal-GETC area at ANY institution', () => {
     for (const rule of ds.rules) {
       if (rule.institution_id !== inst.id) continue;
       if (!rule.credit_source_id.startsWith('clep-')) continue;
-      assert.equal(
-        rule.satisfies_area, null,
-        `${rule.credit_source_id} must not claim area ${rule.satisfies_area} at ${inst.name}`,
+      assert.deepEqual(
+        rule.satisfies_areas, [],
+        `${rule.credit_source_id} claims ${rule.satisfies_areas.join()} at ${inst.name}`,
       );
     }
   }
@@ -80,7 +80,7 @@ test('holding CLEP does not clear an area even at a CSU campus', () => {
   }, 'cheapest');
 
   assert.ok(
-    route.items.some(i => i.satisfies_area === '1A'),
+    route.items.some(i => i.satisfies_areas.includes('1A')),
     'area 1A is still unmet — the CLEP credit did not clear it',
   );
 });
@@ -91,7 +91,7 @@ test('AP clears Cal-GETC areas at both UC and CSU', () => {
     target_institution_id: id, held_credit_ids: ['ap-english-lang'], units_in_residence: 30,
     }, 'cheapest');
     assert.equal(
-      route.items.some(i => i.satisfies_area === '1A'), false,
+      route.items.some(i => i.satisfies_areas.includes('1A')), false,
       `AP should have cleared area 1A at ${id}`,
     );
   }
@@ -100,7 +100,7 @@ test('AP clears Cal-GETC areas at both UC and CSU', () => {
 test('Cal-GETC area 1C is offered at CSU but not at UC', () => {
   // Oral Communication is a CSU-only requirement under Cal-GETC.
   const has1C = (inst: string) =>
-    ds.rules.some(r => r.institution_id === inst && r.satisfies_area === '1C');
+    ds.rules.some(r => r.institution_id === inst && r.satisfies_areas.includes('1C'));
   assert.equal(has1C('csu-long-beach'), true);
   assert.equal(has1C('uc-berkeley'), false);
 });
@@ -112,7 +112,7 @@ test('cheapest route picks the lowest-cost option for an area', () => {
     units_in_residence: 30,
   }, 'cheapest');
 
-  const area2 = route.items.find(i => i.satisfies_area === '2');
+  const area2 = route.items.find(i => i.satisfies_areas.includes('2'));
   // AP ($99) undercuts the CCC course ($138), and CLEP is not a candidate at all
   // because it cannot clear a Cal-GETC area. That ordering is data, not logic —
   // the synthetic test below pins the logic itself.
@@ -142,10 +142,10 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
     ],
     rules: [
       { institution_id: 'x', credit_source_id: 'clep-fast', min_score: 50,
-        units_granted: 3, satisfies_area: '2',
+        units_granted: 3, satisfies_areas: ['2'],
         provenance: { source_url: '', as_of: '', confidence: 'published' as const } },
       { institution_id: 'x', credit_source_id: 'ccc-cheap', min_score: null,
-        units_granted: 3, satisfies_area: '2',
+        units_granted: 3, satisfies_areas: ['2'],
         provenance: { source_url: '', as_of: '', confidence: 'published' as const } },
     ],
   };
@@ -162,7 +162,7 @@ test('fastest route prefers the exam over a term-long course', () => {
     units_in_residence: 30,
   }, 'fastest');
 
-  const area2 = route.items.find(i => i.satisfies_area === '2');
+  const area2 = route.items.find(i => i.satisfies_areas.includes('2'));
   assert.equal(area2?.credit_source_id, 'ap-calculus-ab', 'an exam costs zero terms');
 });
 
@@ -216,10 +216,10 @@ test('lowest-risk never beats cheapest on the areas they both clear', () => {
     'with unconfirmed rows excluded, the safe route should cover less');
 
   for (const item of safest.items) {
-    const rival = cheapest.items.find(i => i.satisfies_area === item.satisfies_area);
-    assert.ok(rival, `cheapest should also clear ${item.satisfies_area}`);
+    const rival = cheapest.items.find(i => i.satisfies_areas.some(a => item.satisfies_areas.includes(a)));
+    assert.ok(rival, `cheapest should also clear ${item.satisfies_areas.join('+')}`);
     assert.ok(item.cost_usd >= rival.cost_usd,
-      `safe pick for ${item.satisfies_area} undercuts the cheapest pick`);
+      `safe pick for ${item.satisfies_areas.join('+')} undercuts the cheapest pick`);
   }
 });
 
@@ -234,7 +234,15 @@ test('all three routes are produced and are internally consistent', () => {
   for (const r of routes) {
     assert.equal(r.total_cost_usd, r.items.reduce((n, i) => n + i.cost_usd, 0));
     assert.equal(r.total_units, r.items.reduce((n, i) => n + i.units, 0));
-    assert.equal(r.areas_cleared.length, r.items.length);
+    // NOT one area per item: a science exam clears its area and the 5C
+    // laboratory in one sitting, so cleared areas can outnumber items.
+    assert.ok(r.areas_cleared.length >= r.items.length);
+    assert.equal(new Set(r.areas_cleared).size, r.areas_cleared.length,
+      'an area must not be reported cleared twice');
+    assert.equal(
+      new Set(r.items.map(i => i.credit_source_id)).size, r.items.length,
+      'the same credit must never be spent twice in one route',
+    );
   }
 });
 
@@ -567,7 +575,7 @@ test('a student can swap the credit used for a requirement', () => {
   const options = optionsForArea(ds, base, '2');
   assert.ok(options.length > 1, 'area 2 should offer a choice');
 
-  const ours = planRoute(ds, base, 'cheapest').items.find(i => i.satisfies_area === '2');
+  const ours = planRoute(ds, base, 'cheapest').items.find(i => i.satisfies_areas.includes('2'));
   const theirs = options.find(o => o.credit_source_id !== ours?.credit_source_id);
   assert.ok(theirs, 'guards the premise');
 
@@ -576,7 +584,7 @@ test('a student can swap the credit used for a requirement', () => {
     plan_overrides: { '2': { kind: 'use', credit_source_id: theirs.credit_source_id } },
   }, 'cheapest');
 
-  const picked = edited.items.find(i => i.satisfies_area === '2');
+  const picked = edited.items.find(i => i.satisfies_areas.includes('2'));
   assert.equal(picked?.credit_source_id, theirs.credit_source_id);
   assert.equal(edited.areas_unmet.includes('2'), false, 'the requirement is still covered');
 });
@@ -591,7 +599,7 @@ test('a skipped requirement is neither priced nor reported as unmet', () => {
 
   assert.ok(edited.areas_skipped.includes('2'));
   assert.equal(edited.areas_unmet.includes('2'), false, 'skipping is a decision, not a gap');
-  assert.equal(edited.items.some(i => i.satisfies_area === '2'), false);
+  assert.equal(edited.items.some(i => i.satisfies_areas.includes('2')), false);
   assert.ok(edited.total_cost_usd < full.total_cost_usd, 'and it is not charged for');
 });
 
@@ -606,7 +614,7 @@ test('an override that no longer applies falls back instead of dropping the area
   }, 'cheapest');
 
   assert.ok(
-    edited.items.some(i => i.satisfies_area === '1A'),
+    edited.items.some(i => i.satisfies_areas.includes('1A')),
     'area 1A must still be planned for',
   );
   assert.equal(
@@ -668,5 +676,87 @@ test('no single pathway is claimed to clear everything', () => {
       paths.every(p => p.areas_covered < p.areas_required),
       `a single pathway claims full coverage at ${id}`,
     );
+  }
+});
+
+test('a science exam clears its area AND the laboratory, and is charged once', () => {
+  // The correction that mattered most: AP Biology was recorded as clearing 5B
+  // alone, so the plan sent a student to sit a lab they had already satisfied.
+  const bio = ds.rules.find(
+    r => r.credit_source_id === 'ap-biology' && r.institution_id === 'uc-davis',
+  );
+  assert.ok(bio);
+  assert.deepEqual([...bio.satisfies_areas].sort(), ['5B', '5C']);
+
+  const route = planRoute(ds, {
+    profile: PLAIN, target_institution_id: 'uc-davis',
+    held_credit_ids: [], units_in_residence: 30,
+    plan_overrides: { '5B': { kind: 'use', credit_source_id: 'ap-biology' } },
+  }, 'cheapest');
+
+  const picks = route.items.filter(i => i.credit_source_id === 'ap-biology');
+  assert.equal(picks.length, 1, 'one exam, one line on the plan, one fee');
+  assert.ok(route.areas_cleared.includes('5B') && route.areas_cleared.includes('5C'));
+  assert.equal(route.areas_unmet.includes('5C'), false, 'the lab must not be asked for twice');
+});
+
+test('an either/or exam is spent on one requirement, never both', () => {
+  // The standard offers AP English Literature for 1A OR 3B. Spending it on both
+  // would build a plan that cannot actually be executed.
+  const litRules = ds.rules.filter(
+    r => r.credit_source_id === 'ap-english-lit' && r.institution_id === 'uc-davis',
+  );
+  assert.equal(litRules.length, 2, 'guards the premise: it is offered for two areas');
+
+  const route = planRoute(ds, {
+    profile: PLAIN, target_institution_id: 'uc-davis',
+    held_credit_ids: [], units_in_residence: 30,
+    plan_overrides: {
+      '1A': { kind: 'use', credit_source_id: 'ap-english-lit' },
+      '3B': { kind: 'use', credit_source_id: 'ap-english-lit' },
+    },
+  }, 'cheapest');
+
+  assert.equal(
+    route.items.filter(i => i.credit_source_id === 'ap-english-lit').length, 1,
+    'the same exam must not appear twice even when asked for twice',
+  );
+  // The requirement it could not be spent on falls back to something else
+  // rather than being dropped.
+  assert.ok(route.areas_cleared.includes('1A') && route.areas_cleared.includes('3B'));
+});
+
+test('no AP exam is claimed to satisfy 1B or area 6', () => {
+  // The Cal-GETC table is explicit: an English score of 3-5 meets 1A and
+  // expressly NOT 1B, and no AP exam satisfies ethnic studies. Inventing one
+  // would send a student to buy an exam that cannot do the job.
+  for (const r of ds.rules) {
+    if (!r.credit_source_id.startsWith('ap-')) continue;
+    assert.equal(r.satisfies_areas.includes('1B'), false, `${r.credit_source_id} claims 1B`);
+    assert.equal(r.satisfies_areas.includes('6'), false, `${r.credit_source_id} claims area 6`);
+    assert.equal(r.satisfies_areas.includes('1C'), false, `${r.credit_source_id} claims 1C`);
+  }
+});
+
+test('the laboratory requirement exists and applies to both systems', () => {
+  const lab = ds.areas.find(a => a.id === '5C');
+  assert.ok(lab, 'Cal-GETC Area 5C was missing from the dataset entirely');
+  assert.ok(lab.applies_to.includes('UC') && lab.applies_to.includes('CSU'));
+
+  // Area 5 totals 7 semester units across 5A, 5B and the lab.
+  const area5 = ds.areas.filter(a => a.id.startsWith('5'));
+  assert.equal(area5.reduce((n, a) => n + a.required_units, 0), 7);
+});
+
+test('every AP mapping is backed by a published source, not an inference', () => {
+  for (const r of ds.rules) {
+    if (!r.credit_source_id.startsWith('ap-')) continue;
+    if (r.satisfies_areas.length === 0) continue;
+    assert.equal(
+      r.provenance.confidence, 'published',
+      `${r.credit_source_id} is still ${r.provenance.confidence}`,
+    );
+    assert.match(r.provenance.source_url, /^https?:\/\//);
+    assert.notEqual(r.provenance.as_of.trim(), '');
   }
 });
