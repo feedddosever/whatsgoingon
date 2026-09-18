@@ -51,6 +51,11 @@ function candidatesFor(ds: Dataset, inst: Institution): PlanItem[] {
   return items;
 }
 
+/** The Cal-GETC areas this institution actually requires. */
+function areasRequiredBy(ds: Dataset, inst: Institution): GeArea[] {
+  return ds.areas.filter(a => a.applies_to.includes(inst.system));
+}
+
 /** Areas the student still has to clear at this institution. */
 function unmetAreas(ds: Dataset, inst: Institution, held: string[]): string[] {
   const cleared = new Set<string>();
@@ -62,7 +67,7 @@ function unmetAreas(ds: Dataset, inst: Institution, held: string[]): string[] {
     if (src.kind === 'clep' && !inst.accepts_clep) continue; // held, but worthless here
     if (rule.satisfies_area) cleared.add(rule.satisfies_area);
   }
-  return ds.areas.map(a => a.id).filter(id => !cleared.has(id));
+  return areasRequiredBy(ds, inst).map(a => a.id).filter(id => !cleared.has(id));
 }
 
 /**
@@ -246,4 +251,27 @@ export function baselineCost(ds: Dataset, input: StudentInput): number {
   const unmet = unmetAreas(ds, inst, input.held_credit_ids);
   const units = unmet.reduce((n, id) => n + (byId(ds.areas, id)?.required_units ?? 0), 0);
   return units * inst.cost_per_unit_usd;
+}
+
+/**
+ * What a route actually saves: the price of the requirements it clears, minus
+ * what the route costs.
+ *
+ * NOT `baseline - route.total_cost_usd`. That subtraction credits a route for
+ * requirements it never touched, and it fails hardest exactly where it matters —
+ * an empty route (nothing confirmed enough to recommend) came out showing the
+ * LARGEST saving of the three, because it spent nothing. A card reading
+ * "saves $9,933" above a plan that clears nothing is the most misleading thing
+ * this app could put on screen.
+ */
+export function routeSaving(ds: Dataset, input: StudentInput, route: Route): number {
+  const inst = byId(ds.institutions, input.target_institution_id);
+  if (!inst) throw new Error(`unknown institution: ${input.target_institution_id}`);
+
+  const clearedUnits = route.areas_cleared.reduce(
+    (n, id) => n + (byId(ds.areas, id)?.required_units ?? 0),
+    0,
+  );
+  const avoided = clearedUnits * inst.cost_per_unit_usd;
+  return Math.max(0, avoided - route.total_cost_usd);
 }

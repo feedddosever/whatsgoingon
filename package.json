@@ -12,18 +12,22 @@
     "demo": "node --experimental-strip-types src/demo.ts"
   },
   "dependencies": {
+    "@expo/metro-runtime": "^57.0.16",
     "expo": "~57.0.23",
     "expo-print": "^57.0.2",
     "expo-sharing": "^57.0.20",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
+    "react-dom": "^19.2.3",
     "react-native": "0.86.3",
     "react-native-purchases": "^10.10.0",
-    "react-native-safe-area-context": "^5.10.0"
+    "react-native-safe-area-context": "^5.10.0",
+    "react-native-web": "^0.21.2"
   },
   "devDependencies": {
     "@types/node": "^26.6.1",
     "@types/react": "~19.2.2",
+    "playwright": "^1.63.0",
     "typescript": "~6.0.3"
   }
 }

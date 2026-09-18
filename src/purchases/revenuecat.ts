@@ -179,6 +179,22 @@ export async function hasAdvisorPacket(): Promise<boolean> {
 }
 
 /**
+ * The store's own localised price string (e.g. "$4.99", "4,99 €"), or null when
+ * no store can answer. Never throws: a paywall that cannot name the price is
+ * still usable, and the store will state it at the moment of purchase anyway.
+ */
+export async function getAdvisorPacketPrice(): Promise<string | null> {
+  try {
+    if (!(await isReady())) return null;
+    const offerings = await Purchases.getOfferings();
+    const pkg = pickPurchasable(offerings.all, offerings.current);
+    return pkg?.product.priceString ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Resolves true once the entitlement is actually active — not merely once the
  * store said "ok", since a pending payment grants nothing. Resolves false when
  * the student cancels. Rejects only on a real failure.

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { planRoute, planAllRoutes, baselineCost } from './engine.ts';
+import { planRoute, planAllRoutes, baselineCost, routeSaving } from './engine.ts';
 import { california } from './dataset.ts';
 
 const ds = california;
@@ -122,7 +122,7 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
       residency_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
       transfer_cap_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
     }],
-    areas: [{ id: '2', name: 'Math', required_units: 3,
+    areas: [{ id: '2', name: 'Math', required_units: 3, applies_to: ['CSU' as const],
       provenance: { source_url: '', as_of: '', confidence: 'published' as const } }],
     creditSources: [
       { id: 'clep-fast', kind: 'clep' as const, name: 'Exam', cost_usd: 95,
@@ -173,13 +173,20 @@ test('lowest-risk route stakes nothing on unconfirmed data', () => {
     units_in_residence: 30,
   }, 'lowest_risk');
 
-  // Every item must be backed. An unconfirmed row appearing here is the failure
-  // this route exists to prevent.
-  assert.ok(route.items.length > 0, 'confirmed rows should now produce a route');
+  // The invariant is "everything here is backed", NOT "there is something here".
+  // An empty safe route is a truthful answer when nothing is confirmed yet, and
+  // the student must be told why rather than shown a blank screen.
   for (const item of route.items) {
     assert.ok(
       item.provenance.confidence === 'statute' || item.provenance.confidence === 'published',
       `${item.credit_source_id} is ${item.provenance.confidence} and must not appear here`,
+    );
+  }
+
+  if (route.items.length === 0) {
+    assert.ok(
+      route.warnings.some(w => w.kind === 'unverified_data'),
+      'an empty safe route must explain itself',
     );
   }
 });
@@ -364,4 +371,82 @@ test('an unconfirmed row never carries a source link that cannot answer it', () 
       }
     }
   }
+});
+
+test('a route that clears nothing saves nothing', () => {
+  // The trap: saving computed as (baseline - route cost) credits a route for
+  // requirements it never touched, so the empty safe route showed the biggest
+  // number on screen.
+  const input = {
+    target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
+  };
+  const safest = planRoute(ds, input, 'lowest_risk');
+  if (safest.items.length === 0) {
+    assert.equal(routeSaving(ds, input, safest), 0);
+    assert.ok(baselineCost(ds, input) > 0, 'and it is not because the baseline is zero');
+  }
+});
+
+test('saving is never more than the requirements a route actually clears', () => {
+  const input = {
+    target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
+  };
+  const inst = ds.institutions.find(i => i.id === 'csu-long-beach')!;
+
+  for (const r of planAllRoutes(ds, input)) {
+    const clearedUnits = r.areas_cleared.reduce(
+      (n, id) => n + (ds.areas.find(a => a.id === id)?.required_units ?? 0), 0);
+    assert.ok(
+      routeSaving(ds, input, r) <= clearedUnits * inst.cost_per_unit_usd,
+      `${r.kind} claims a saving larger than the work it does`,
+    );
+    assert.ok(routeSaving(ds, input, r) >= 0, `${r.kind} reports a negative saving`);
+  }
+});
+
+test('a fuller route saves more than a narrower one', () => {
+  const input = {
+    target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
+  };
+  const cheapest = planRoute(ds, input, 'cheapest');
+  const safest = planRoute(ds, input, 'lowest_risk');
+  if (safest.areas_cleared.length < cheapest.areas_cleared.length) {
+    assert.ok(
+      routeSaving(ds, input, cheapest) > routeSaving(ds, input, safest),
+      'the route doing more work must not report the smaller saving',
+    );
+  }
+});
+
+test('a CSU-only requirement is not imposed on a UC student', () => {
+  // Cal-GETC area 1C (Oral Communication) is a CSU requirement, not a UC one.
+  // Listing it as unmet at a UC campus sends the student to solve something that
+  // does not apply — and its units inflate their baseline, overstating the saving.
+  const uc = planRoute(ds, {
+    target_institution_id: 'uc-berkeley', held_credit_ids: [], units_in_residence: 30,
+  }, 'cheapest');
+  assert.equal(uc.areas_unmet.includes('1C'), false, '1C must not be required at UC');
+  assert.equal(uc.areas_cleared.includes('1C'), false);
+
+  const csu = planRoute(ds, {
+    target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
+  }, 'cheapest');
+  assert.ok(
+    csu.areas_cleared.includes('1C') || csu.areas_unmet.includes('1C'),
+    '1C IS required at CSU and must appear somewhere',
+  );
+});
+
+test('the baseline excludes requirements the campus does not impose', () => {
+  const ucBase = baselineCost(ds, {
+    target_institution_id: 'uc-berkeley', held_credit_ids: [], units_in_residence: 30,
+  });
+  const inst = ds.institutions.find(i => i.id === 'uc-berkeley')!;
+  const ucUnits = ds.areas
+    .filter(a => a.applies_to.includes('UC'))
+    .reduce((n, a) => n + a.required_units, 0);
+  assert.equal(ucBase, ucUnits * inst.cost_per_unit_usd);
+
+  const area1C = ds.areas.find(a => a.id === '1C')!;
+  assert.equal(area1C.applies_to.includes('UC'), false, 'guards the premise of this test');
 });

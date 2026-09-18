@@ -57,6 +57,13 @@ export interface GeArea {
   id: string;
   name: string;
   required_units: number;
+  /**
+   * Which systems actually require this area. Not every Cal-GETC area applies
+   * everywhere — 1C (Oral Communication) is a CSU requirement and not a UC one —
+   * so a UC-bound student must not be told to solve it, and its units must not
+   * inflate their baseline.
+   */
+  applies_to: SystemId[];
   provenance: Provenance;
 }
 

@@ -45,6 +45,51 @@ export const creditSources: CreditSource[] = [
     },
   },
 
+  {
+    id: 'ap-english-lit',
+    kind: 'ap',
+    name: 'AP English Literature & Composition (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+  {
+    id: 'ap-art-history',
+    kind: 'ap',
+    name: 'AP Art History (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+  {
+    id: 'ap-biology',
+    kind: 'ap',
+    name: 'AP Biology (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+  {
+    id: 'ap-chemistry',
+    kind: 'ap',
+    name: 'AP Chemistry (score 3+)',
+    cost_usd: 99,
+    provenance: {
+      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
+      as_of: '',
+      confidence: 'needs_check',
+    },
+  },
+
   // ---- CLEP: cannot satisfy Cal-GETC anywhere, and UC rejects it entirely ----
   {
     id: 'clep-college-composition',
@@ -140,6 +185,71 @@ export const creditSources: CreditSource[] = [
       as_of: '2026-09-18',
       confidence: 'published',
       note: 'Cal-GETC area 6. CCPG waives the $46/unit enrollment fee.',
+    },
+  },
+  {
+    id: 'ccc-engl-1b',
+    kind: 'ccc_course',
+    name: 'Community college English 1B, Critical Thinking (3 units)',
+    cost_usd: 138,
+    provenance: {
+      source_url:
+        'https://lao.ca.gov/Publications/Report/2026-27-budget-california-community-colleges',
+      as_of: '2026-09-18',
+      confidence: 'published',
+      note: 'Cal-GETC area 1B. CCPG waives the $46/unit enrollment fee for eligible students.',
+    },
+  },
+  {
+    id: 'ccc-hum-1',
+    kind: 'ccc_course',
+    name: 'Community college Humanities 1 (3 units)',
+    cost_usd: 138,
+    provenance: {
+      source_url:
+        'https://lao.ca.gov/Publications/Report/2026-27-budget-california-community-colleges',
+      as_of: '2026-09-18',
+      confidence: 'published',
+      note: 'Cal-GETC area 3B. CCPG waives the $46/unit enrollment fee.',
+    },
+  },
+  {
+    id: 'ccc-art-1',
+    kind: 'ccc_course',
+    name: 'Community college Art History 1 (3 units)',
+    cost_usd: 138,
+    provenance: {
+      source_url:
+        'https://lao.ca.gov/Publications/Report/2026-27-budget-california-community-colleges',
+      as_of: '2026-09-18',
+      confidence: 'published',
+      note: 'Cal-GETC area 3A. CCPG waives the $46/unit enrollment fee.',
+    },
+  },
+  {
+    id: 'ccc-physics-1',
+    kind: 'ccc_course',
+    name: 'Community college Physical Science 1 (3 units)',
+    cost_usd: 138,
+    provenance: {
+      source_url:
+        'https://lao.ca.gov/Publications/Report/2026-27-budget-california-community-colleges',
+      as_of: '2026-09-18',
+      confidence: 'published',
+      note: 'Cal-GETC area 5A. CCPG waives the $46/unit enrollment fee.',
+    },
+  },
+  {
+    id: 'ccc-biology-1',
+    kind: 'ccc_course',
+    name: 'Community college Biology 1 (3 units)',
+    cost_usd: 138,
+    provenance: {
+      source_url:
+        'https://lao.ca.gov/Publications/Report/2026-27-budget-california-community-colleges',
+      as_of: '2026-09-18',
+      confidence: 'published',
+      note: 'Cal-GETC area 5B. CCPG waives the $46/unit enrollment fee.',
     },
   },
 ];

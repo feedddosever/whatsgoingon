@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import type { Route, StudentInput } from './src/types.ts';
-import { baselineCost, planAllRoutes } from './src/engine.ts';
+import { baselineCost, planAllRoutes, routeSaving } from './src/engine.ts';
 import { california } from './src/dataset.ts';
 import { theme } from './src/ui/theme.ts';
 import { InputScreen } from './src/screens/InputScreen.tsx';
@@ -14,6 +14,7 @@ import { PaywallScreen } from './src/screens/PaywallScreen.tsx';
 import { exportAdvisorPacket } from './src/packet/advisorPacket.ts';
 import {
   configurePurchases,
+  getAdvisorPacketPrice,
   hasAdvisorPacket,
   purchaseAdvisorPacket,
   restorePurchases,
@@ -49,6 +50,7 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [booting, setBooting] = useState(true);
+  const [priceLabel, setPriceLabel] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -58,6 +60,10 @@ export default function App() {
           await configurePurchases(REVENUECAT_API_KEY);
           const owned = await hasAdvisorPacket();
           if (alive) setUnlocked(owned);
+          // Never throws; a null price just means the paywall stays honest
+          // about not knowing it yet.
+          const price = await getAdvisorPacketPrice();
+          if (alive) setPriceLabel(price);
         }
       } catch {
         // A store that will not answer at launch means "locked", not "crash".
@@ -86,9 +92,10 @@ export default function App() {
     [institution, input],
   );
 
+  // Credit a route only for the requirements it actually clears — see routeSaving.
   const savingFor = useCallback(
-    (r: Route | null) => (r ? Math.max(0, baseline - r.total_cost_usd) : 0),
-    [baseline],
+    (r: Route | null) => (r && institution ? routeSaving(california, input, r) : 0),
+    [institution, input],
   );
 
   const handlePurchase = useCallback(async () => {
@@ -158,7 +165,7 @@ export default function App() {
     body = (
       <PaywallScreen
         savingUsd={savingFor(selected)}
-        priceLabel={null}
+        priceLabel={priceLabel}
         alreadyOwned={unlocked}
         busy={busy}
         error={purchaseError}
