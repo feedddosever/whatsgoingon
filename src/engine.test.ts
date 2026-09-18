@@ -46,18 +46,53 @@ test('held CLEP credit does NOT clear an area at a UC campus', () => {
   );
 });
 
-test('the same CLEP credit does clear an area at a CSU campus', () => {
+test('CLEP clears no Cal-GETC area at ANY institution', () => {
+  // CLEP cannot be used for Cal-GETC. CSU counts it toward a degree (capped at
+  // 30 units); UC awards it nothing. Neither clears a GE transfer requirement,
+  // so no CLEP row may ever be planned against an area.
+  for (const inst of ds.institutions) {
+    for (const rule of ds.rules) {
+      if (rule.institution_id !== inst.id) continue;
+      if (!rule.credit_source_id.startsWith('clep-')) continue;
+      assert.equal(
+        rule.satisfies_area, null,
+        `${rule.credit_source_id} must not claim area ${rule.satisfies_area} at ${inst.name}`,
+      );
+    }
+  }
+});
+
+test('holding CLEP does not clear an area even at a CSU campus', () => {
   const route = planRoute(ds, {
     target_institution_id: 'csu-long-beach',
     held_credit_ids: ['clep-college-composition'],
     units_in_residence: 30,
   }, 'cheapest');
 
-  assert.equal(
+  assert.ok(
     route.items.some(i => i.satisfies_area === '1A'),
-    false,
-    'area 1A is already cleared, so nothing should be planned for it',
+    'area 1A is still unmet — the CLEP credit did not clear it',
   );
+});
+
+test('AP clears Cal-GETC areas at both UC and CSU', () => {
+  for (const id of ['uc-berkeley', 'csu-long-beach']) {
+    const route = planRoute(ds, {
+      target_institution_id: id, held_credit_ids: ['ap-english-lang'], units_in_residence: 30,
+    }, 'cheapest');
+    assert.equal(
+      route.items.some(i => i.satisfies_area === '1A'), false,
+      `AP should have cleared area 1A at ${id}`,
+    );
+  }
+});
+
+test('Cal-GETC area 1C is offered at CSU but not at UC', () => {
+  // Oral Communication is a CSU-only requirement under Cal-GETC.
+  const has1C = (inst: string) =>
+    ds.rules.some(r => r.institution_id === inst && r.satisfies_area === '1C');
+  assert.equal(has1C('csu-long-beach'), true);
+  assert.equal(has1C('uc-berkeley'), false);
 });
 
 test('cheapest route picks the lowest-cost option for an area', () => {
@@ -68,9 +103,10 @@ test('cheapest route picks the lowest-cost option for an area', () => {
   }, 'cheapest');
 
   const area2 = route.items.find(i => i.satisfies_area === '2');
-  // In the seeded data the CLEP fee undercuts CCC enrolment fees. That ordering
-  // is data, not logic — the synthetic test below pins the logic itself.
-  assert.equal(area2?.credit_source_id, 'clep-college-algebra');
+  // AP ($99) undercuts the CCC course ($138), and CLEP is not a candidate at all
+  // because it cannot clear a Cal-GETC area. That ordering is data, not logic —
+  // the synthetic test below pins the logic itself.
+  assert.equal(area2?.credit_source_id, 'ap-calculus-ab');
 });
 
 test('cheapest and fastest diverge when the cheap option costs a term', () => {
@@ -114,7 +150,7 @@ test('fastest route prefers the exam over a term-long course', () => {
   }, 'fastest');
 
   const area2 = route.items.find(i => i.satisfies_area === '2');
-  assert.equal(area2?.credit_source_id, 'clep-college-algebra', 'exam costs zero terms');
+  assert.equal(area2?.credit_source_id, 'ap-calculus-ab', 'an exam costs zero terms');
 });
 
 test('residency shortfall is reported and cannot be transferred away', () => {
@@ -127,17 +163,45 @@ test('residency shortfall is reported and cannot be transferred away', () => {
   assert.ok(route.warnings.some(w => w.kind === 'residency'));
 });
 
-test('lowest-risk route refuses to stake anything on unverified data', () => {
+test('lowest-risk route stakes nothing on unconfirmed data', () => {
   const route = planRoute(ds, {
     target_institution_id: 'csu-long-beach',
     held_credit_ids: [],
     units_in_residence: 30,
   }, 'lowest_risk');
 
-  // Every seeded row is currently `unverified`, so this route must be empty and
-  // must say so. When the dataset is verified this test's meaning inverts.
-  assert.equal(route.items.length, 0, 'nothing is trustworthy yet');
-  assert.ok(route.areas_unmet.length > 0);
+  // Now that some rows are confirmed the route has content — but every item in
+  // it must be backed. An unconfirmed row appearing here is the failure this
+  // route exists to prevent.
+  assert.ok(route.items.length > 0, 'confirmed rows should now produce a route');
+  for (const item of route.items) {
+    assert.ok(
+      item.provenance.confidence === 'statute' || item.provenance.confidence === 'published',
+      `${item.credit_source_id} is ${item.provenance.confidence} and must not appear here`,
+    );
+  }
+});
+
+test('lowest-risk never beats cheapest on the areas they both clear', () => {
+  // Comparing route TOTALS is meaningless: lowest-risk can look cheaper purely
+  // because it covers fewer areas. Certainty costs money, so the real invariant
+  // is per-area — and this is also why a route card must never show cost without
+  // showing coverage next to it.
+  const input = {
+    target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
+  };
+  const cheapest = planRoute(ds, input, 'cheapest');
+  const safest = planRoute(ds, input, 'lowest_risk');
+
+  assert.ok(safest.areas_cleared.length < cheapest.areas_cleared.length,
+    'with unconfirmed rows excluded, the safe route should cover less');
+
+  for (const item of safest.items) {
+    const rival = cheapest.items.find(i => i.satisfies_area === item.satisfies_area);
+    assert.ok(rival, `cheapest should also clear ${item.satisfies_area}`);
+    assert.ok(item.cost_usd >= rival.cost_usd,
+      `safe pick for ${item.satisfies_area} undercuts the cheapest pick`);
+  }
 });
 
 test('all three routes are produced and are internally consistent', () => {
@@ -180,7 +244,7 @@ test('baseline prices only the areas still unmet, at the school\'s own rate', ()
 
   // Clearing an area must reduce the baseline by exactly that area's units.
   const withCredit = baselineCost(ds, {
-    ...input, held_credit_ids: ['clep-college-composition'],
+    ...input, held_credit_ids: ['ap-english-lang'],
   });
   const inst = ds.institutions.find(i => i.id === 'csu-long-beach')!;
   const area1A = ds.areas.find(a => a.id === '1A')!;

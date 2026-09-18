@@ -7,10 +7,12 @@ import type { GeArea } from '../../src/types.ts';
  */
 const CAL_GETC_SOURCE = {
   source_url: 'https://icas-ca.org/cal-getc/',
-  as_of: '',
-  confidence: 'unverified' as const,
+  as_of: '2026-09-18',
+  confidence: 'published' as const,
   note:
-    'Confirm the current area list, unit minimums, and whether area 1C is genuinely CSU-only.',
+    'Cal-GETC v1.4, effective 2026, replaced IGETC and CSU GE Breadth under AB 928. ' +
+    'Area 1C (Oral Communication) is required for CSU and not for UC. ' +
+    'CLEP cannot be used to satisfy any Cal-GETC area.',
 };
 
 export const calGetcAreas: GeArea[] = [

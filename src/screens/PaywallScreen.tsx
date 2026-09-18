@@ -8,6 +8,13 @@
  *
  * No countdown, no "3 people are viewing", no price struck through. A student
  * deciding whether to spend money on their own degree deserves the plain case.
+ *
+ * Two props decide which screen this is. `alreadyOwned` removes the ask
+ * entirely — a student who has paid is shown what they own and a way back to
+ * their plan, never a second buy button. `priceLabel` is the store's own
+ * localised price, and is null until the store answers; we quote the real price
+ * when we have it and say plainly that the store will show it when we do not.
+ * We never invent a figure in between.
  */
 import {
   ActivityIndicator,
@@ -68,7 +75,8 @@ function BenefitRow(props: { index: number; benefit: Benefit }) {
 }
 
 export function PaywallScreen(props: PaywallScreenProps) {
-  const { savingUsd, busy, error, onPurchase, onRestore, onDismiss } = props;
+  const { savingUsd, priceLabel, alreadyOwned, busy, error, onPurchase, onRestore, onDismiss } =
+    props;
   const { width } = useWindowDimensions();
   const wide = width >= 700;
 
@@ -76,6 +84,36 @@ export function PaywallScreen(props: PaywallScreenProps) {
   // as a number — say there isn't one and let the packet stand on its own.
   // Non-finite is the same hole wearing a number: money(Infinity) prints "$∞".
   const anchored = Number.isFinite(savingUsd) && savingUsd > 0;
+
+  // Null is "the store has not answered yet"; a blank string is the same
+  // ignorance wearing a value, and would print "One payment of  ." on a screen
+  // whose whole job is not overclaiming. Both fall back to the honest wording.
+  const price = priceLabel !== null && priceLabel.trim().length > 0 ? priceLabel.trim() : null;
+
+  // Same argument either way — the saving is only real if a counsellor signs
+  // off on it — but it is no longer a pitch once the packet is theirs.
+  const heroSub = anchored
+    ? `That figure is only worth anything if your campus agrees with it. ${
+        alreadyOwned ? 'Your packet is' : 'The advisor packet is'
+      } what you take to them to find out — before you pay a registration fee.`
+    : `${
+        alreadyOwned ? 'Your packet' : 'The packet'
+      } is still the fastest way to get a counsellor to check that for themselves, on paper, with sources.`;
+
+  // Quote the store's own figure once we have it, in the store's own currency
+  // and formatting. Until then, promise only what we can stand behind: that the
+  // store will show the price and ask before charging.
+  const priceNote = alreadyOwned
+    ? 'Already paid for. This was one payment rather than a subscription, so nothing renews and nothing further is charged — including the re-checks when your sources move.'
+    : price !== null
+      ? `One payment of ${price}, not a subscription. Your store asks you to confirm before anything is charged — we never see your card.`
+      : 'One payment, not a subscription. Your store shows the price and asks you to confirm before anything is charged — we never see your card.';
+
+  // The price belongs on the button too: a student should know what they are
+  // agreeing to at the moment they tap, not one paragraph earlier.
+  const buyText = price === null ? 'Unlock advisor packet' : `Unlock advisor packet · ${price}`;
+  const buyLabel =
+    price === null ? 'Unlock the advisor packet' : `Unlock the advisor packet for ${price}`;
 
   return (
     <View style={styles.root}>
@@ -86,10 +124,14 @@ export function PaywallScreen(props: PaywallScreenProps) {
           onPress={onDismiss}
           hitSlop={12}
           accessibilityRole="button"
-          accessibilityLabel="Close without buying"
+          accessibilityLabel={
+            alreadyOwned ? 'Go back to your plan' : 'Close without buying'
+          }
           style={({ pressed }) => [styles.dismissTop, pressed && styles.pressed]}
         >
-          <Text style={styles.dismissTopText}>Not now</Text>
+          {/* "Not now" is an answer to a question. Once the student owns the
+              packet there is no question left to decline. */}
+          <Text style={styles.dismissTopText}>{alreadyOwned ? 'Done' : 'Not now'}</Text>
         </Pressable>
       </View>
 
@@ -97,6 +139,18 @@ export function PaywallScreen(props: PaywallScreenProps) {
         style={styles.scroll}
         contentContainerStyle={[styles.content, wide && styles.contentWide]}
       >
+        {/* First thing in the scroll, above even the saving: a student who has
+            already paid should learn that before they read one word of pitch. */}
+        {alreadyOwned && (
+          <View style={styles.owned}>
+            <Text style={styles.ownedTitle}>You already own the advisor packet</Text>
+            <Text style={styles.ownedBody}>
+              This unlock is active on your store account, so there is nothing to buy and nothing
+              further to pay. Head back to your plan and export the packet whenever you need it.
+            </Text>
+          </View>
+        )}
+
         <View style={[styles.hero, anchored ? styles.heroAnchored : styles.heroFlat]}>
           {/* "could", not "is about to": the figure is a projection off data of
               mixed confidence, and this screen cannot see that confidence. */}
@@ -120,11 +174,7 @@ export function PaywallScreen(props: PaywallScreenProps) {
               Nothing in our data beats paying your campus outright for these requirements.
             </Text>
           )}
-          <Text style={styles.heroSub}>
-            {anchored
-              ? 'That figure is only worth anything if your campus agrees with it. The advisor packet is what you take to them to find out — before you pay a registration fee.'
-              : 'The packet is still the fastest way to get a counsellor to check that for themselves, on paper, with sources.'}
-          </Text>
+          <Text style={styles.heroSub}>{heroSub}</Text>
         </View>
 
         {/* Above the pitch, not below it. The CTA is pinned to the footer, so a
@@ -139,21 +189,24 @@ export function PaywallScreen(props: PaywallScreenProps) {
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>What unlocking buys</Text>
+        <Text style={styles.sectionTitle}>
+          {alreadyOwned ? 'What your unlock includes' : 'What unlocking buys'}
+        </Text>
         {BENEFITS.map((b, i) => (
           <BenefitRow key={b.title} index={i} benefit={b} />
         ))}
 
-        <Text style={styles.priceNote}>
-          One payment, not a subscription. Your store shows the price and asks you to confirm before
-          anything is charged — we never see your card.
-        </Text>
+        <Text style={styles.priceNote}>{priceNote}</Text>
       </ScrollView>
 
       <View style={styles.footer}>
         {/* Trimmed, because `error: string | null` also admits "" — which would
-            paint a red box with nothing in it and no way to dismiss it. */}
-        {error !== null && error.trim().length > 0 && (
+            paint a red box with nothing in it and no way to dismiss it. Hidden
+            once the packet is owned: every error this screen can raise is about
+            acquiring something the student already has, and a red "Purchase
+            failed" next to "you already own this" reads as a charge that went
+            wrong. */}
+        {!alreadyOwned && error !== null && error.trim().length > 0 && (
           <View
             style={styles.errorBox}
             accessibilityRole="alert"
@@ -164,43 +217,63 @@ export function PaywallScreen(props: PaywallScreenProps) {
           </View>
         )}
 
-        <Pressable
-          onPress={onPurchase}
-          disabled={busy}
-          accessibilityRole="button"
-          accessibilityLabel="Unlock the advisor packet"
-          accessibilityState={{ disabled: busy, busy }}
-          style={({ pressed }) => [styles.cta, busy && styles.ctaBusy, pressed && styles.pressed]}
-        >
-          {busy && <ActivityIndicator size="small" color={theme.color.bg} />}
-          <Text style={styles.ctaText}>{busy ? 'Talking to the store…' : 'Unlock advisor packet'}</Text>
-        </Pressable>
-
-        <View style={styles.secondaryRow}>
-          <Pressable
-            onPress={onRestore}
-            disabled={busy}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel="Restore a purchase made earlier"
-            accessibilityState={{ disabled: busy }}
-            style={({ pressed }) => [pressed && styles.pressed]}
-          >
-            <Text style={[styles.secondaryText, busy && styles.secondaryDisabled]}>
-              Restore purchases
-            </Text>
-          </Pressable>
-          <Text style={styles.secondaryDivider}>·</Text>
+        {alreadyOwned ? (
+          // No buy button, and no restore link either — there is nothing left
+          // to restore. The one action is the way onward, and it stays live
+          // whatever the store is doing.
           <Pressable
             onPress={onDismiss}
-            hitSlop={10}
             accessibilityRole="button"
-            accessibilityLabel="Keep using the app without the packet"
-            style={({ pressed }) => [pressed && styles.pressed]}
+            accessibilityLabel="Go back to your plan"
+            style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
           >
-            <Text style={styles.secondaryText}>Keep looking for free</Text>
+            <Text style={styles.ctaText}>Back to your plan</Text>
           </Pressable>
-        </View>
+        ) : (
+          <>
+            <Pressable
+              onPress={onPurchase}
+              disabled={busy}
+              accessibilityRole="button"
+              accessibilityLabel={buyLabel}
+              accessibilityState={{ disabled: busy, busy }}
+              style={({ pressed }) => [
+                styles.cta,
+                busy && styles.ctaBusy,
+                pressed && styles.pressed,
+              ]}
+            >
+              {busy && <ActivityIndicator size="small" color={theme.color.bg} />}
+              <Text style={styles.ctaText}>{busy ? 'Talking to the store…' : buyText}</Text>
+            </Pressable>
+
+            <View style={styles.secondaryRow}>
+              <Pressable
+                onPress={onRestore}
+                disabled={busy}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel="Restore a purchase made earlier"
+                accessibilityState={{ disabled: busy }}
+                style={({ pressed }) => [pressed && styles.pressed]}
+              >
+                <Text style={[styles.secondaryText, busy && styles.secondaryDisabled]}>
+                  Restore purchases
+                </Text>
+              </Pressable>
+              <Text style={styles.secondaryDivider}>·</Text>
+              <Pressable
+                onPress={onDismiss}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel="Keep using the app without the packet"
+                style={({ pressed }) => [pressed && styles.pressed]}
+              >
+                <Text style={styles.secondaryText}>Keep looking for free</Text>
+              </Pressable>
+            </View>
+          </>
+        )}
       </View>
     </View>
   );
@@ -236,6 +309,23 @@ const styles = StyleSheet.create({
     gap: theme.space.md,
   },
   contentWide: { paddingHorizontal: theme.space.lg },
+
+  // Reads as a receipt, not an offer: the accent border says "settled", and it
+  // deliberately does not compete with the saving directly below it.
+  owned: {
+    backgroundColor: theme.color.surface,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.color.border,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.color.accent,
+    padding: theme.space.md,
+    gap: theme.space.xs,
+  },
+  // Accent stays on the border only: the theme reserves that green for money,
+  // and the saving in the hero below must remain the loudest thing on screen.
+  ownedTitle: { ...theme.font.heading, color: theme.color.text },
+  ownedBody: { ...theme.font.small, color: theme.color.text, lineHeight: 20 },
 
   hero: {
     borderRadius: theme.radius.lg,

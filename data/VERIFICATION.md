@@ -26,22 +26,54 @@ dataset cannot quietly ship half-checked.
 
 ## Priority order
 
-### P0 — blocks everything
+### P0 — RESOLVED 2026-09-18
 
-**1. Does UC award credit for CLEP?**
-The seed says **no**, systemwide. This single row drives the entire demo and the
-product's core claim. If it's wrong, the pitch is wrong.
-→ `admission.universityofcalifornia.edu`, UC credit-by-exam policy.
+Confirmed from a 2026-27 California research brief citing LAO budget reports, the
+Cal-GETC v1.4 standard, CSU PolicyStat and UC admissions policy. Rows raised to
+`published` with `as_of: 2026-09-18`.
 
-**2. Cal-GETC areas and unit minimums.**
-Cal-GETC replaced IGETC and CSU GE Breadth from Fall 2025. Confirm the current
-area list, unit minimums, and whether area 1C is genuinely CSU-only.
-→ ICAS / CCC Chancellor's Office Cal-GETC standards.
+**1. Does UC award credit for CLEP? — NO. Confirmed.**
+UC accepts only AP, IB and A-Level. It awards nothing for CLEP or DSST, and does not
+honour credit posted to a third-party transcript (Sophia, Study.com, StraighterLine,
+Saylor). The product's central claim holds.
 
-**3. CSU CLEP acceptance, per campus.**
-The seed treats CSU as uniformly CLEP-accepting. It is not — exam lists, minimum
-scores and unit grants vary by campus. Verify Long Beach and San Jose State
-individually, not from the systemwide page.
+**2. Cal-GETC — confirmed.** v1.4, effective 2026, replaced IGETC and CSU GE Breadth
+under AB 928. Area 1C (Oral Communication) is CSU-only.
+
+**3. CSU CLEP acceptance — confirmed, and it overturned a modelling assumption.**
+CSU accepts 31 of 33 CLEP exams toward a degree, **capped at 30 units** — but
+**CLEP cannot satisfy Cal-GETC**. The dataset previously had CLEP clearing Cal-GETC
+areas at CSU. That was wrong, and it was the kind of wrong that costs a student money:
+it would have told them to buy an exam that cannot do the job they were buying it for.
+All CLEP rows now carry `satisfies_area: null`.
+
+**4. CCC enrolment fee — confirmed.** $46/unit, unchanged since summer 2012, no increase
+proposed for 2026-27. 3 units = $138.
+
+### P0-NEW — opened by the same brief
+
+**A. CLEP at CSU is accepted but clears no Cal-GETC area, and the app does not say so.**
+`strandedCredits()` only fires when `accepts_clep` is false, so a student holding CLEP
+and targeting a CSU gets no warning at all — their credit silently clears nothing. They
+need to be told it counts toward the degree (30-unit cap) but not toward Cal-GETC.
+**This is now the most valuable unbuilt warning in the app.**
+
+**B. Per-field provenance.** `Institution.provenance` is one record covering several
+independent claims. The exam policy is now `published`; `residency_min_units` and
+`max_transfer_units` in the same row are still unconfirmed, and a residency warning
+therefore renders a `published` badge it has not earned. The caveat is spelled out in
+each row's `note` as a stopgap. The real fix is provenance per field.
+
+**C. Missing pathways the brief documents and the engine cannot express:**
+- **ADT (Associate Degree for Transfer)** — guarantees CSU admission with junior standing.
+- **UC TAG** — guaranteed transfer at Davis, Irvine, Merced, Riverside, Santa Barbara,
+  Santa Cruz. Berkeley, UCLA and San Diego do **not** participate. Currently only a note.
+- **Fee waivers** — CCPG waives the CCC $46/unit fee; Modern States covers the CLEP exam
+  fee. Both can take a route's cost to **$0** and would likely reorder every route.
+- **IB** — accepted by UC, CSU and CCC; not yet in the dataset.
+- **Dual enrolment / CCAP** — tuition-free college units for high schoolers, up to 15
+  units/term. For the pre-enrolment student this app targets, this may be the single
+  largest saving available and it is entirely unmodelled.
 
 ### P1 — needed for a credible plan
 

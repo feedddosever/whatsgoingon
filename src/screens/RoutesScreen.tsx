@@ -22,8 +22,11 @@ import type {
   Provenance,
   Route,
   RouteKind,
+  RouteWarning,
+  WarningKind,
 } from '../types.ts';
 import type { RoutesScreenProps } from '../ui/contracts.ts';
+import { checkedOn, isBacked, linkable, noteText } from '../ui/provenance.ts';
 import { confidenceColor, confidenceLabel, money, theme } from '../ui/theme.ts';
 
 const KIND_LABEL: Record<RouteKind, string> = {
@@ -48,7 +51,61 @@ const RANK: Record<Confidence, number> = {
   unverified: 3,
 };
 
-const isTrusted = (c: Confidence): boolean => c === 'statute' || c === 'published';
+/**
+ * Severity, read off the warning's kind rather than recovered from its wording.
+ *
+ * A card has room for one warning, so this decides which one the student actually
+ * sees: stranded credit first, because it is money already spent that this campus
+ * will never honour.
+ */
+const WARNING_RANK: Record<WarningKind, number> = {
+  stranded_credit: 0,
+  transfer_cap: 1,
+  unverified_data: 2,
+  residency: 3,
+  unmet_areas: 4,
+};
+
+/** What the student is looking at, before they read the sentence itself. */
+const WARNING_TITLE: Record<WarningKind, string> = {
+  stranded_credit: 'Credit that will not count here',
+  transfer_cap: 'Units over the transfer cap',
+  residency: 'Units you must earn on campus',
+  unmet_areas: 'Nothing in our data clears this',
+  unverified_data: 'Not confirmed against the campus',
+};
+
+/** The one kind that gets the red treatment: it is the student's money, already spent. */
+const isSevere = (w: RouteWarning): boolean => w.kind === 'stranded_credit';
+
+/**
+ * Warnings are values, not references: two routes each build their own object for
+ * the same institution-level fact. Comparing by identity would call those two
+ * different and stamp every shared warning onto every card as well, so they are
+ * matched on content. Kinds are a closed set of literals, so the separator
+ * cannot be forged by a message.
+ */
+const warningKey = (w: RouteWarning): string => `${w.kind}::${w.message}`;
+
+/** Most severe first. Never sorted in place — `warnings` belongs to the caller. */
+const bySeverity = (ws: RouteWarning[]): RouteWarning[] =>
+  [...ws].sort((a, b) => WARNING_RANK[a.kind] - WARNING_RANK[b.kind]);
+
+/**
+ * A student holding two stranded credits can produce the same sentence twice, and
+ * a repeated warning reads as a rendering bug rather than as a fact.
+ */
+function dedupeWarnings(ws: RouteWarning[]): RouteWarning[] {
+  const seen = new Set<string>();
+  const out: RouteWarning[] = [];
+  for (const w of ws) {
+    const key = warningKey(w);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(w);
+  }
+  return out;
+}
 
 /** A route is only as good as its worst row, so that is the row we put on the card. */
 function weakestItem(route: Route): PlanItem | null {
@@ -63,17 +120,10 @@ function weakestItem(route: Route): PlanItem | null {
 
 const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`;
 
-/** Only an http(s) source can be opened; anything else would be a dead link. */
-const linkable = (url: string): boolean => /^https?:\/\//i.test(url.trim());
-
 /** No error surface exists on this screen, and a dead link must not take it down. */
 const openSource = (url: string): void => {
   void Linking.openURL(url).catch(() => undefined);
 };
-
-/** Seeded rows carry an empty as_of. Saying so is the honest reading. */
-const checkedOn = (asOf: string): string =>
-  asOf.trim() === '' ? 'not yet opened' : `read ${asOf.trim()}`;
 
 const policyLine = (inst: Institution): string => {
   const clep = inst.accepts_clep ? 'accepts CLEP' : 'does not accept CLEP';
@@ -92,19 +142,26 @@ interface ProvenanceBadgeProps {
 }
 
 function ProvenanceBadge(props: ProvenanceBadgeProps) {
-  const { source_url, as_of, confidence, note } = props.provenance;
+  const { provenance } = props;
+  const { source_url, confidence } = provenance;
   const tint = confidenceColor(confidence);
   const text =
     props.label === undefined
       ? confidenceLabel(confidence)
       : `${props.label} — ${confidenceLabel(confidence)}`;
-  const trimmedNote = note === undefined ? '' : note.trim();
+  // `note` is where the dataset records what could bite the student — a score
+  // minimum, a cap, a claim that has to be confirmed. Dropping it would turn
+  // provenance back into the decoration this product refuses to make it.
+  const note = props.showNote === false ? null : noteText(provenance);
+  // checkedOn() owns the visible phrasing; the screen reader needs a whole
+  // sentence, so it asks the row itself whether anyone has opened the page.
+  const opened = provenance.as_of.trim() !== '';
 
   return (
     <View style={styles.provBlock}>
       <View style={styles.provRow}>
         <View
-          style={[styles.badge, { borderColor: tint }, !isTrusted(confidence) && styles.badgeSoft]}
+          style={[styles.badge, { borderColor: tint }, !isBacked(provenance) && styles.badgeSoft]}
         >
           <View style={[styles.badgeDot, { backgroundColor: tint }]} />
           <Text style={[styles.badgeText, { color: tint }]}>{text}</Text>
@@ -115,13 +172,13 @@ function ProvenanceBadge(props: ProvenanceBadgeProps) {
             hitSlop={10}
             accessibilityRole="link"
             accessibilityLabel={
-              as_of.trim() === ''
-                ? 'Open the source page. Nobody has read it yet.'
-                : `Open the source page, last read ${as_of.trim()}`
+              opened
+                ? `Open the source page, last read ${checkedOn(provenance)}`
+                : 'Open the source page. Nobody has read it yet.'
             }
           >
             {/* An empty as_of means nobody has opened the page. Say it rather than hide it. */}
-            <Text style={styles.sourceLink}>source · {checkedOn(as_of)}</Text>
+            <Text style={styles.sourceLink}>source · {checkedOn(provenance)}</Text>
           </Pressable>
         ) : (
           // A row with no usable URL stays flat rather than pretending to be a link
@@ -129,14 +186,22 @@ function ProvenanceBadge(props: ProvenanceBadgeProps) {
           <Text style={styles.sourceDead}>no source on file</Text>
         )}
       </View>
-      {/* `note` is where the dataset records what could bite the student — a score
-          minimum, a cap, a claim that has to be confirmed. Dropping it would turn
-          provenance back into the decoration this product refuses to make it. */}
-      {props.showNote !== false && trimmedNote !== '' && (
-        <Text style={styles.provNote}>{trimmedNote}</Text>
-      )}
+      {note !== null && <Text style={styles.provNote}>{note}</Text>}
     </View>
   );
+}
+
+/**
+ * What a warning rests on. `unmet_areas` and `unverified_data` carry no row —
+ * they are fired by the absence of one — and saying that plainly is the honest
+ * version of a badge, not a reason to show nothing.
+ */
+function WarningBacking(props: { warning: RouteWarning; showNote?: boolean }) {
+  const { provenance } = props.warning;
+  if (provenance === undefined) {
+    return <Text style={styles.sourceDead}>no source — this is what our data is missing</Text>;
+  }
+  return <ProvenanceBadge provenance={provenance} showNote={props.showNote} />;
 }
 
 function Stat(props: { label: string; value: string }) {
@@ -152,8 +217,8 @@ interface RouteCardProps {
   route: Route;
   savingUsd: number;
   institutionName: string;
-  /** Warnings this route adds on top of the ones already banner-ed above. */
-  extraWarnings: string[];
+  /** Warnings this route adds on top of the ones already banner-ed above, most severe first. */
+  extraWarnings: RouteWarning[];
   sharedWarningCount: number;
   headline: boolean;
   onPress: () => void;
@@ -170,8 +235,11 @@ function RouteCard(props: RouteCardProps) {
     onPress,
   } = props;
   const worst = weakestItem(route);
-  const trusted = worst !== null && isTrusted(worst.provenance.confidence);
-  const shaky = route.items.filter(i => !isTrusted(i.provenance.confidence)).length;
+  const trusted = worst !== null && isBacked(worst.provenance);
+  const shaky = route.items.filter(i => !isBacked(i.provenance)).length;
+  // The caller sorts by severity, so the one warning this card has room for is
+  // already the one that matters most.
+  const top: RouteWarning | null = extraWarnings.length > 0 ? extraWarnings[0] : null;
   const areasTotal = route.areas_cleared.length + route.areas_unmet.length;
   const empty = route.items.length === 0;
   const settled = empty && route.areas_unmet.length === 0;
@@ -254,14 +322,19 @@ function RouteCard(props: RouteCardProps) {
         </View>
       )}
 
-      {extraWarnings.length > 0 ? (
-        <View style={styles.cardWarn}>
-          <Text style={styles.cardWarnCount}>
+      {top !== null ? (
+        <View style={[styles.cardWarn, isSevere(top) && styles.cardWarnSevere]}>
+          <Text style={[styles.cardWarnCount, isSevere(top) && styles.cardWarnCountSevere]}>
             {plural(extraWarnings.length, 'warning')} on this route
           </Text>
+          <Text style={[styles.cardWarnTitle, isSevere(top) && styles.cardWarnTitleSevere]}>
+            {WARNING_TITLE[top.kind]}
+          </Text>
           {/* Never clamped: a warning the student cannot finish reading is a warning
-              that did not do its job. */}
-          <Text style={styles.cardWarnText}>{extraWarnings[0]}</Text>
+              that did not do its job. Printed verbatim — it is written for a student. */}
+          <Text style={styles.cardWarnText}>{top.message}</Text>
+          {/* The campus note is already printed under the header above. */}
+          <WarningBacking warning={top} showNote={false} />
           {extraWarnings.length > 1 && (
             <Text style={styles.cardWarnMore}>+{extraWarnings.length - 1} more in the full plan</Text>
           )}
@@ -308,18 +381,20 @@ export function RoutesScreen(props: RoutesScreenProps) {
 
   // Warnings that bind every route are institution-level facts, not consequences
   // of the choice being made here — they belong above the cards, not inside one.
-  // Deduped: a student holding two stranded credits can produce the same sentence
-  // twice, and a repeated warning reads as a rendering bug rather than a fact.
-  const shared: string[] = [];
-  if (routes.length > 0) {
-    for (const w of routes[0].warnings) {
-      if (shared.includes(w)) continue;
-      if (routes.every(r => r.warnings.includes(w))) shared.push(w);
-    }
-  }
+  // Matched on kind + message, because each route builds its own object for the
+  // same fact and identity would mark none of them as shared.
+  const boundEverywhere = (w: RouteWarning): boolean => {
+    const key = warningKey(w);
+    return routes.every(r => r.warnings.some(x => warningKey(x) === key));
+  };
+  const shared: RouteWarning[] =
+    routes.length === 0
+      ? []
+      : bySeverity(dedupeWarnings(routes[0].warnings).filter(boundEverywhere));
+  const sharedKeys = new Set(shared.map(warningKey));
 
   const bestWorst = best === null ? null : weakestItem(best);
-  const bestTrusted = bestWorst !== null && isTrusted(bestWorst.provenance.confidence);
+  const bestTrusted = bestWorst !== null && isBacked(bestWorst.provenance);
   const heroSaving = best === null ? 0 : Math.max(savingOf(best), 0);
   // The accent is the theme's colour for money we can vouch for. A figure resting
   // on unchecked rows does not get to wear it, however large it is.
@@ -332,7 +407,7 @@ export function RoutesScreen(props: RoutesScreenProps) {
     if (savingOf(best) <= 0) {
       caveats.push('Nothing here beats paying for these requirements outright.');
     }
-    if (bestWorst !== null && !isTrusted(bestWorst.provenance.confidence)) {
+    if (bestWorst !== null && !isBacked(bestWorst.provenance)) {
       caveats.push(
         `This figure leans on rows marked "${confidenceLabel(bestWorst.provenance.confidence).toLowerCase()}". Treat it as a ceiling, not a promise.`,
       );
@@ -382,9 +457,13 @@ export function RoutesScreen(props: RoutesScreenProps) {
         >
           {money(heroSaving)}
         </Text>
+        {/* Says exactly what the baseline is and nothing more: the Cal-GETC areas
+            still unmet, at this campus's own per-unit rate. Calling it the cost of
+            a degree would be the kind of overclaim this screen exists to refuse. */}
         <Text style={styles.heroSub}>
-          against {money(baselineCostUsd)} — what these requirements cost at {institution.name} if
-          you buy none of this credit.
+          against {money(baselineCostUsd)} — the Cal-GETC areas you have not cleared yet, priced at
+          the per-unit rate {institution.name} charges. That is the comparison, not the cost of a
+          whole degree.
         </Text>
         {caveats.map(c => (
           <Text key={c} style={styles.heroCaveat}>
@@ -397,16 +476,26 @@ export function RoutesScreen(props: RoutesScreenProps) {
         <View style={styles.alert} accessibilityRole="alert">
           <Text style={styles.alertKicker}>Read before you spend anything</Text>
           {shared.map(w => (
-            <Text key={w} style={styles.alertText}>
-              {w}
-            </Text>
+            <View key={warningKey(w)} style={styles.alertItem}>
+              <Text style={[styles.alertTitle, isSevere(w) && styles.alertTitleSevere]}>
+                {WARNING_TITLE[w.kind]}
+              </Text>
+              {/* Verbatim: the engine writes these for a student, and a warning the
+                  UI paraphrases is a warning the UI can get wrong. */}
+              <Text style={[styles.alertText, isSevere(w) && styles.alertTextSevere]}>
+                {w.message}
+              </Text>
+              {/* Every warning shows the row it rests on. The campus note is already
+                  printed under the header above, so only a different source repeats it. */}
+              <WarningBacking
+                warning={w}
+                showNote={w.provenance?.source_url !== institution.provenance.source_url}
+              />
+            </View>
           ))}
           <Text style={styles.alertFooter}>
-            {shared.length === 1 ? 'This applies' : 'These apply'} to every route below. What we
-            know about this campus, and how well we know it:
+            {shared.length === 1 ? 'This applies' : 'These apply'} to every route below.
           </Text>
-          {/* The note is already printed under the campus header a few lines up. */}
-          <ProvenanceBadge provenance={institution.provenance} showNote={false} />
         </View>
       )}
 
@@ -422,7 +511,9 @@ export function RoutesScreen(props: RoutesScreenProps) {
           route={route}
           savingUsd={savingOf(route)}
           institutionName={institution.name}
-          extraWarnings={route.warnings.filter(w => !shared.includes(w))}
+          extraWarnings={bySeverity(
+            dedupeWarnings(route.warnings).filter(w => !sharedKeys.has(warningKey(w))),
+          )}
           sharedWarningCount={shared.length}
           headline={route === best && savingOf(route) > 0}
           onPress={() => onSelectRoute(route)}
@@ -502,7 +593,17 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
+  alertItem: { gap: theme.space.xs },
+  alertTitle: {
+    ...theme.font.small,
+    color: theme.color.warn,
+    fontWeight: '700',
+  },
+  // Stranded credit is money the student has already spent. It leads the block and
+  // it is the only one printed in the colour that means "this one costs you".
+  alertTitleSevere: { color: theme.color.danger },
   alertText: { ...theme.font.heading, color: theme.color.text, lineHeight: 23 },
+  alertTextSevere: { fontWeight: '700' },
   alertFooter: { ...theme.font.small, color: theme.color.textMuted },
 
   sectionTitle: {
@@ -582,6 +683,9 @@ const styles = StyleSheet.create({
     paddingLeft: theme.space.sm,
     gap: 2,
   },
+  // A card carrying stranded credit reads as loudly as the banner above it: same
+  // colour, thicker rule. This is the claim the whole product exists to make.
+  cardWarnSevere: { borderLeftWidth: 6, borderLeftColor: theme.color.danger },
   cardWarnCount: {
     ...theme.font.small,
     color: theme.color.warn,
@@ -589,6 +693,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
+  cardWarnCountSevere: { color: theme.color.danger },
+  cardWarnTitle: { ...theme.font.small, color: theme.color.warn, fontWeight: '600' },
+  cardWarnTitleSevere: { color: theme.color.danger },
   cardWarnText: { ...theme.font.small, color: theme.color.text, lineHeight: 19 },
   cardWarnMore: { ...theme.font.small, color: theme.color.textMuted },
   cardWarnNone: { ...theme.font.small, color: theme.color.textMuted },

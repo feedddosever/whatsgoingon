@@ -9,8 +9,9 @@
  */
 import type { ReactElement } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import type { PlanItem, Provenance, RouteKind } from '../types.ts';
+import type { PlanItem, Provenance, RouteKind, RouteWarning, WarningKind } from '../types.ts';
 import type { RouteDetailScreenProps } from '../ui/contracts.ts';
+import { checkedOn, isBacked, linkable, noteText } from '../ui/provenance.ts';
 import { confidenceColor, confidenceLabel, money, theme } from '../ui/theme.ts';
 
 const ROUTE_LABEL: Record<RouteKind, string> = {
@@ -20,37 +21,39 @@ const ROUTE_LABEL: Record<RouteKind, string> = {
 };
 
 /**
- * Clauses the engine writes into its warnings. Two kinds of warning come out of
- * it and they are not equally backed: a warning that quotes an institution's
- * policy row (CLEP, transfer cap, residency) is only as true as that row, so it
- * must carry the row's provenance; a warning about a hole in our own dataset has
- * no campus page behind it and must not borrow one.
+ * Severity is data, not prose.
+ *
+ * This screen used to recover a warning's severity by matching the engine's
+ * wording, so rephrasing one sentence there silently demoted the app's most
+ * consequential claim. It now comes off `kind`, and the row the warning rests on
+ * travels with the warning instead of being guessed at from the same prose.
+ *
+ * Stranded credit outranks every other kind — it is money the student has
+ * already spent — so it alone is drawn in danger red rather than warning amber.
  */
-const STRANDED_CLAUSE = 'does not award credit';
-const POLICY_CLAUSES = [STRANDED_CLAUSE, 'caps transfer credit', 'units earned on campus'];
+const isSevere = (w: RouteWarning): boolean => w.kind === 'stranded_credit';
 
-/**
- * Stranded credit outranks every other warning: it is money already spent, so it
- * is drawn in danger red rather than warning amber.
- */
-const isStranded = (warning: string): boolean => warning.includes(STRANDED_CLAUSE);
-
-/** True when the warning is a claim about this campus's own published policy. */
-const isPolicyClaim = (warning: string): boolean =>
-  POLICY_CLAUSES.some(clause => warning.includes(clause));
-
-/** Only an http(s) source can be opened; anything else would be a dead link. */
-const linkable = (url: string): boolean => /^https?:\/\//i.test(url.trim());
+/** Names the shape of the problem before the sentence spells it out. */
+const WARNING_KICKER: Record<WarningKind, string> = {
+  stranded_credit: '✗  CREDIT YOU ALREADY HOLD',
+  transfer_cap: '⚠  BEFORE YOU PAY · TRANSFER CAP',
+  residency: '⚠  BEFORE YOU PAY · RESIDENCY',
+  unmet_areas: '⚠  A GAP IN OUR DATA',
+  unverified_data: '⚠  NOT CONFIRMED YET',
+};
 
 /** A source that will not open must never take the screen down with it. */
 const openSource = (url: string): void => {
   void Linking.openURL(url).catch(() => undefined);
 };
 
-const checkedOn = (p: Provenance): string => (p.as_of.trim() === '' ? 'never checked' : p.as_of);
-
-const isShaky = (p: Provenance): boolean =>
-  p.confidence === 'unverified' || p.confidence === 'needs_check';
+/**
+ * A bare Cal-GETC code is advisor shorthand; the student knows the requirement
+ * by its name. A code we hold no row for still prints as itself — never as
+ * "undefined", and never with a dangling separator behind it.
+ */
+const areaLabel = (code: string, name: string | null): string =>
+  name === null ? `CAL-GETC ${code}` : `CAL-GETC ${code} · ${name}`;
 
 /**
  * Provenance, never decoration: states how far we trust the claim beside it and
@@ -59,7 +62,7 @@ const isShaky = (p: Provenance): boolean =>
  */
 function SourceBadge({ p }: { p: Provenance }): ReactElement {
   const color = confidenceColor(p.confidence);
-  const shaky = isShaky(p);
+  const shaky = !isBacked(p);
   const label = confidenceLabel(p.confidence);
 
   if (!linkable(p.source_url)) {
@@ -96,33 +99,40 @@ function SourceBadge({ p }: { p: Provenance }): ReactElement {
  * Load-bearing, not fine print — so it gets a card, not a footnote.
  *
  * The loudest sentence in the app is still a claim, and a claim with no source
- * shown is exactly the thing this product exists to replace. Policy warnings
- * therefore carry the institution row they were derived from, and are drawn
- * dashed with the caveat spelled out while that row is unconfirmed: loud, but
- * honest about how far we can vouch for it.
+ * shown is exactly the thing this product exists to replace. A warning that
+ * quotes a campus policy arrives carrying that campus row and shows it; a
+ * warning about a hole in our own data arrives carrying nothing, and must not
+ * borrow a source to look better than it is. Either way, anything we cannot
+ * vouch for is drawn dashed: loud, but honest about how far it is backed.
  */
 function WarningCard(
-  { text, provenance, instName }: { text: string; provenance: Provenance | null; instName: string },
+  { warning, instName }: { warning: RouteWarning; instName: string },
 ): ReactElement {
-  const severe = isStranded(text);
-  const shaky = provenance !== null && isShaky(provenance);
-  const note = provenance?.note ?? '';
+  const severe = isSevere(warning);
+  const backing = warning.provenance ?? null;
+  const shaky = backing !== null && !isBacked(backing);
+  // Nothing to cite is its own kind of unconfirmed, and looks like one.
+  const unsure = backing === null || shaky;
+  // The institution row rides on several warnings at once; repeating its note on
+  // each of them is noise, so it is spent on the one that costs the most.
+  const note = severe && backing !== null ? noteText(backing) : null;
   return (
     <View
       style={[
         styles.warning,
         severe ? styles.warningSevere : styles.warningPlain,
-        shaky && styles.warningShaky,
+        unsure && styles.warningShaky,
       ]}
       accessibilityRole="alert"
     >
       <Text style={[styles.warningKicker, severe ? styles.severeInk : styles.warnInk]}>
-        {severe ? '✗  CREDIT YOU ALREADY HOLD' : '⚠  BEFORE YOU PAY'}
+        {WARNING_KICKER[warning.kind]}
       </Text>
-      {/* Verbatim from the engine: paraphrasing a hard constraint loses it. */}
-      <Text style={styles.warningText}>{text}</Text>
+      {/* Verbatim from the engine: it is written for a student, and
+          paraphrasing a hard constraint loses it. */}
+      <Text style={styles.warningText}>{warning.message}</Text>
 
-      {severe && note.trim() !== '' && <Text style={styles.warningNote}>{note}</Text>}
+      {note !== null && <Text style={styles.warningNote}>{note}</Text>}
 
       {shaky && (
         <Text style={styles.warningCaveat}>
@@ -131,16 +141,22 @@ function WarningCard(
         </Text>
       )}
 
-      {provenance !== null && <SourceBadge p={provenance} />}
+      {backing !== null && <SourceBadge p={backing} />}
     </View>
   );
 }
 
 function ItemCard(
-  { item, position, instName }: { item: PlanItem; position: number; instName: string },
+  { item, position, instName, areaName }: {
+    item: PlanItem;
+    position: number;
+    instName: string;
+    areaName: (id: string) => string | null;
+  },
 ): ReactElement {
-  const shaky = isShaky(item.provenance);
+  const shaky = !isBacked(item.provenance);
   const unverified = item.provenance.confidence === 'unverified';
+  const note = noteText(item.provenance);
   return (
     <View style={[styles.item, unverified && styles.itemUnverified]}>
       <View style={styles.itemHead}>
@@ -160,15 +176,13 @@ function ItemCard(
           <Text style={styles.chipText}>
             {item.satisfies_area === null
               ? 'ELECTIVE · CLEARS NO AREA'
-              : `CAL-GETC ${item.satisfies_area}`}
+              : areaLabel(item.satisfies_area, areaName(item.satisfies_area))}
           </Text>
         </View>
         <SourceBadge p={item.provenance} />
       </View>
 
-      {item.provenance.note !== undefined && item.provenance.note.trim() !== '' && (
-        <Text style={styles.itemNote}>{item.provenance.note}</Text>
-      )}
+      {note !== null && <Text style={styles.itemNote}>{note}</Text>}
 
       {shaky && (
         <Text style={styles.itemShakyTag}>
@@ -182,11 +196,18 @@ function ItemCard(
 }
 
 export function RouteDetailScreen(
-  { institution, route, unlocked, onUnlock, onExportPacket, onBack }: RouteDetailScreenProps,
+  { institution, route, areas, unlocked, onUnlock, onExportPacket, onBack }: RouteDetailScreenProps,
 ): ReactElement {
-  const severeCount = route.warnings.filter(isStranded).length;
+  // The only place a Cal-GETC code has a human name. A handful of rows, looked
+  // up by hand: a code with no row falls back to the bare code.
+  const areaName = (id: string): string | null => {
+    const name = areas.find(a => a.id === id)?.name.trim() ?? '';
+    return name === '' ? null : name;
+  };
+
+  const severeCount = route.warnings.filter(isSevere).length;
   const hasWarnings = route.warnings.length > 0;
-  const shakyItems = route.items.filter(i => isShaky(i.provenance)).length;
+  const shakyItems = route.items.filter(i => !isBacked(i.provenance)).length;
   const priced = route.items.length > 0;
   // The biggest number on the screen is only as good as the weakest row under
   // it. It wears the saving colour when every row is backed, and plain ink with
@@ -284,14 +305,7 @@ export function RouteDetailScreen(
         {/* Warnings come before the plan. They are the reason the plan looks the
             way it does, and the single most valuable thing the app says. */}
         {route.warnings.map((w, i) => (
-          <WarningCard
-            key={`warning-${i}`}
-            text={w}
-            // A warning about this campus's policy rests on the campus row; a
-            // warning about a gap in our data rests on nothing we can cite.
-            provenance={isPolicyClaim(w) ? institution.provenance : null}
-            instName={institution.name}
-          />
+          <WarningCard key={`${w.kind}-${i}`} warning={w} instName={institution.name} />
         ))}
 
         {route.areas_unmet.length > 0 && (
@@ -300,7 +314,7 @@ export function RouteDetailScreen(
             <View style={styles.unmetRow}>
               {route.areas_unmet.map(area => (
                 <View key={area} style={styles.unmetChip}>
-                  <Text style={styles.unmetChipText}>CAL-GETC {area}</Text>
+                  <Text style={styles.unmetChipText}>{areaLabel(area, areaName(area))}</Text>
                 </View>
               ))}
             </View>
@@ -332,6 +346,7 @@ export function RouteDetailScreen(
               item={item}
               position={i + 1}
               instName={institution.name}
+              areaName={areaName}
             />
           ))
         )}

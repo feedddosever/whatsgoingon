@@ -12,7 +12,7 @@ function show(label: string, input: Parameters<typeof planAllRoutes>[1]) {
       console.log(`     • ${i.label.padEnd(46)} ${money(i.cost_usd).padStart(6)}  area ${i.satisfies_area}  [${i.provenance.confidence}]`);
     }
     if (r.items.length === 0) console.log('     (nothing this route is willing to recommend)');
-    for (const w of r.warnings) console.log(`     ⚠  ${w}`);
+    for (const w of r.warnings) console.log(`     ⚠  [${w.kind}] ${w.message}`);
   }
 }
 

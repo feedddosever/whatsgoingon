@@ -13,35 +13,69 @@
 import { Platform } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import type { Confidence, Institution, PlanItem, Provenance, Route, RouteKind } from '../types.ts';
+import type {
+  GeArea, Institution, PlanItem, Provenance, Route, RouteKind, RouteWarning, WarningKind,
+} from '../types.ts';
+import { checkedOn, isBacked, linkable, noteText } from '../ui/provenance.ts';
 import { confidenceLabel, money } from '../ui/theme.ts';
 
 export interface AdvisorPacketInput {
   institution: Institution;
   route: Route;
+  /**
+   * The Cal-GETC rows, so an area can print under its name and not only its
+   * code. An advisor reads "3B" natively; the student holding the printout does
+   * not, and this is the document they read together.
+   */
+  areas: GeArea[];
   /** Optional: absent, the document prints a rule for the student to sign by hand. */
   studentName?: string;
 }
 
 /**
- * The same bar the engine's lowest-risk route uses. Anything below it is not a
- * claim we are willing to make on a student's behalf — it is a question for the
- * advisor, and the packet asks it as one.
- */
-const CONFIRMED = new Set<Confidence>(['statute', 'published']);
-
-/**
- * A row is a claim only if it says where it came from. 'published' with an empty
- * source_url is a row nobody can check, so it goes in the confirm list with the
- * rest rather than printing as settled.
+ * A row is a claim only if it is backed AND says where it came from.
+ * isBacked() is the shared bar — the same one the screens and the engine's
+ * lowest-risk route use, so the packet cannot quietly disagree with the app
+ * about what counts as confirmed. A 'published' row with an empty source_url is
+ * a row nobody can check, so it joins the confirm list rather than printing as
+ * settled.
  */
 const needsConfirming = (p: Provenance): boolean =>
-  !CONFIRMED.has(p.confidence) || p.source_url.trim() === '';
+  !isBacked(p) || p.source_url.trim() === '';
 
 const ROUTE_LABEL: Record<RouteKind, string> = {
   cheapest: 'cheapest route',
   fastest: 'fastest route',
   lowest_risk: 'lowest-risk route',
+};
+
+/**
+ * Names the shape of the problem above the sentence that spells it out, so an
+ * advisor skimming the page can tell money already spent from a hole in our
+ * data without reading either one. Kept short: it sets as a small-caps kicker.
+ *
+ * Record<WarningKind, …> on purpose — a new kind in the engine has to be given
+ * a name here before this file will compile, rather than printing untitled.
+ */
+const WARNING_LABEL: Record<WarningKind, string> = {
+  stranded_credit: 'Credit already held · will not count here',
+  transfer_cap: 'Transfer-unit cap',
+  residency: 'Residency requirement',
+  unmet_areas: 'Gap in our data',
+  unverified_data: 'Not confirmed yet',
+};
+
+/**
+ * Print order. Stranded credit leads because it is the only kind that is money
+ * the student has already spent; the rest follow the order the engine raises
+ * them in. Nothing is dropped — this sorts, it does not filter.
+ */
+const WARNING_RANK: Record<WarningKind, number> = {
+  stranded_credit: 0,
+  transfer_cap: 1,
+  residency: 2,
+  unmet_areas: 3,
+  unverified_data: 4,
 };
 
 /**
@@ -57,9 +91,6 @@ const esc = (value: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-/** Only an http(s) source can carry an anchor; anything else prints as plain text. */
-const linkable = (url: string): boolean => /^https?:\/\//i.test(url.trim());
-
 /**
  * Seeded rows carry an empty as_of. Saying so is the honest reading — and it is
  * set in the same italic as a missing source, so it cannot be skimmed as a date.
@@ -67,9 +98,13 @@ const linkable = (url: string): boolean => /^https?:\/\//i.test(url.trim());
 const checkedHtml = (p: Provenance): string =>
   p.as_of.trim() === '' ? '<span class="missing">never</span>' : esc(p.as_of);
 
-/** The same fact as a clause rather than a field value, for running prose. */
+/**
+ * The same fact as a clause rather than a field value, for running prose. The
+ * undated wording is the shared one, so the packet and the screens say the same
+ * thing about a row nobody has opened.
+ */
 const checkedPhrase = (p: Provenance): string =>
-  p.as_of.trim() === '' ? 'never checked' : `checked ${p.as_of}`;
+  p.as_of.trim() === '' ? checkedOn(p) : `checked ${checkedOn(p)}`;
 
 const units = (n: number): string => `${n} unit${n === 1 ? '' : 's'}`;
 
@@ -84,12 +119,24 @@ function todayLocal(): string {
 }
 
 /**
- * The plan carries the Cal-GETC area id, not its name, and the packet will not
- * invent one: an advisor reads "3B" natively, and a name typed in here would be a
- * second, unsourced copy of a dataset row.
+ * "3B (Humanities)" — the code an advisor reads natively, plus the name the
+ * student knows the requirement by. The name is the dataset's row or nothing:
+ * a code we hold no area for prints as itself, never as "undefined" and never
+ * with an empty bracket after it.
  */
-const areaLabel = (area: string | null): string =>
-  area === null ? 'Elective credit — clears no area' : `Cal-GETC area ${area}`;
+type AreaNamer = (id: string) => string;
+
+function areaNamerFor(areas: GeArea[]): AreaNamer {
+  const names = new Map(areas.map((a): [string, string] => [a.id, a.name.trim()]));
+  return (id: string): string => {
+    const name = names.get(id) ?? '';
+    return name === '' ? id : `${id} (${name})`;
+  };
+}
+
+/** What a row claims to clear, as a phrase. Returns text — the caller escapes it. */
+const areaLabel = (area: string | null, named: AreaNamer): string =>
+  area === null ? 'Elective credit — clears no area' : `Cal-GETC area ${named(area)}`;
 
 /** Spelled out in full: this page is going to be printed. */
 function sourceHtml(p: Provenance): string {
@@ -135,9 +182,9 @@ function campusPolicyClaim(inst: Institution): string {
 }
 
 /** Item row plus its source row, kept together as one tbody so a page break cannot split them. */
-function itemHtml(item: PlanItem, n: number): string {
+function itemHtml(item: PlanItem, n: number, named: AreaNamer): string {
   const flagged = needsConfirming(item.provenance);
-  const note = item.provenance.note?.trim() ?? '';
+  const note = noteText(item.provenance);
 
   return `
       <tbody class="row${flagged ? ' flagged' : ''}">
@@ -145,7 +192,7 @@ function itemHtml(item: PlanItem, n: number): string {
           <td class="num">${n}</td>
           <td class="what">${esc(item.label)}${flagged ? '<span class="chip">confirm</span>' : ''}</td>
           <td class="fig">${item.units}</td>
-          <td>${esc(areaLabel(item.satisfies_area))}</td>
+          <td>${esc(areaLabel(item.satisfies_area, named))}</td>
           <td class="fig">${money(item.cost_usd)}</td>
           <td class="conf${flagged ? ' weak' : ''}">${esc(confidenceLabel(item.provenance.confidence))}</td>
         </tr>
@@ -154,13 +201,13 @@ function itemHtml(item: PlanItem, n: number): string {
           <td colspan="5">
             <span class="k">Source</span> ${sourceHtml(item.provenance)}
             <span class="k">Checked</span> ${checkedHtml(item.provenance)}
-            ${note === '' ? '' : `<div class="note"><span class="k">Note</span> ${esc(note)}</div>`}
+            ${note === null ? '' : `<div class="note"><span class="k">Note</span> ${esc(note)}</div>`}
           </td>
         </tr>
       </tbody>`;
 }
 
-function planTableHtml(route: Route): string {
+function planTableHtml(route: Route, named: AreaNamer): string {
   if (route.items.length === 0) {
     return `
       <p class="empty">This route recommends buying no credit at all. Either everything it
@@ -180,16 +227,54 @@ function planTableHtml(route: Route): string {
           <th>How far we trust this</th>
         </tr>
       </thead>
-      ${route.items.map((item, i) => itemHtml(item, i + 1)).join('')}
+      ${route.items.map((item, i) => itemHtml(item, i + 1, named)).join('')}
     </table>`;
+}
+
+/**
+ * What a warning rests on. A kind carrying a provenance row prints it in full,
+ * like every other claim in this document. A kind that carries none says so
+ * plainly rather than going quiet: 'unmet_areas' is the absence of a row, and an
+ * advisor should be able to see that it is our data that stops, not the policy.
+ */
+function warningBasisHtml(w: RouteWarning): string {
+  const p = w.provenance;
+  if (p === undefined) {
+    return `
+          <div class="basis">This one rests on what our data does <b>not</b> contain — there is
+          no policy page behind it to cite.</div>`;
+  }
+
+  const note = noteText(p);
+  return `
+          <div class="basis">
+            ${esc(confidenceLabel(p.confidence))} · ${sourceHtml(p)} · ${esc(checkedPhrase(p))}
+            ${note === null ? '' : `<div>${esc(note)}</div>`}
+          </div>`;
 }
 
 /**
  * Warnings are the most valuable thing this app says, so in print they get a
  * heavy rule and bold text rather than a colour — an advisor's office printer is
- * usually greyscale. Reproduced exactly as the engine phrased them.
+ * usually greyscale. The sentence is reproduced exactly as the engine phrased
+ * it, because it is written for the student; what this adds above it is the
+ * KIND, so nobody has to read a paragraph to find out that "will not count
+ * here" is not the same problem as "our data does not cover this".
  */
-function warningsHtml(warnings: string[], instName: string): string {
+function warningHtml(w: RouteWarning): string {
+  // Money the student has already spent outranks everything else on the page,
+  // and greyscale printing means that has to be weight rather than colour.
+  const severe = w.kind === 'stranded_credit';
+
+  return `
+        <li class="${severe ? 'w severe' : 'w'}">
+          <div class="kind">${esc(WARNING_LABEL[w.kind])}</div>
+          <div class="msg">${esc(w.message)}</div>
+          ${warningBasisHtml(w)}
+        </li>`;
+}
+
+function warningsHtml(warnings: RouteWarning[], instName: string): string {
   if (warnings.length === 0) {
     return `
     <section class="alert quiet">
@@ -199,11 +284,25 @@ function warningsHtml(warnings: string[], instName: string): string {
     </section>`;
   }
 
+  // A copy: route.warnings belongs to the caller, and an export must not
+  // reorder the array the screens are rendering from.
+  const ordered = [...warnings].sort((a, b) => WARNING_RANK[a.kind] - WARNING_RANK[b.kind]);
+  const stranded = ordered.filter(w => w.kind === 'stranded_credit').length;
+
+  // The heading leads with the worst kind present, so the block names its own
+  // stakes before the advisor reaches the first bullet.
+  const heading =
+    stranded === 0
+      ? 'Read this first — constraints on this plan'
+      : stranded === 1
+        ? 'Read this first — credit already held that will not count here'
+        : `Read this first — ${stranded} credits already held that will not count here`;
+
   return `
     <section class="alert">
-      <h2>Read this first — constraints on this plan</h2>
+      <h2>${esc(heading)}</h2>
       <ul>
-        ${warnings.map(w => `<li>${esc(w)}</li>`).join('')}
+        ${ordered.map(w => warningHtml(w)).join('')}
       </ul>
     </section>`;
 }
@@ -213,7 +312,7 @@ function warningsHtml(warnings: string[], instName: string): string {
  * across the whole document, and the campus-policy row is appended after the last
  * table row rather than competing for a number with it.
  */
-function confirmHtml(input: AdvisorPacketInput): string {
+function confirmHtml(input: AdvisorPacketInput, named: AreaNamer): string {
   const { institution, route } = input;
 
   const flagged = route.items
@@ -227,7 +326,7 @@ function confirmHtml(input: AdvisorPacketInput): string {
     const claim =
       item.satisfies_area === null
         ? `we expect ${units(item.units)} of elective credit, clearing no Cal-GETC area`
-        : `we expect it to clear Cal-GETC area ${esc(item.satisfies_area)} for ${units(item.units)}`;
+        : `we expect it to clear ${esc(areaLabel(item.satisfies_area, named))} for ${units(item.units)}`;
 
     return `
         <li>
@@ -292,7 +391,7 @@ function confirmHtml(input: AdvisorPacketInput): string {
     </section>`;
 }
 
-function summaryHtml(route: Route): string {
+function summaryHtml(route: Route, named: AreaNamer): string {
   const unconfirmed = route.items.filter(i => needsConfirming(i.provenance)).length;
 
   // The total is a factual claim like any other, and it is the biggest thing on
@@ -308,12 +407,12 @@ function summaryHtml(route: Route): string {
   const cleared =
     route.areas_cleared.length === 0
       ? 'No Cal-GETC area is cleared by this plan.'
-      : `Clears ${route.areas_cleared.length} Cal-GETC area${route.areas_cleared.length === 1 ? '' : 's'}: ${esc(route.areas_cleared.join(', '))}.`;
+      : `Clears ${route.areas_cleared.length} Cal-GETC area${route.areas_cleared.length === 1 ? '' : 's'}: ${esc(route.areas_cleared.map(a => named(a)).join(', '))}.`;
 
   const unmet =
     route.areas_unmet.length === 0
       ? 'Every area in our data is accounted for.'
-      : `Still unmet: ${esc(route.areas_unmet.join(', '))}.`;
+      : `Still unmet: ${esc(route.areas_unmet.map(a => named(a)).join(', '))}.`;
 
   return `
     <section class="summary">
@@ -346,7 +445,7 @@ const STYLES = `
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
-    h1, h2, th, .chip, .k, .total, .facts b, .reply-k, .num, .fig, .conf {
+    h1, h2, th, .chip, .k, .total, .facts b, .reply-k, .num, .fig, .conf, .alert .kind {
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
     h1 { font-size: 19px; line-height: 1.2; letter-spacing: -0.3px; margin: 0 0 3px; }
@@ -377,9 +476,23 @@ const STYLES = `
     .ask { margin: 0 0 12px; font-size: 11px; }
 
     .alert { border: 3px solid #000; background: #f1f1f1; padding: 11px 13px; margin: 0 0 14px; page-break-inside: avoid; }
-    .alert ul { margin: 0; padding-left: 16px; }
-    .alert li { font-size: 11px; font-weight: 700; margin-bottom: 5px; }
-    .alert li:last-child { margin-bottom: 0; }
+    /* Each warning carries its own kicker, so the list drops its bullets rather
+       than setting a marker beside a two-line label. */
+    .alert ul { margin: 0; padding: 0; list-style: none; }
+    .alert li.w { margin-bottom: 9px; page-break-inside: avoid; }
+    .alert li.w:last-child { margin-bottom: 0; }
+    .alert .kind {
+      display: inline-block; font-size: 7.5px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .6px; border: 1px solid #000; padding: 0 4px; margin-bottom: 3px;
+    }
+    .alert .msg { font-size: 11px; font-weight: 700; }
+    .alert .basis { margin-top: 2px; color: #222; }
+    /* Stranded credit is money the student has already spent. On a greyscale
+       office printer that has to read as weight: a reversed kicker, a bar down
+       the side, and the sentence itself set larger than the others. */
+    .alert li.severe { border-left: 5px solid #000; padding-left: 9px; }
+    .alert li.severe .kind { background: #000; color: #fff; }
+    .alert li.severe .msg { font-size: 13px; line-height: 1.35; }
     .alert.quiet { border-width: 1px; background: #fff; }
     .alert.quiet p { font-weight: 400; margin: 0; }
 
@@ -433,7 +546,8 @@ const STYLES = `
  * product, and a PDF is a poor place to discover an escaping bug.
  */
 export function buildAdvisorPacketHtml(input: AdvisorPacketInput): string {
-  const { institution, route, studentName } = input;
+  const { institution, route, areas, studentName } = input;
+  const named = areaNamerFor(areas);
 
   const who =
     studentName !== undefined && studentName.trim() !== ''
@@ -469,12 +583,12 @@ export function buildAdvisorPacketHtml(input: AdvisorPacketInput): string {
 
   ${warningsHtml(route.warnings, institution.name)}
 
-  ${summaryHtml(route)}
+  ${summaryHtml(route, named)}
 
   <h2>The plan</h2>
-  ${planTableHtml(route)}
+  ${planTableHtml(route, named)}
 
-  ${confirmHtml(input)}
+  ${confirmHtml(input, named)}
 
   <footer>
     <b>${vintage}</b>
