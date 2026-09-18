@@ -11,6 +11,8 @@ export const acceptanceRules: AcceptanceRule[] = [
       source_url: "https://www.calstate.edu/apply/transfer/Pages/credit-by-exam.aspx",
       as_of: "",
       confidence: "unverified",
+      note:
+        "Score minimum applies. Confirm the campus grants this against area 1A specifically, not as unassigned elective credit.",
     },
   },
   {
@@ -23,6 +25,8 @@ export const acceptanceRules: AcceptanceRule[] = [
       source_url: "https://www.calstate.edu/apply/transfer/Pages/credit-by-exam.aspx",
       as_of: "",
       confidence: "unverified",
+      note:
+        "Score minimum applies. Some campuses grant elective units only, which does NOT clear area 2.",
     },
   },
   {
@@ -35,6 +39,8 @@ export const acceptanceRules: AcceptanceRule[] = [
       source_url: "https://www.calstate.edu/apply/transfer/Pages/credit-by-exam.aspx",
       as_of: "",
       confidence: "unverified",
+      note:
+        "Score minimum applies. Confirm it maps to area 4 and not to a major-specific requirement.",
     },
   },
   {
@@ -61,6 +67,8 @@ export const acceptanceRules: AcceptanceRule[] = [
       source_url: "https://assist.org/",
       as_of: "",
       confidence: "unverified",
+      note:
+        "Confirm on ASSIST for this campus pair. Math articulation frequently depends on the major.",
     },
   },
   {
@@ -73,6 +81,8 @@ export const acceptanceRules: AcceptanceRule[] = [
       source_url: "https://assist.org/",
       as_of: "",
       confidence: "unverified",
+      note:
+        "Course-to-course articulation is institution-pair specific. Confirm this exact CCC course on ASSIST for this exact campus.",
     },
   },
   {
@@ -85,6 +95,8 @@ export const acceptanceRules: AcceptanceRule[] = [
       source_url: "https://assist.org/",
       as_of: "",
       confidence: "unverified",
+      note:
+        "Confirm on ASSIST for this campus pair. Math articulation frequently depends on the major.",
     },
   },
 ];

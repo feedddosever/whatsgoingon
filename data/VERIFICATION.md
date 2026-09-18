@@ -66,6 +66,19 @@ result worth putting on screen.
 
 **8. Current CCC per-unit enrolment fee.** Seed assumes $138 for 3 units.
 
+**8a. Per-unit tuition at each UC/CSU campus (`cost_per_unit_usd`).**
+Seed assumes **$490/unit UC, $396/unit CSU**. These drive `baselineCost()`, which is
+the "do nothing" figure the headline saving is measured against — so an error here
+inflates or deflates the single number the whole product is selling.
+
+**Known modelling simplification:** UC and CSU charge **tiered flat-rate tuition**, not
+per unit. A full-time student pays the same whether they take 12 units or 18. Treating
+tuition as linear per-unit is an approximation that is closest to true for part-time
+students and overstates the saving for full-timers. Either confirm a defensible per-unit
+figure and keep the approximation (documenting it in the app), or move to a tier model.
+**Do not put the headline saving on screen until this is settled** — it is the most
+scrutinised number in the demo.
+
 **9. CLEP sitting fees.** Test centres charge on top of the exam fee.
 
 ### P3 — known gaps, deliberately not seeded

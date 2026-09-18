@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { planRoute, planAllRoutes } from './engine.ts';
+import { planRoute, planAllRoutes, baselineCost } from './engine.ts';
 import { california } from './dataset.ts';
 
 const ds = california;
@@ -26,9 +26,10 @@ test('holding CLEP credit for a UC target produces a stranded-credit warning', (
     units_in_residence: 30,
   }, 'cheapest');
 
-  const stranded = route.warnings.filter(w => w.includes('does not award credit'));
+  const stranded = route.warnings.filter(w => w.kind === 'stranded_credit');
   assert.equal(stranded.length, 2, 'each stranded CLEP credit warns separately');
-  assert.match(stranded[0], /will not count here/);
+  assert.match(stranded[0].message, /will not count here/);
+  assert.ok(stranded[0].provenance, 'a stranded warning carries the row it rests on');
 });
 
 test('held CLEP credit does NOT clear an area at a UC campus', () => {
@@ -79,7 +80,7 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
   const synthetic = {
     institutions: [{
       id: 'x', name: 'X', system: 'CSU' as const, residency_min_units: 0,
-      max_transfer_units: null, accepts_clep: true,
+      cost_per_unit_usd: 400, max_transfer_units: null, accepts_clep: true,
       provenance: { source_url: '', as_of: '', confidence: 'published' as const },
     }],
     areas: [{ id: '2', name: 'Math', required_units: 3,
@@ -123,7 +124,7 @@ test('residency shortfall is reported and cannot be transferred away', () => {
     units_in_residence: 12,
   }, 'cheapest');
 
-  assert.ok(route.warnings.some(w => /requires at least 30 units earned on campus/.test(w)));
+  assert.ok(route.warnings.some(w => w.kind === 'residency'));
 });
 
 test('lowest-risk route refuses to stake anything on unverified data', () => {
@@ -151,5 +152,49 @@ test('all three routes are produced and are internally consistent', () => {
     assert.equal(r.total_cost_usd, r.items.reduce((n, i) => n + i.cost_usd, 0));
     assert.equal(r.total_units, r.items.reduce((n, i) => n + i.units, 0));
     assert.equal(r.areas_cleared.length, r.items.length);
+  }
+});
+
+test('no warning leaks developer-facing language to a student', () => {
+  // The lowest-risk route once told students the "dataset is not ready to ship".
+  const leaks = /ship|dataset|unverified row|TODO|FIXME/i;
+  for (const id of ['uc-berkeley', 'csu-long-beach']) {
+    for (const r of planAllRoutes(ds, {
+      target_institution_id: id, held_credit_ids: [], units_in_residence: 0,
+    })) {
+      for (const w of r.warnings) {
+        assert.ok(!leaks.test(w.message), `developer language in: ${w.message}`);
+      }
+    }
+  }
+});
+
+test('baseline prices only the areas still unmet, at the school\'s own rate', () => {
+  const input = {
+    target_institution_id: 'csu-long-beach',
+    held_credit_ids: [],
+    units_in_residence: 30,
+  };
+  const all = baselineCost(ds, input);
+  assert.ok(all > 0, 'a student with no credit faces the full bill');
+
+  // Clearing an area must reduce the baseline by exactly that area's units.
+  const withCredit = baselineCost(ds, {
+    ...input, held_credit_ids: ['clep-college-composition'],
+  });
+  const inst = ds.institutions.find(i => i.id === 'csu-long-beach')!;
+  const area1A = ds.areas.find(a => a.id === '1A')!;
+  assert.equal(all - withCredit, area1A.required_units * inst.cost_per_unit_usd);
+});
+
+test('a saving is never negative — routes cost less than doing nothing', () => {
+  const input = {
+    target_institution_id: 'csu-long-beach',
+    held_credit_ids: [],
+    units_in_residence: 30,
+  };
+  const base = baselineCost(ds, input);
+  for (const r of planAllRoutes(ds, input)) {
+    assert.ok(r.total_cost_usd <= base, `${r.kind} costs more than doing nothing`);
   }
 });

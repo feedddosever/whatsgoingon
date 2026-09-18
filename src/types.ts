@@ -19,6 +19,12 @@ export interface Institution {
   id: string;
   name: string;
   system: SystemId;
+  /**
+   * What this institution charges per unit. Used to price the do-nothing path:
+   * what the student pays if they clear every requirement here instead of
+   * transferring credit in.
+   */
+  cost_per_unit_usd: number;
   /** Minimum units that must be earned AT this institution to graduate. */
   residency_min_units: number;
   /** Cap on units transferable in from community college, if any. */
@@ -60,6 +66,8 @@ export interface AcceptanceRule {
 }
 
 export interface StudentInput {
+  /** Printed on the advisor packet so the advisor knows who is asking. */
+  student_name?: string;
   target_institution_id: string;
   /** Credit source ids the student already holds. */
   held_credit_ids: string[];
@@ -78,6 +86,29 @@ export interface PlanItem {
 
 export type RouteKind = 'cheapest' | 'fastest' | 'lowest_risk';
 
+/**
+ * Why a warning fires, as data rather than prose.
+ *
+ * Screens style these by severity and attach the provenance badge that backs
+ * them. An earlier version passed bare strings, which forced the UI to recover
+ * severity by matching the engine's wording — so rephrasing a sentence here
+ * silently stripped the badge off the app's most consequential claim.
+ */
+export type WarningKind =
+  | 'stranded_credit'   // credit the student holds that this school will not honour
+  | 'transfer_cap'      // route exceeds the institution's transfer-unit ceiling
+  | 'residency'         // minimum units that must be earned on campus
+  | 'unmet_areas'       // no route in our data clears these requirements
+  | 'unverified_data';  // we will not stake the student's money on this yet
+
+export interface RouteWarning {
+  kind: WarningKind;
+  /** Student-facing. Rendered verbatim, so it is written for a student. */
+  message: string;
+  /** The row this warning rests on, where one exists. */
+  provenance?: Provenance;
+}
+
 export interface Route {
   kind: RouteKind;
   items: PlanItem[];
@@ -86,5 +117,5 @@ export interface Route {
   areas_cleared: string[];
   areas_unmet: string[];
   /** Hard constraints that bind this route — shown to the student verbatim. */
-  warnings: string[];
+  warnings: RouteWarning[];
 }
