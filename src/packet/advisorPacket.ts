@@ -486,7 +486,10 @@ const STYLES = `
       letter-spacing: .6px; border: 1px solid #000; padding: 0 4px; margin-bottom: 3px;
     }
     .alert .msg { font-size: 11px; font-weight: 700; }
-    .alert .basis { margin-top: 2px; color: #222; }
+    /* .basis breaks URLs anywhere, which is right for a source line and wrong
+       for the sentence of a provenance note — so prose wraps normally here and
+       only an unbreakable URL is allowed to split. */
+    .alert .basis { margin-top: 2px; color: #222; word-break: normal; overflow-wrap: anywhere; }
     /* Stranded credit is money the student has already spent. On a greyscale
        office printer that has to read as weight: a reversed kicker, a bar down
        the side, and the sentence itself set larger than the others. */
