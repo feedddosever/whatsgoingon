@@ -3,8 +3,9 @@
  *
  * The saving is the hook, so it is the largest thing on the screen. Everything
  * else here exists to keep that number from becoming a lie: the weakest row
- * behind each route, the note saying what could bite the student, and the
- * warnings that say this campus will not honour credit the student already holds.
+ * behind each route, the note saying what could bite the student, the coverage
+ * that says how much of the job the route actually does, and the warnings that
+ * say this campus will not honour credit the student already holds.
  */
 import {
   Linking,
@@ -17,6 +18,7 @@ import {
 } from 'react-native';
 import type {
   Confidence,
+  GeArea,
   Institution,
   PlanItem,
   Provenance,
@@ -56,27 +58,56 @@ const RANK: Record<Confidence, number> = {
  *
  * A card has room for one warning, so this decides which one the student actually
  * sees: stranded credit first, because it is money already spent that this campus
- * will never honour.
+ * will never honour. Credit the campus does award but that clears no Cal-GETC
+ * requirement sits directly behind it — the student has not lost the money, but
+ * they have satisfied nothing, and nothing on the plan looks wrong.
  */
 const WARNING_RANK: Record<WarningKind, number> = {
   stranded_credit: 0,
-  transfer_cap: 1,
-  unverified_data: 2,
-  residency: 3,
-  unmet_areas: 4,
+  credit_not_toward_ge: 1,
+  transfer_cap: 2,
+  unverified_data: 3,
+  residency: 4,
 };
 
 /** What the student is looking at, before they read the sentence itself. */
 const WARNING_TITLE: Record<WarningKind, string> = {
   stranded_credit: 'Credit that will not count here',
+  credit_not_toward_ge: 'Counts for the degree, clears no requirement',
   transfer_cap: 'Units over the transfer cap',
   residency: 'Units you must earn on campus',
-  unmet_areas: 'Nothing in our data clears this',
   unverified_data: 'Not confirmed against the campus',
 };
 
-/** The one kind that gets the red treatment: it is the student's money, already spent. */
-const isSevere = (w: RouteWarning): boolean => w.kind === 'stranded_credit';
+/**
+ * How loudly a warning is drawn. Three tiers, because two were not enough — and
+ * the same three RouteDetailScreen names, since one student meeting two
+ * vocabularies for one warning is the app disagreeing with itself.
+ *
+ *   severe   — stranded credit: money already spent that this campus will not honour.
+ *   elevated — credit the campus DOES award that clears no Cal-GETC requirement.
+ *              Nothing looks wrong to the student: the credit is accepted, the plan
+ *              reads normally, and they have satisfied no requirement. A warning
+ *              nobody would go looking for cannot be drawn as an aside, so it is
+ *              filled rather than ruled. Not red — nobody is out of pocket — and
+ *              deliberately not the default either.
+ *   plain    — the constraints a student can see coming once they are told.
+ *
+ * A Record rather than a ternary chain: a kind added to the engine has to be
+ * placed here deliberately instead of inheriting the quietest treatment by
+ * falling through to the default.
+ */
+type WarningTone = 'severe' | 'elevated' | 'plain';
+
+const WARNING_TONE: Record<WarningKind, WarningTone> = {
+  stranded_credit: 'severe',
+  credit_not_toward_ge: 'elevated',
+  transfer_cap: 'plain',
+  residency: 'plain',
+  unverified_data: 'plain',
+};
+
+const toneOf = (w: RouteWarning): WarningTone => WARNING_TONE[w.kind];
 
 /**
  * Warnings are values, not references: two routes each build their own object for
@@ -120,19 +151,106 @@ function weakestItem(route: Route): PlanItem | null {
 
 const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`;
 
+/**
+ * A bare Cal-GETC code is advisor shorthand; the student knows the requirement by
+ * its name. RouteDetailScreen already prints "CAL-GETC 3B · Humanities", and one
+ * student meeting two vocabularies for one requirement is the app disagreeing
+ * with itself, so this screen says it the same way. A code we hold no row for
+ * prints as itself — never as "undefined", never with a dangling separator.
+ */
+const areaLabel = (code: string, name: string | null): string =>
+  name === null ? `CAL-GETC ${code}` : `CAL-GETC ${code} · ${name}`;
+
+const areaNamer =
+  (areas: GeArea[]) =>
+  (id: string): string => {
+    const name = areas.find(a => a.id === id)?.name.trim() ?? '';
+    return areaLabel(id, name === '' ? null : name);
+  };
+
+/** "A", "A and B", "A, B and C" — a list a student reads rather than parses. */
+const joinAreas = (labels: string[]): string =>
+  labels.length < 2
+    ? labels.join('')
+    : `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
+
 /** No error surface exists on this screen, and a dead link must not take it down. */
 const openSource = (url: string): void => {
   void Linking.openURL(url).catch(() => undefined);
 };
 
-const policyLine = (inst: Institution): string => {
-  const clep = inst.accepts_clep ? 'accepts CLEP' : 'does not accept CLEP';
-  const cap =
-    inst.max_transfer_units === null
-      ? 'no transfer cap'
-      : `${inst.max_transfer_units}-unit transfer cap`;
-  return `${inst.system} · ${clep} · ${cap} · ${inst.residency_min_units} units must be earned on campus`;
-};
+/**
+ * The campus header used to print exam policy, the transfer cap and the residency
+ * minimum as one sentence under one "published policy" badge. Only the first of
+ * those three is published: the other two are unconfirmed and carry their own
+ * provenance, so they are printed separately and never under that badge.
+ */
+const examPolicyLine = (inst: Institution): string =>
+  `${inst.system} · ${inst.accepts_clep ? 'accepts CLEP' : 'does not accept CLEP'}`;
+
+const capLine = (inst: Institution): string =>
+  inst.max_transfer_units === null
+    ? 'No transfer cap on file'
+    : `${inst.max_transfer_units}-unit cap on credit transferred in`;
+
+/** A zero minimum is missing data, not a campus without a residency rule. */
+const residencyLine = (inst: Institution): string =>
+  inst.residency_min_units > 0
+    ? `${inst.residency_min_units} units must be earned on campus`
+    : 'No residency minimum on file';
+
+/**
+ * What a route costs once the requirements it does NOT clear are priced back in.
+ *
+ * The lowest-risk route drops unconfirmed rows, so it can clear fewer areas and
+ * still show a smaller total than the cheapest route. A card reading "$297" next
+ * to one reading "$573" looks like the better deal when it is in fact doing less
+ * work, and the student pays for the difference at this campus's estimated per-unit rate
+ * either way. Pricing the gap — the same arithmetic the baseline uses — makes the
+ * cards comparable instead of merely adjacent, and it is why the saving on a
+ * narrower route shrinks rather than grows.
+ *
+ * When an unmet area has no row we can price, nothing is guessed: the gap stays
+ * null, the card says so, and it is kept out of the running for the headline.
+ */
+interface Outlook {
+  cleared: number;
+  total: number;
+  /** Cost of the areas this route leaves the student to clear, at the campus rate. */
+  gapUsd: number | null;
+  /** Baseline minus (plan + gap). Null when the gap cannot be priced. */
+  savingUsd: number | null;
+}
+
+function outlookOf(
+  route: Route,
+  areas: GeArea[],
+  perUnitUsd: number,
+  baselineUsd: number,
+): Outlook {
+  let units = 0;
+  let priced = true;
+  for (const id of route.areas_unmet) {
+    const area = areas.find(a => a.id === id);
+    if (area === undefined) {
+      priced = false;
+      continue;
+    }
+    units += area.required_units;
+  }
+  const gapUsd = priced ? units * perUnitUsd : null;
+  return {
+    cleared: route.areas_cleared.length,
+    total: route.areas_cleared.length + route.areas_unmet.length,
+    gapUsd,
+    savingUsd: gapUsd === null ? null : baselineUsd - (route.total_cost_usd + gapUsd),
+  };
+}
+
+interface RouteEntry {
+  route: Route;
+  outlook: Outlook;
+}
 
 interface ProvenanceBadgeProps {
   provenance: Provenance;
@@ -149,10 +267,7 @@ function ProvenanceBadge(props: ProvenanceBadgeProps) {
       : `${props.label} — ${confidenceLabel(confidence)}`;
   // `note` is where the dataset records what could bite the student — a score
   // minimum, a cap, a claim that has to be confirmed. Dropping it would turn
-  // provenance back into the decoration this product refuses to make it, and it
-  // is never suppressed: the campus row here reads "published policy" while its
-  // own note says the residency minimum and the transfer cap in that row are NOT
-  // confirmed. A badge shown without that sentence promises what we do not know.
+  // provenance back into the decoration this product refuses to make it.
   const note = noteText(provenance);
   // checkedOn() owns the visible phrasing; the screen reader needs a whole
   // sentence, so it asks the row itself whether anyone has opened the page.
@@ -193,8 +308,35 @@ function ProvenanceBadge(props: ProvenanceBadgeProps) {
 }
 
 /**
- * What a warning rests on. `unmet_areas` and `unverified_data` carry no row —
- * they are fired by the absence of one — and saying that plainly is the honest
+ * One campus figure and the row that backs it.
+ *
+ * Kept as data rather than inlined twice, because which of these is set apart as
+ * unconfirmed is READ OFF the row (`isBacked`) and never assumed: a figure whose
+ * source someone confirms must stop wearing the "not confirmed" kicker, and one
+ * nobody has confirmed can never quietly lose it.
+ */
+interface CampusClaim {
+  label: string;
+  text: string;
+  provenance: Provenance;
+}
+
+function CampusClaimLine(props: { claim: CampusClaim }) {
+  const { claim } = props;
+  return (
+    <View style={styles.instClaim}>
+      <Text style={styles.instMeta}>{claim.text}</Text>
+      <ProvenanceBadge provenance={claim.provenance} label={claim.label} />
+    </View>
+  );
+}
+
+/**
+ * What a warning rests on. The engine attaches the row for each claim — the exam
+ * policy behind stranded credit, the transfer-cap row behind the cap, the
+ * residency row behind residency — so the badge here is whatever backs THIS
+ * warning, never the campus header's. `unverified_data` carries no row at all;
+ * it is fired by the absence of one, and saying that plainly is the honest
  * version of a badge, not a reason to show nothing.
  */
 function WarningBacking(props: { warning: RouteWarning }) {
@@ -216,8 +358,11 @@ function Stat(props: { label: string; value: string }) {
 
 interface RouteCardProps {
   route: Route;
-  savingUsd: number;
+  /** Coverage and the coverage-adjusted saving, computed once by the screen. */
+  outlook: Outlook;
   institutionName: string;
+  /** So this card names a requirement the way every other screen names it. */
+  areaName: (id: string) => string;
   /** Warnings this route adds on top of the ones already banner-ed above, most severe first. */
   extraWarnings: RouteWarning[];
   sharedWarningCount: number;
@@ -228,8 +373,9 @@ interface RouteCardProps {
 function RouteCard(props: RouteCardProps) {
   const {
     route,
-    savingUsd,
+    outlook,
     institutionName,
+    areaName,
     extraWarnings,
     sharedWarningCount,
     headline,
@@ -241,25 +387,52 @@ function RouteCard(props: RouteCardProps) {
   // The caller sorts by severity, so the one warning this card has room for is
   // already the one that matters most.
   const top: RouteWarning | null = extraWarnings.length > 0 ? extraWarnings[0] : null;
-  const areasTotal = route.areas_cleared.length + route.areas_unmet.length;
+  const topTone: WarningTone | null = top === null ? null : toneOf(top);
   const empty = route.items.length === 0;
   const settled = empty && route.areas_unmet.length === 0;
+  const unmetLabels = route.areas_unmet.map(areaName);
+  const saving = outlook.savingUsd;
+  const gap = outlook.gapUsd;
 
   // A route that costs more than the baseline has not saved "nothing" — it has
   // lost money, and rounding that up to zero is the sort of flattery this app exists
-  // to refuse.
+  // to refuse. The figure is net of what the route leaves unmet, so a route that
+  // clears less cannot buy a bigger number by doing less work.
   const savingText =
-    savingUsd > 0
-      ? `Saves ${money(savingUsd)}`
-      : savingUsd < 0
-        ? `Costs ${money(-savingUsd)} more than doing nothing`
-        : 'Saves nothing against the baseline';
+    saving === null
+      ? 'Saving not stated: an area this route leaves open is missing from our data'
+      : saving > 0
+        ? `Saves ${money(saving)}`
+        : saving < 0
+          ? `Costs ${money(-saving)} more than doing nothing`
+          : 'Saves nothing against the baseline';
+
+  // Coverage travels with every cost on this card. On its own, a total says only
+  // how much was spent, never how much of the job it bought.
+  const coverageText =
+    route.areas_unmet.length === 0
+      ? `Clears all ${plural(outlook.total, 'area')} you still owe.`
+      : `Clears ${outlook.cleared} of ${outlook.total}. ${joinAreas(unmetLabels)} ` +
+        `${route.areas_unmet.length === 1 ? 'is' : 'are'} still yours to clear.`;
+
+  const allInText =
+    gap === null
+      ? 'Plan cost only: an area this route leaves open is missing from our data, so we cannot ' +
+        'say what it leaves you to pay. Do not read this total against the other cards.'
+      : route.areas_unmet.length === 0
+        ? `${money(route.total_cost_usd)} all-in — this route leaves you nothing further to pay for.`
+        : `${money(route.total_cost_usd + gap)} all-in at ${institutionName}: the plan, plus ` +
+          `${money(gap)} for the ${plural(route.areas_unmet.length, 'area')} it does not clear, at ` +
+          `this campus's estimated per-unit rate. Compare the cards on this number, not on the plan cost.`;
 
   const summary = empty
     ? `${KIND_LABEL[route.kind]} route. Nothing we would recommend. ${plural(route.warnings.length, 'warning')}.`
-    : `${KIND_LABEL[route.kind]} route. ${savingText}. Costs ${money(route.total_cost_usd)}, ` +
-      `${plural(route.total_units, 'unit')}, clears ${route.areas_cleared.length} of ${areasTotal} areas, ` +
-      `${plural(route.warnings.length, 'warning')}.`;
+    : `${KIND_LABEL[route.kind]} route. Clears ${outlook.cleared} of ${outlook.total} areas. ` +
+      `${savingText}. Plan costs ${money(route.total_cost_usd)}` +
+      (gap !== null && route.areas_unmet.length > 0
+        ? `, and leaves ${money(gap)} of requirements for you to pay for`
+        : '') +
+      `. ${plural(route.total_units, 'unit')}, ${plural(route.warnings.length, 'warning')}.`;
 
   return (
     <Pressable
@@ -296,8 +469,8 @@ function RouteCard(props: RouteCardProps) {
             {settled
               ? `Credit you already hold clears every area at ${institutionName}.`
               : route.kind === 'lowest_risk'
-                ? `Every row that could clear ${route.areas_unmet.join(', ')} is still unconfirmed, so this route will not put your money on any of it.`
-                : `No credit in our data clears ${route.areas_unmet.join(', ')} at ${institutionName}.`}
+                ? `Every row that could clear ${joinAreas(unmetLabels)} is still unconfirmed, so this route will not put your money on any of it.`
+                : `No credit in our data clears ${joinAreas(unmetLabels)} at ${institutionName}.`}
           </Text>
         </View>
       ) : (
@@ -305,44 +478,61 @@ function RouteCard(props: RouteCardProps) {
           <Text
             style={[
               styles.cardSaving,
-              trusted && savingUsd > 0 ? styles.cardSavingTrusted : styles.cardSavingUnsure,
+              trusted && saving !== null && saving > 0
+                ? styles.cardSavingTrusted
+                : styles.cardSavingUnsure,
             ]}
           >
             {savingText}
           </Text>
-          {!trusted && savingUsd > 0 && (
+          {/* Directly under the money, before anything else can be skimmed past. */}
+          <Text style={styles.cardCoverage}>{coverageText}</Text>
+          {!trusted && saving !== null && saving > 0 && (
             <Text style={styles.cardSavingCaveat}>
               Not a confirmed figure — it rests on rows nobody has checked against the source.
             </Text>
           )}
           <View style={styles.statRow}>
-            <Stat label="Total cost" value={money(route.total_cost_usd)} />
+            <Stat label="Plan cost" value={money(route.total_cost_usd)} />
+            <Stat label="Areas cleared" value={`${outlook.cleared} of ${outlook.total}`} />
+            <Stat
+              label="Still to pay here"
+              value={gap === null ? 'Not priced' : money(gap)}
+            />
             <Stat label="Units" value={String(route.total_units)} />
-            <Stat label="Areas cleared" value={`${route.areas_cleared.length} of ${areasTotal}`} />
           </View>
+          <Text style={styles.cardAllIn}>{allInText}</Text>
         </View>
       )}
 
       {top !== null ? (
-        <View style={[styles.cardWarn, isSevere(top) && styles.cardWarnSevere]}>
+        <View
+          style={[
+            styles.cardWarn,
+            topTone === 'severe' && styles.cardWarnSevere,
+            topTone === 'elevated' && styles.cardWarnElevated,
+          ]}
+        >
           {/* `extraWarnings` excludes the ones banner-ed above, which still bind
               this route — so calling them "N warnings on this route" undercounts
               the route's constraints. Say what the number actually is. */}
-          <Text style={[styles.cardWarnCount, isSevere(top) && styles.cardWarnCountSevere]}>
+          <Text style={[styles.cardWarnCount, topTone === 'severe' && styles.cardWarnCountSevere]}>
             {sharedWarningCount > 0
               ? `${plural(extraWarnings.length, 'warning')} beyond the ${sharedWarningCount} above`
               : `${plural(extraWarnings.length, 'warning')} on this route`}
           </Text>
-          <Text style={[styles.cardWarnTitle, isSevere(top) && styles.cardWarnTitleSevere]}>
+          <Text style={[styles.cardWarnTitle, topTone === 'severe' && styles.cardWarnTitleSevere]}>
             {WARNING_TITLE[top.kind]}
           </Text>
           {/* Never clamped: a warning the student cannot finish reading is a warning
               that did not do its job. Printed verbatim — it is written for a student. */}
-          <Text style={styles.cardWarnText}>{top.message}</Text>
-          {/* Badge AND note. The campus row is marked "published policy", but its
-              note is the caveat naming the residency minimum and the transfer cap
-              as the parts of that row nobody has confirmed — exactly the two
-              warnings likeliest to land here. */}
+          <Text style={[styles.cardWarnText, topTone === 'elevated' && styles.cardWarnTextElevated]}>
+            {top.message}
+          </Text>
+          {/* Badge AND note, and the badge is the one the engine attached to THIS
+              warning — the residency row behind a residency warning, the cap row
+              behind the cap. The campus header's published exam-policy badge never
+              reaches down here to lend credibility to a claim it does not cover. */}
           <WarningBacking warning={top} />
           {extraWarnings.length > 1 && (
             <Text style={styles.cardWarnMore}>+{extraWarnings.length - 1} more in the full plan</Text>
@@ -374,18 +564,50 @@ function RouteCard(props: RouteCardProps) {
 }
 
 export function RoutesScreen(props: RoutesScreenProps) {
-  const { institution, routes, baselineCostUsd, onSelectRoute, onBack } = props;
+  const { institution, routes, areas, baselineCostUsd, onSelectRoute, onBack } = props;
   const { width } = useWindowDimensions();
   const wide = width >= 700;
 
-  const savingOf = (r: Route): number => baselineCostUsd - r.total_cost_usd;
+  const areaName = areaNamer(areas);
 
-  // A route with no items "saves" the whole baseline while delivering nothing,
-  // so it can never be the headline.
-  let best: Route | null = null;
-  for (const r of routes) {
-    if (r.items.length === 0) continue;
-    if (best === null || savingOf(r) > savingOf(best)) best = r;
+  // The transfer cap and the residency minimum each carry their own row, and
+  // neither is covered by the exam-policy source. Which of them is set apart as
+  // unconfirmed comes from its own provenance, so the dashed block can never
+  // outlive — or fail to cover — what the data actually says.
+  const campusClaims: CampusClaim[] = [
+    {
+      label: 'Transfer cap',
+      text: capLine(institution),
+      provenance: institution.transfer_cap_provenance,
+    },
+    {
+      label: 'Units earned on campus',
+      text: residencyLine(institution),
+      provenance: institution.residency_provenance,
+    },
+  ];
+  const confirmedClaims = campusClaims.filter(c => isBacked(c.provenance));
+  const uncheckedClaims = campusClaims.filter(c => !isBacked(c.provenance));
+
+  const entries: RouteEntry[] = routes.map(route => ({
+    route,
+    outlook: outlookOf(route, areas, institution.cost_per_unit_usd, baselineCostUsd),
+  }));
+
+  // The headline goes to the biggest saving NET of what the route leaves unmet.
+  // On the raw totals a route that clears fewer areas looks like it saves more,
+  // purely because it is doing less; that is the one comparison on this screen a
+  // student is most likely to make by eye. A route with no items, or one whose gap
+  // we cannot price, is never the headline.
+  let best: RouteEntry | null = null;
+  let bestSaving = Number.NEGATIVE_INFINITY;
+  for (const e of entries) {
+    const s = e.outlook.savingUsd;
+    if (e.route.items.length === 0 || s === null) continue;
+    if (s > bestSaving) {
+      best = e;
+      bestSaving = s;
+    }
   }
 
   // Warnings that bind every route are institution-level facts, not consequences
@@ -402,9 +624,9 @@ export function RoutesScreen(props: RoutesScreenProps) {
       : bySeverity(dedupeWarnings(routes[0].warnings).filter(boundEverywhere));
   const sharedKeys = new Set(shared.map(warningKey));
 
-  const bestWorst = best === null ? null : weakestItem(best);
+  const bestWorst = best === null ? null : weakestItem(best.route);
   const bestTrusted = bestWorst !== null && isBacked(bestWorst.provenance);
-  const heroSaving = best === null ? 0 : Math.max(savingOf(best), 0);
+  const heroSaving = best === null ? 0 : Math.max(bestSaving, 0);
   // The accent is the theme's colour for money we can vouch for. A figure resting
   // on unchecked rows does not get to wear it, however large it is.
   const heroConfident = bestTrusted && heroSaving > 0;
@@ -413,7 +635,7 @@ export function RoutesScreen(props: RoutesScreenProps) {
   if (best === null) {
     caveats.push(`No route in our data buys you anything at ${institution.name} yet.`);
   } else {
-    if (savingOf(best) <= 0) {
+    if (bestSaving <= 0) {
       caveats.push('Nothing here beats paying for these requirements outright.');
     }
     if (bestWorst !== null && !isBacked(bestWorst.provenance)) {
@@ -421,9 +643,14 @@ export function RoutesScreen(props: RoutesScreenProps) {
         `This figure leans on rows marked "${confidenceLabel(bestWorst.provenance.confidence).toLowerCase()}". Treat it as a ceiling, not a promise.`,
       );
     }
-    if (best.areas_unmet.length > 0) {
+    if (best.route.areas_unmet.length > 0) {
+      const gap = best.outlook.gapUsd;
       caveats.push(
-        `It still leaves ${best.areas_unmet.join(', ')} unsolved — ${plural(best.areas_unmet.length, 'area')} you have to clear some other way.`,
+        `It still leaves ${joinAreas(best.route.areas_unmet.map(areaName))} unsolved — ` +
+          `${plural(best.route.areas_unmet.length, 'area')} you have to clear some other way` +
+          (gap === null
+            ? '.'
+            : `. The ${money(gap)} that would cost at ${institution.name}'s own rate is already taken off the figure above.`),
       );
     }
   }
@@ -444,8 +671,26 @@ export function RoutesScreen(props: RoutesScreenProps) {
 
       <View style={styles.instBlock}>
         <Text style={styles.instName}>{institution.name}</Text>
-        <Text style={styles.instMeta}>{policyLine(institution)}</Text>
-        <ProvenanceBadge provenance={institution.provenance} label="Campus policy" />
+        {/* One badge, one claim. This source was read and covers the exam policy —
+            nothing else in the campus record. */}
+        <Text style={styles.instMeta}>{examPolicyLine(institution)}</Text>
+        <ProvenanceBadge provenance={institution.exam_policy_provenance} label="Exam policy" />
+        {/* The transfer cap and the residency minimum are NOT covered by that
+            source. They used to sit in the same sentence, under the same
+            "published policy" badge, which lent them a certainty our data does not
+            have. Each carries its own row now, and any of them nobody has
+            confirmed is set apart below where that badge cannot reach it. */}
+        {confirmedClaims.map(c => (
+          <CampusClaimLine key={c.label} claim={c} />
+        ))}
+        {uncheckedClaims.length > 0 && (
+          <View style={styles.instUnchecked}>
+            <Text style={styles.instUncheckedKicker}>Not confirmed for this campus</Text>
+            {uncheckedClaims.map(c => (
+              <CampusClaimLine key={c.label} claim={c} />
+            ))}
+          </View>
+        )}
       </View>
 
       <View style={[styles.hero, heroConfident ? styles.heroTrusted : styles.heroUnsure]}>
@@ -453,7 +698,7 @@ export function RoutesScreen(props: RoutesScreenProps) {
           {best === null
             ? 'Possible saving'
             : heroSaving > 0
-              ? `Take the ${KIND_LABEL[best.kind].toLowerCase()} route and save`
+              ? `Take the ${KIND_LABEL[best.route.kind].toLowerCase()} route and save`
               : 'Best saving available'}
         </Text>
         <Text
@@ -462,17 +707,25 @@ export function RoutesScreen(props: RoutesScreenProps) {
             heroConfident ? styles.heroNumberTrusted : styles.heroNumberUnsure,
             { fontSize: wide ? 56 : theme.font.display.fontSize },
           ]}
-          accessibilityLabel={`Saving: ${money(heroSaving)}`}
+          accessibilityLabel={
+            best === null
+              ? `Saving: ${money(heroSaving)}`
+              : `Saving: ${money(heroSaving)}, after what that route leaves unmet is priced back in`
+          }
         >
           {money(heroSaving)}
         </Text>
-        {/* Says exactly what the baseline is and nothing more: the Cal-GETC areas
-            still unmet, at this campus's own per-unit rate. Calling it the cost of
-            a degree would be the kind of overclaim this screen exists to refuse. */}
+        {/* Says exactly what the baseline is: the Cal-GETC areas still unmet, at
+            this campus's estimated per-unit rate. Calling it the cost of a degree would be
+            the kind of overclaim this screen exists to refuse — and it names the one
+            thing that makes the three cards comparable, which is that a route's
+            unmet areas are charged back to it at that same rate. */}
         <Text style={styles.heroSub}>
           against {money(baselineCostUsd)} — the Cal-GETC areas you have not cleared yet, priced at
-          the per-unit rate {institution.name} charges. That is the comparison, not the cost of a
-          whole degree.
+          an estimated per-unit rate for {institution.name} — neither UC nor CSU actually charges
+          per unit, so this is derived from published annual figures. Whatever a route leaves unmet is priced back
+          in at that same rate, so a plan that clears fewer areas cannot look cheaper than it is.
+          That is the comparison, not the cost of a whole degree.
         </Text>
         {caveats.map(c => (
           <Text key={c} style={styles.heroCaveat}>
@@ -484,24 +737,35 @@ export function RoutesScreen(props: RoutesScreenProps) {
       {shared.length > 0 && (
         <View style={styles.alert} accessibilityRole="alert">
           <Text style={styles.alertKicker}>Read before you spend anything</Text>
-          {shared.map(w => (
-            <View key={warningKey(w)} style={styles.alertItem}>
-              <Text style={[styles.alertTitle, isSevere(w) && styles.alertTitleSevere]}>
-                {WARNING_TITLE[w.kind]}
-              </Text>
-              {/* Verbatim: the engine writes these for a student, and a warning the
-                  UI paraphrases is a warning the UI can get wrong. */}
-              <Text style={[styles.alertText, isSevere(w) && styles.alertTextSevere]}>
-                {w.message}
-              </Text>
-              {/* Every warning shows the row it rests on, note included. Comparing
-                  source_url to the campus header's and hiding the note on a match
-                  silently stripped the "NOT yet confirmed" caveat off the residency
-                  and transfer-cap warnings, leaving them looking like settled
-                  published policy. Repetition is the cheaper mistake. */}
-              <WarningBacking warning={w} />
-            </View>
-          ))}
+          {shared.map(w => {
+            const tone = toneOf(w);
+            return (
+              <View
+                key={warningKey(w)}
+                style={[styles.alertItem, tone === 'elevated' && styles.alertItemElevated]}
+              >
+                <Text style={[styles.alertTitle, tone === 'severe' && styles.alertTitleSevere]}>
+                  {WARNING_TITLE[w.kind]}
+                </Text>
+                {/* Verbatim: the engine writes these for a student, and a warning the
+                    UI paraphrases is a warning the UI can get wrong. */}
+                <Text
+                  style={[
+                    styles.alertText,
+                    tone === 'severe' && styles.alertTextSevere,
+                  ]}
+                >
+                  {w.message}
+                </Text>
+                {/* Every warning shows the row it rests on, note included, and that
+                    row is the one the engine attached to this claim. Reaching for
+                    the campus record instead once badged a residency warning
+                    "published policy" on the strength of a source that only covered
+                    exam policy. */}
+                <WarningBacking warning={w} />
+              </View>
+            );
+          })}
           <Text style={styles.alertFooter}>
             {shared.length === 1 ? 'This applies' : 'These apply'} to every route below.
           </Text>
@@ -514,18 +778,19 @@ export function RoutesScreen(props: RoutesScreenProps) {
         </Text>
       )}
 
-      {routes.map((route, i) => (
+      {entries.map((entry, i) => (
         <RouteCard
-          key={`${route.kind}-${i}`}
-          route={route}
-          savingUsd={savingOf(route)}
+          key={`${entry.route.kind}-${i}`}
+          route={entry.route}
+          outlook={entry.outlook}
           institutionName={institution.name}
+          areaName={areaName}
           extraWarnings={bySeverity(
-            dedupeWarnings(route.warnings).filter(w => !sharedKeys.has(warningKey(w))),
+            dedupeWarnings(entry.route.warnings).filter(w => !sharedKeys.has(warningKey(w))),
           )}
           sharedWarningCount={shared.length}
-          headline={route === best && savingOf(route) > 0}
-          onPress={() => onSelectRoute(route)}
+          headline={entry === best && bestSaving > 0}
+          onPress={() => onSelectRoute(entry.route)}
         />
       ))}
 
@@ -555,6 +820,24 @@ const styles = StyleSheet.create({
   instBlock: { gap: theme.space.xs },
   instName: { ...theme.font.title, color: theme.color.text },
   instMeta: { ...theme.font.small, color: theme.color.textMuted, lineHeight: 19 },
+  // Dashed and set in, so an unconfirmed figure cannot be read as part of the
+  // published line above it. Which figures land here comes from their own rows.
+  instUnchecked: {
+    borderLeftWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: theme.color.unverified,
+    paddingLeft: theme.space.sm,
+    marginTop: theme.space.xs,
+    gap: theme.space.xs,
+  },
+  instUncheckedKicker: {
+    ...theme.font.small,
+    color: theme.color.unverified,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    fontWeight: '700',
+  },
+  instClaim: { gap: theme.space.xs },
 
   hero: {
     borderRadius: theme.radius.lg,
@@ -603,6 +886,20 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   alertItem: { gap: theme.space.xs },
+  // Credit the campus accepts that clears nothing: filled AND ruled, so it reads
+  // as its own claim rather than as a footnote to the one above it. Filled in
+  // `surface`, which is darker than the banner it sits in — the card's elevated tier
+  // fills the other way round for the same reason, because the fill has to be
+  // visible against whatever it lands on. Typography alone could not carry this
+  // tier here: `alertText` is already weight 600, so a "bolder" message would
+  // have rendered identically to a plain one.
+  alertItemElevated: {
+    backgroundColor: theme.color.surface,
+    borderRadius: theme.radius.sm,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.color.warn,
+    padding: theme.space.sm,
+  },
   alertTitle: {
     ...theme.font.small,
     color: theme.color.warn,
@@ -668,7 +965,21 @@ const styles = StyleSheet.create({
   cardSavingTrusted: { color: theme.color.accent },
   // Money we cannot vouch for is not printed in the colour that means "money".
   cardSavingUnsure: { color: theme.color.textMuted },
+  // Full-strength ink, not muted: how much of the job a route does is not a
+  // footnote to the price, it is half of what the price means.
+  cardCoverage: { ...theme.font.small, color: theme.color.text, lineHeight: 19 },
   cardSavingCaveat: { ...theme.font.small, color: theme.color.needsCheck, lineHeight: 18 },
+  // The one number that is safe to read across cards, so it is set apart from the
+  // plan cost rather than beside it.
+  cardAllIn: {
+    ...theme.font.small,
+    color: theme.color.text,
+    fontWeight: '600',
+    lineHeight: 19,
+    borderTopWidth: 1,
+    borderTopColor: theme.color.border,
+    paddingTop: theme.space.xs,
+  },
 
   statRow: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.md },
   stat: { minWidth: 96, flexShrink: 1 },
@@ -695,6 +1006,16 @@ const styles = StyleSheet.create({
   // A card carrying stranded credit reads as loudly as the banner above it: same
   // colour, thicker rule. This is the claim the whole product exists to make.
   cardWarnSevere: { borderLeftWidth: 6, borderLeftColor: theme.color.danger },
+  // Credit the campus does award, clearing no Cal-GETC requirement: filled and
+  // thick-ruled, because this is the warning a student would never think to look
+  // for. Not the red of money already lost, and not the default either.
+  cardWarnElevated: {
+    borderLeftWidth: 6,
+    backgroundColor: theme.color.surfaceAlt,
+    borderRadius: theme.radius.sm,
+    paddingVertical: theme.space.sm,
+    paddingRight: theme.space.sm,
+  },
   cardWarnCount: {
     ...theme.font.small,
     color: theme.color.warn,
@@ -706,6 +1027,7 @@ const styles = StyleSheet.create({
   cardWarnTitle: { ...theme.font.small, color: theme.color.warn, fontWeight: '600' },
   cardWarnTitleSevere: { color: theme.color.danger },
   cardWarnText: { ...theme.font.small, color: theme.color.text, lineHeight: 19 },
+  cardWarnTextElevated: { fontWeight: '600' },
   cardWarnMore: { ...theme.font.small, color: theme.color.textMuted },
   cardWarnNone: { ...theme.font.small, color: theme.color.textMuted },
 

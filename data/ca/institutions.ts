@@ -43,16 +43,16 @@ const CSU_EXAM_POLICY: Provenance = {
  * resting on them cannot borrow the exam policy's credibility.
  */
 const UC_RESIDENCY: Provenance = {
-  source_url:
-    'https://admission.universityofcalifornia.edu/admission-requirements/transfer-requirements/',
+  // Deliberately blank: the exam-policy page does not cover residency, and
+  // linking it would send a student to a page that cannot answer their question.
+  source_url: '',
   as_of: '',
   confidence: 'needs_check',
   note: 'Minimum units earned on campus. Unconfirmed — ask the campus registrar.',
 };
 
 const UC_TRANSFER_CAP: Provenance = {
-  source_url:
-    'https://admission.universityofcalifornia.edu/admission-requirements/transfer-requirements/',
+  source_url: '',
   as_of: '',
   confidence: 'needs_check',
   note:
@@ -61,17 +61,43 @@ const UC_TRANSFER_CAP: Provenance = {
 };
 
 const CSU_RESIDENCY: Provenance = {
-  source_url: 'https://www.calstate.edu/apply/transfer/Pages/credit-by-exam.aspx',
+  source_url: '',
   as_of: '',
   confidence: 'needs_check',
   note: 'Minimum units earned on campus. Unconfirmed — ask the campus registrar.',
 };
 
 const CSU_TRANSFER_CAP: Provenance = {
-  source_url: 'https://www.calstate.edu/apply/transfer/Pages/credit-by-exam.aspx',
+  source_url: '',
   as_of: '',
   confidence: 'needs_check',
   note: 'Transfer-unit cap unconfirmed against a CSU source.',
+};
+
+
+/**
+ * The per-unit figure is derived, not published. Both systems charge tiered flat
+ * rates, so this is an estimate that is closest to true for a student adding a
+ * term's worth of GE and overstates the saving for someone already full-time.
+ */
+const UC_COST: Provenance = {
+  source_url: 'https://lao.ca.gov/Publications/Report/2026-27-budget-university-of-california',
+  as_of: '2026-09-18',
+  confidence: 'needs_check',
+  note:
+    'Derived from $15,588 systemwide tuition and fees plus ~$1,650 campus-based fees, ' +
+    'divided by 30 units. UC charges a tiered flat rate, not per unit, so treat this as ' +
+    'an estimate rather than a price.',
+};
+
+const CSU_COST: Provenance = {
+  source_url: 'https://lao.ca.gov/Publications/Report/2026-27-budget-california-state-university',
+  as_of: '2026-09-18',
+  confidence: 'needs_check',
+  note:
+    'Derived from $6,838 systemwide tuition plus ~$2,194 average campus fees, divided by ' +
+    '30 units. CSU charges a tiered flat rate, not per unit, so treat this as an estimate ' +
+    'rather than a price.',
 };
 
 const uc = (id: string, name: string, tagNote: string): Institution => ({
@@ -79,6 +105,7 @@ const uc = (id: string, name: string, tagNote: string): Institution => ({
   name,
   system: 'UC',
   cost_per_unit_usd: UC_PER_UNIT,
+  cost_provenance: UC_COST,
   residency_min_units: 24,
   max_transfer_units: 70,
   accepts_clep: false,
@@ -92,6 +119,7 @@ const csu = (id: string, name: string): Institution => ({
   name,
   system: 'CSU',
   cost_per_unit_usd: CSU_PER_UNIT,
+  cost_provenance: CSU_COST,
   residency_min_units: 30,
   max_transfer_units: 70,
   accepts_clep: true,

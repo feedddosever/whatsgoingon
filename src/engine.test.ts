@@ -117,6 +117,7 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
     institutions: [{
       id: 'x', name: 'X', system: 'CSU' as const, residency_min_units: 0,
       cost_per_unit_usd: 400, max_transfer_units: null, accepts_clep: true,
+      cost_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
       exam_policy_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
       residency_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
       transfer_cap_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
@@ -315,4 +316,52 @@ test('AP held against a CSU raises no credit warning at all', () => {
     false,
     'AP clears a Cal-GETC area, so there is nothing to warn about',
   );
+});
+
+test('the app never invents a policy it has no record of', () => {
+  // ccc-comm-1 (Cal-GETC area 1C) has rules only at the CSU campuses, because 1C
+  // is a CSU-only requirement. Holding it against a UC target must NOT produce
+  // "UC Berkeley counts CCC Communication Studies 1 toward your degree" — nothing
+  // in the dataset says that, and asserting it is exactly the certainty this
+  // product must never imply.
+  const route = planRoute(ds, {
+    target_institution_id: 'uc-berkeley',
+    held_credit_ids: ['ccc-comm-1'],
+    units_in_residence: 30,
+  }, 'cheapest');
+
+  assert.equal(
+    route.warnings.some(w => w.kind === 'credit_not_toward_ge'), false,
+    'no rule exists for this pair, so no claim may be made about what it counts for',
+  );
+
+  const unknown = route.warnings.find(w => w.kind === 'unverified_data');
+  assert.ok(unknown, 'the student should be told we have no record');
+  assert.match(unknown.message, /no record of how/);
+});
+
+test('credit_not_toward_ge cites the rule that backs it, not the campus row', () => {
+  const route = planRoute(ds, {
+    target_institution_id: 'csu-long-beach',
+    held_credit_ids: ['clep-college-composition'],
+    units_in_residence: 30,
+  }, 'cheapest');
+
+  const w = route.warnings.find(x => x.kind === 'credit_not_toward_ge');
+  const rule = ds.rules.find(
+    r => r.institution_id === 'csu-long-beach' && r.credit_source_id === 'clep-college-composition',
+  );
+  assert.equal(w?.provenance, rule?.provenance);
+});
+
+test('an unconfirmed row never carries a source link that cannot answer it', () => {
+  // A residency badge linking to the exam-policy page sends a student to a page
+  // that does not mention residency. Blank is honest; a wrong link is not.
+  for (const inst of ds.institutions) {
+    for (const p of [inst.residency_provenance, inst.transfer_cap_provenance]) {
+      if (p.confidence === 'needs_check' || p.confidence === 'unverified') {
+        assert.equal(p.source_url, '', `${inst.name} links an unconfirmed claim to a source`);
+      }
+    }
+  }
 });

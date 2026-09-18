@@ -64,8 +64,14 @@ cites the row that actually backs it, so a residency figure can no longer wear t
 policy's confirmed badge. A test pins this.
 
 **Still open here:** `residency_min_units` (UC 24 / CSU 30) and `max_transfer_units` (70)
-remain unconfirmed. They are now honestly labelled rather than silently overclaimed, but
-they still need a source.
+remain unconfirmed. They are now honestly labelled rather than silently overclaimed, and
+their `source_url` is deliberately blank — the exam-policy page does not cover residency,
+and linking it would send a student to a page that cannot answer their question. A test
+asserts no unconfirmed row carries a source link.
+
+**D. `cost_per_unit_usd` now carries its own `cost_provenance` (`needs_check`).**
+It drives the headline saving, and it is derived rather than published — see 8a. Screen
+copy now says "estimated per-unit rate" rather than "the rate this campus charges".
 
 **C. Missing pathways the brief documents and the engine cannot express:**
 - **ADT (Associate Degree for Transfer)** — guarantees CSU admission with junior standing.

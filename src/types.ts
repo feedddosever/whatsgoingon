@@ -23,8 +23,13 @@ export interface Institution {
    * What this institution charges per unit. Used to price the do-nothing path:
    * what the student pays if they clear every requirement here instead of
    * transferring credit in.
+   *
+   * This is a DERIVED estimate — neither UC nor CSU charges per unit — so it
+   * carries provenance like any other claim. It now drives the headline saving,
+   * which makes it the most scrutinised number in the app.
    */
   cost_per_unit_usd: number;
+  cost_provenance: Provenance;
   /** Minimum units that must be earned AT this institution to graduate. */
   residency_min_units: number;
   /** Cap on units transferable in from community college, if any. */

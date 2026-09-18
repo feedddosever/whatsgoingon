@@ -28,17 +28,59 @@ const ROUTE_LABEL: Record<RouteKind, string> = {
  * consequential claim. It now comes off `kind`, and the row the warning rests on
  * travels with the warning instead of being guessed at from the same prose.
  *
- * Stranded credit outranks every other kind — it is money the student has
- * already spent — so it alone is drawn in danger red rather than warning amber.
+ * Three tiers, because two could not hold the middle case:
+ *
+ *   severe    'stranded_credit' — money the student has already spent, gone.
+ *             It alone is drawn in danger red.
+ *   elevated  'credit_not_toward_ge' — the campus DOES award this credit, so
+ *             nothing on the screen looks wrong, and yet it clears no Cal-GETC
+ *             requirement: the student has satisfied nothing and has no way to
+ *             tell. Nobody is out of pocket, so it is not red; it is the amber
+ *             of the constraint kinds carrying visible extra weight, so it
+ *             cannot be skimmed past as one more piece of small print.
+ *   plain     the constraint and data-gap kinds. Amber, and loud enough.
+ *
+ * Every kind is spelled out rather than defaulted, so a kind added to the engine
+ * has to be placed here deliberately instead of inheriting the quietest
+ * treatment by falling through.
  */
-const isSevere = (w: RouteWarning): boolean => w.kind === 'stranded_credit';
+type WarningTier = 'severe' | 'elevated' | 'plain';
+
+const WARNING_TIER: Record<WarningKind, WarningTier> = {
+  stranded_credit: 'severe',
+  credit_not_toward_ge: 'elevated',
+  transfer_cap: 'plain',
+  residency: 'plain',
+  unverified_data: 'plain',
+};
+
+const tierOf = (w: RouteWarning): WarningTier => WARNING_TIER[w.kind];
+
+const TIER_RANK: Record<WarningTier, number> = { severe: 0, elevated: 1, plain: 2 };
+
+/**
+ * Most severe first — the cards have to agree with the tiers they are drawn in.
+ *
+ * The engine emits held-credit warnings in the order the student listed the
+ * credit, which used to be harmless: stranded credit was the only loud kind, so
+ * it always came out on top by itself. With a second held-credit kind below it,
+ * a student holding a course this campus clears nothing with AND a CLEP it will
+ * not honour reads the amber card before the red one, under a red strip telling
+ * them the red one is the problem. Ordering here is the same judgement the
+ * routes screen and the advisor packet already make.
+ *
+ * Copied before sorting — `warnings` belongs to the route, not to this render —
+ * and the sort is stable, so warnings of one tier keep the engine's order.
+ */
+const bySeverity = (ws: RouteWarning[]): RouteWarning[] =>
+  [...ws].sort((a, b) => TIER_RANK[tierOf(a)] - TIER_RANK[tierOf(b)]);
 
 /** Names the shape of the problem before the sentence spells it out. */
 const WARNING_KICKER: Record<WarningKind, string> = {
   stranded_credit: '✗  CREDIT YOU ALREADY HOLD',
+  credit_not_toward_ge: '⚠  CREDIT YOU HOLD · CLEARS NO REQUIREMENT',
   transfer_cap: '⚠  BEFORE YOU PAY · TRANSFER CAP',
   residency: '⚠  BEFORE YOU PAY · RESIDENCY',
-  unmet_areas: '⚠  A GAP IN OUR DATA',
   unverified_data: '⚠  NOT CONFIRMED YET',
 };
 
@@ -96,6 +138,32 @@ function SourceBadge({ p }: { p: Provenance }): ReactElement {
 }
 
 /**
+ * One line of the campus footer, carrying the badge for the one claim it makes.
+ *
+ * A campus row is three separately-confirmed claims, not one: the exam policy is
+ * published and checked, while the residency minimum and the transfer cap are
+ * not. Printing all three as a single sentence under a single badge put a
+ * "Published policy" stamp beneath two figures nobody has confirmed — the one
+ * thing this product must never do. One claim, one line, one badge; and where
+ * the claim is unconfirmed the figure itself is drawn in its own confidence
+ * colour, so the line reads as unconfirmed before the badge is even read.
+ */
+function InstFact({ text, p }: { text: string; p: Provenance }): ReactElement {
+  const backed = isBacked(p);
+  return (
+    <View style={styles.instFact}>
+      <Text
+        style={[styles.instText, !backed && { color: confidenceColor(p.confidence) }]}
+        numberOfLines={3}
+      >
+        {text}
+      </Text>
+      <SourceBadge p={p} />
+    </View>
+  );
+}
+
+/**
  * Load-bearing, not fine print — so it gets a card, not a footnote.
  *
  * The loudest sentence in the app is still a claim, and a claim with no source
@@ -108,23 +176,30 @@ function SourceBadge({ p }: { p: Provenance }): ReactElement {
 function WarningCard(
   { warning, instName }: { warning: RouteWarning; instName: string },
 ): ReactElement {
-  const severe = isSevere(warning);
+  const tier = tierOf(warning);
+  const severe = tier === 'severe';
   const backing = warning.provenance ?? null;
   const shaky = backing !== null && !isBacked(backing);
   // Nothing to cite is its own kind of unconfirmed, and looks like one.
   const unsure = backing === null || shaky;
   // The note is where a row says what could bite the student, and it is not
-  // interchangeable between warnings: the institution row's note is the CAVEAT
-  // naming the residency minimum and the transfer cap as the parts of that row
-  // nobody has confirmed. Spending it on the loudest card alone would strip it
-  // from the two warnings it actually qualifies, leaving them looking like
-  // settled published policy. Every card that rests on a row shows that row.
+  // interchangeable between warnings: each kind now arrives carrying the
+  // provenance of the single claim it rests on — the campus exam policy, the
+  // residency minimum, the transfer cap — and each of those rows says something
+  // different about what nobody has checked. So every card that rests on a row
+  // shows that row's own note, never a neighbour's, and the residency and
+  // transfer-cap cards come out dashed and amber beside the solid, published
+  // stranded-credit card, which is exactly how certain each one is.
   const note = backing !== null ? noteText(backing) : null;
   return (
     <View
       style={[
         styles.warning,
-        severe ? styles.warningSevere : styles.warningPlain,
+        tier === 'severe'
+          ? styles.warningSevere
+          : tier === 'elevated'
+            ? styles.warningElevated
+            : styles.warningPlain,
         unsure && styles.warningShaky,
       ]}
       accessibilityRole="alert"
@@ -209,8 +284,13 @@ export function RouteDetailScreen(
     return name === '' ? null : name;
   };
 
-  const severeCount = route.warnings.filter(isSevere).length;
+  const severeCount = route.warnings.filter(w => tierOf(w) === 'severe').length;
+  // Credit the campus does award, that clears nothing. Nothing about it looks
+  // wrong, so when no louder warning is there to carry the strip, it says so
+  // itself rather than hiding inside a count of "constraints".
+  const elevatedCount = route.warnings.filter(w => tierOf(w) === 'elevated').length;
   const hasWarnings = route.warnings.length > 0;
+  const orderedWarnings = bySeverity(route.warnings);
   const shakyItems = route.items.filter(i => !isBacked(i.provenance)).length;
   const priced = route.items.length > 0;
   // The biggest number on the screen is only as good as the weakest row under
@@ -218,6 +298,9 @@ export function RouteDetailScreen(
   // the count of unconfirmed rows when it is not — a green promise we cannot
   // keep is worse than no number at all.
   const heroBacked = priced && shakyItems === 0;
+
+  const unmetCount = route.areas_unmet.length;
+  const unmetOne = unmetCount === 1;
 
   const capLine =
     institution.max_transfer_units === null
@@ -251,7 +334,14 @@ export function RouteDetailScreen(
       {hasWarnings && (
         <View style={styles.stripWrap}>
           <View
-            style={[styles.strip, severeCount > 0 ? styles.stripSevere : styles.stripPlain]}
+            style={[
+              styles.strip,
+              severeCount > 0
+                ? styles.stripSevere
+                : elevatedCount > 0
+                  ? styles.stripElevated
+                  : styles.stripPlain,
+            ]}
             accessibilityRole="alert"
           >
             {/* Three lines, because a campus with a long name must not push the
@@ -262,7 +352,9 @@ export function RouteDetailScreen(
             >
               {severeCount > 0
                 ? `✗  ${severeCount === 1 ? 'Credit you hold is' : `${severeCount} credits you hold are`} worthless at ${institution.name} — read below`
-                : `⚠  ${route.warnings.length} ${route.warnings.length === 1 ? 'constraint binds' : 'constraints bind'} this route — read below`}
+                : elevatedCount > 0
+                  ? `⚠  ${elevatedCount === 1 ? 'Credit you hold clears' : `${elevatedCount} credits you hold clear`} no Cal-GETC requirement at ${institution.name} — read below`
+                  : `⚠  ${route.warnings.length} ${route.warnings.length === 1 ? 'constraint binds' : 'constraints bind'} this route — read below`}
             </Text>
           </View>
         </View>
@@ -307,14 +399,29 @@ export function RouteDetailScreen(
         )}
 
         {/* Warnings come before the plan. They are the reason the plan looks the
-            way it does, and the single most valuable thing the app says. */}
-        {route.warnings.map((w, i) => (
+            way it does, and the single most valuable thing the app says — and
+            the loudest of them comes first, whatever order they arrived in. */}
+        {orderedWarnings.map((w, i) => (
           <WarningCard key={`${w.kind}-${i}`} warning={w} instName={institution.name} />
         ))}
 
-        {route.areas_unmet.length > 0 && (
+        {/* The only place unmet requirements are reported. The engine used to
+            emit a warning saying the same thing, which made the student read one
+            sentence twice on a single screen; now this block stands on its own,
+            so it states the consequence itself instead of reading like a
+            footnote to a card that is no longer above it. */}
+        {unmetCount > 0 && (
           <View style={styles.unmet}>
-            <Text style={styles.unmetKicker}>STILL UNMET</Text>
+            <Text style={styles.unmetKicker}>
+              STILL UNMET · {unmetCount} {unmetOne ? 'AREA' : 'AREAS'}
+            </Text>
+            <Text style={styles.unmetLead}>
+              {unmetOne
+                ? 'One Cal-GETC requirement is'
+                : `${unmetCount} Cal-GETC requirements are`}{' '}
+              still open after this route. You have to clear {unmetOne ? 'it' : 'them'} at{' '}
+              {institution.name} some other way, and the total above does not price that.
+            </Text>
             <View style={styles.unmetRow}>
               {route.areas_unmet.map(area => (
                 <View key={area} style={styles.unmetChip}>
@@ -323,7 +430,7 @@ export function RouteDetailScreen(
               ))}
             </View>
             <Text style={styles.unmetText}>
-              Nothing in our data clears {route.areas_unmet.length === 1 ? 'this area' : 'these areas'} at{' '}
+              Nothing in our data clears {unmetOne ? 'this area' : 'these areas'} at{' '}
               {institution.name}. That is a gap in our dataset, not proof that no option exists —
               ask your advisor.
             </Text>
@@ -363,13 +470,20 @@ export function RouteDetailScreen(
           </Text>
         )}
 
+        {/* Three claims, three sources, three badges. The campus identity line
+            carries the exam policy — the only one of the three anybody has
+            confirmed — and the two figures nobody has confirmed sit on their own
+            lines under their own 'needs confirming' badges, instead of being
+            covered by a "Published policy" stamp that was never about them. */}
         <View style={styles.instRow}>
-          <Text style={styles.instText} numberOfLines={4}>
-            {institution.name} · {institution.system} ·{' '}
-            {institution.accepts_clep ? 'accepts CLEP' : 'awards no CLEP credit'} · {capLine} ·{' '}
-            {residencyLine}
-          </Text>
-          <SourceBadge p={institution.provenance} />
+          <InstFact
+            text={`${institution.name} · ${institution.system} · ${
+              institution.accepts_clep ? 'accepts CLEP' : 'awards no CLEP credit'
+            }`}
+            p={institution.exam_policy_provenance}
+          />
+          <InstFact text={capLine} p={institution.transfer_cap_provenance} />
+          <InstFact text={residencyLine} p={institution.residency_provenance} />
         </View>
       </ScrollView>
 
@@ -448,6 +562,13 @@ const styles = StyleSheet.create({
     paddingVertical: theme.space.sm,
   },
   stripSevere: { borderColor: theme.color.danger, backgroundColor: theme.color.surface },
+  // Amber like the plain strip, weighted like the severe one: this is the tier
+  // where nothing looks wrong to the student unless the screen says so.
+  stripElevated: {
+    borderColor: theme.color.warn,
+    borderLeftWidth: 8,
+    backgroundColor: theme.color.surfaceAlt,
+  },
   stripPlain: { borderColor: theme.color.warn, backgroundColor: theme.color.surface },
   stripText: { ...theme.font.small, fontWeight: '700', letterSpacing: 0.5 },
   severeInk: { color: theme.color.danger },
@@ -481,6 +602,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.color.surface,
   },
   warningSevere: { borderColor: theme.color.danger },
+  // Between the two: no money is gone, so it is not red, but credit that counts
+  // and clears nothing is invisible to the student unless this card is heavier
+  // than the constraints around it.
+  warningElevated: {
+    borderColor: theme.color.warn,
+    borderLeftWidth: 8,
+    backgroundColor: theme.color.surfaceAlt,
+  },
   warningPlain: { borderColor: theme.color.warn },
   // Still loud, but dashed while the policy row behind it is unconfirmed.
   warningShaky: { borderStyle: 'dashed' },
@@ -497,6 +626,9 @@ const styles = StyleSheet.create({
     gap: theme.space.sm,
   },
   unmetKicker: { ...theme.font.small, color: theme.color.warn, fontWeight: '700', letterSpacing: 1 },
+  // This block is the whole report on unmet requirements now, so its first
+  // sentence carries full ink rather than the muted grey of a footnote.
+  unmetLead: { ...theme.font.body, color: theme.color.text, lineHeight: 22 },
   unmetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm },
   unmetChip: {
     borderWidth: 1,
@@ -594,6 +726,7 @@ const styles = StyleSheet.create({
     borderTopColor: theme.color.border,
     gap: theme.space.sm,
   },
+  instFact: { gap: theme.space.xs },
   instText: { ...theme.font.small, color: theme.color.textMuted, lineHeight: 19 },
 
   footer: {

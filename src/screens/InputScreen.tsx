@@ -7,6 +7,11 @@
  * exam's price, a residency minimum) is quoted from the dataset and carries its
  * own provenance badge, because a student who acts on a wrong transfer-credit
  * claim loses real money and a real semester.
+ *
+ * A campus's claims do not share a source. Its exam policy is published and
+ * checked; its residency minimum is not. So each sentence here carries the row
+ * that backs that sentence and no other, and no figure borrows a neighbour's
+ * credibility.
  */
 import { useRef, useState } from 'react';
 import type { ReactElement } from 'react';
@@ -48,6 +53,44 @@ const CREDIT_GROUPS: ReadonlyArray<{ kind: CreditKind; title: string; blurb: str
 const openSource = (url: string): void => {
   void Linking.openURL(url).catch(() => undefined);
 };
+
+/**
+ * The residency sentence, written to match how far the figure behind it is
+ * actually backed.
+ *
+ * The minimum and the campus's exam policy are separate claims from separate
+ * sources, and the minimum is the unconfirmed one. Stating it flat and hanging a
+ * "needs confirming" badge underneath reads as a footnote on a fact, so when
+ * nobody has checked the number the sentence itself says so.
+ */
+function residencySentence(inst: Institution, unitsInResidence: number): string {
+  // A zero minimum is missing data, not a school with no residency rule.
+  if (inst.residency_min_units <= 0) {
+    return (
+      `We have no residency minimum on file for ${inst.name}. Assume there is one and confirm ` +
+      `it before you plan around transferred credit.`
+    );
+  }
+
+  const shortBy = Math.max(0, inst.residency_min_units - unitsInResidence);
+
+  if (!isBacked(inst.residency_provenance)) {
+    return (
+      `We have ${inst.residency_min_units} units on file as the minimum ${inst.name} makes you ` +
+      `earn on campus, and nobody has confirmed that against the campus itself. ` +
+      (shortBy > 0
+        ? `If it holds you are ${shortBy} short, and transferring in more credit does not reduce it.`
+        : 'If it holds, you have met it.')
+    );
+  }
+
+  return (
+    `${inst.name} requires ${inst.residency_min_units} units earned on campus to graduate.` +
+    (shortBy > 0
+      ? ` You are ${shortBy} short — transferring in more credit does not reduce this.`
+      : ' You have met that minimum.')
+  );
+}
 
 /**
  * Provenance, never decoration: the badge states how far we trust the claim it
@@ -122,7 +165,9 @@ function InstitutionCard(
         <Text style={[styles.instFact, !inst.accepts_clep && styles.instFactCold]}>
           {inst.accepts_clep ? 'Accepts CLEP' : 'No CLEP credit'}
         </Text>
-        <SourceBadge p={inst.provenance} compact />
+        {/* The fact beside it is this campus's exam policy, so the badge is the
+            exam-policy row — not the campus's other, unconfirmed figures. */}
+        <SourceBadge p={inst.exam_policy_provenance} compact />
       </View>
     </Pressable>
   );
@@ -159,6 +204,56 @@ function CreditRow(
         )}
       </View>
     </Pressable>
+  );
+}
+
+/**
+ * The quiet failure, and the reason it gets a block of its own.
+ *
+ * This campus DOES award credit for the CLEP the student holds — it counts toward
+ * the degree — and it still clears no Cal-GETC requirement. Nothing looks wrong:
+ * the exams are accepted, the rows above read normally, and the student has
+ * satisfied nothing. Stranded credit is money already spent, so this sits a step
+ * below it: amber rather than danger red, no headline figure, no bar that follows
+ * the student down the page. Deliberately styled, though — never left to fall
+ * through to the plain body treatment, because a warning nobody would think to go
+ * looking for cannot be drawn as an aside.
+ *
+ * The wording is the engine's own `credit_not_toward_ge` sentence, split in two so
+ * the exams can be named. The claim rests on the campus's published exam policy
+ * and carries that row's badge, nothing else.
+ */
+function NotTowardGeNotice(
+  { inst, exams }: { inst: Institution; exams: CreditSource[] },
+): ReactElement {
+  const shaky = !isBacked(inst.exam_policy_provenance);
+  const note = noteText(inst.exam_policy_provenance);
+  const one = exams.length === 1;
+
+  return (
+    <View style={[styles.noGe, shaky && styles.noGeShaky]} accessibilityRole="alert">
+      <Text style={styles.noGeKicker}>⚠  CREDIT YOU HOLD · CLEARS NO REQUIREMENT</Text>
+      <Text style={styles.noGeHead}>
+        {inst.name} counts {one ? 'this exam' : `these ${exams.length} exams`} toward your degree,
+        but {one ? 'it does' : 'they do'} not clear any Cal-GETC requirement.
+      </Text>
+      {exams.map(s => (
+        <Text key={s.id} style={styles.noGeItem} numberOfLines={3}>
+          ·  {s.name} — no Cal-GETC area
+        </Text>
+      ))}
+      <Text style={styles.noGeBody}>
+        You still have to satisfy {one ? 'that requirement' : 'those requirements'} another way.
+      </Text>
+      {note !== null && <Text style={styles.noGeNote}>{note}</Text>}
+      {shaky && (
+        <Text style={styles.noGeNote}>
+          We have not confirmed this against {inst.name}&apos;s own page. Check it with the campus
+          before you plan around {one ? 'this exam' : 'these exams'}.
+        </Text>
+      )}
+      <SourceBadge p={inst.exam_policy_provenance} />
+    </View>
   );
 }
 
@@ -213,9 +308,26 @@ export function InputScreen(
       ? creditSources.filter(s => s.kind === 'clep' && value.held_credit_ids.includes(s.id))
       : [];
   const strandedUsd = stranded.reduce((n, s) => n + s.cost_usd, 0);
-  const strandedClaimShaky = target !== undefined && !isBacked(target.provenance);
-  // What could bite the student, if the campus row carries such a note.
-  const targetNote = target === undefined ? null : noteText(target.provenance);
+
+  // The other half of the same policy, and the half nothing on screen betrays:
+  // this campus DOES award credit for the CLEP the student holds, and that credit
+  // still clears no Cal-GETC requirement — the engine's `credit_not_toward_ge`.
+  // Exactly one of these two lists can be non-empty: stranded needs `accepts_clep`
+  // false, this needs it true.
+  const notTowardGe: CreditSource[] =
+    target !== undefined && target.accepts_clep
+      ? creditSources.filter(s => s.kind === 'clep' && value.held_credit_ids.includes(s.id))
+      : [];
+
+  // Both CLEP claims rest on the campus's exam policy and on nothing else. The
+  // residency minimum and the transfer cap are separate rows at their own
+  // confidence, and may not borrow this badge.
+  const strandedClaimShaky =
+    target !== undefined && !isBacked(target.exam_policy_provenance);
+  // What could bite the student, if the exam-policy row carries such a note.
+  const examPolicyNote =
+    target === undefined ? null : noteText(target.exam_policy_provenance);
+
   // With a waived or unknown fee the dollar total is $0 — shouting "$0" would read
   // as "nothing lost". Count the exams instead; the units are the loss either way.
   const strandedHeadline =
@@ -226,8 +338,26 @@ export function InputScreen(
         : `${stranded.length} exams`;
   const strandedNoun = stranded.length === 1 ? 'this exam' : `these ${stranded.length} exams`;
 
-  const shortBy =
-    target === undefined ? 0 : Math.max(0, target.residency_min_units - value.units_in_residence);
+  // The residency figure is a claim of its own, and an unconfirmed one: the block
+  // that states it has to look unconfirmed rather than leaning on a badge to
+  // qualify a flat sentence.
+  //
+  // Two ways that figure can fail to be solid, and a confirmed source only
+  // settles the first: the row may be unconfirmed, or we may hold no figure at
+  // all. A published residency source does not turn a missing minimum into a
+  // fact, so a zero reads as unconfirmed here whatever the row behind it says.
+  const residencyMissing = target !== undefined && target.residency_min_units <= 0;
+  const residencyShaky =
+    target !== undefined && (residencyMissing || !isBacked(target.residency_provenance));
+  // Confidence colour carries meaning, so it is picked from what we actually
+  // have: with no figure on file the block is precisely "needs confirming",
+  // whatever confidence the row claims.
+  const residencyRuleColor =
+    target === undefined
+      ? theme.color.border
+      : residencyMissing
+        ? theme.color.needsCheck
+        : confidenceColor(target.residency_provenance.confidence);
 
   const groups = CREDIT_GROUPS
     .map(g => ({ kind: g.kind, title: g.title, blurb: g.blurb, rows: creditSources.filter(s => s.kind === g.kind) }))
@@ -286,6 +416,12 @@ export function InputScreen(
         style={styles.scroll}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
+        // The optional name field is the last interactive element on the page, so
+        // the soft keyboard opens straight over it. iOS insets the scroll view for
+        // the keyboard only when asked; on Android the window resizes and the
+        // scroll view shrinks with it. Dragging dismisses the keyboard either way.
+        automaticallyAdjustKeyboardInsets
+        keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={onScroll}
@@ -341,14 +477,16 @@ export function InputScreen(
                 {s.cost_usd > 0 ? `${money(s.cost_usd)} spent, 0 units here` : '0 units here'}
               </Text>
             ))}
-            {targetNote !== null && <Text style={styles.alertNote}>{targetNote}</Text>}
+            {examPolicyNote !== null && <Text style={styles.alertNote}>{examPolicyNote}</Text>}
             {strandedClaimShaky && (
               <Text style={styles.alertNote}>
                 We have not confirmed this against {target.name}&apos;s own page. Check it with the
                 campus before you pay for another exam — or before you write these off.
               </Text>
             )}
-            <SourceBadge p={target.provenance} />
+            {/* This card claims one thing — that the campus awards no credit for
+                these exams — so it carries the row that backs that one claim. */}
+            <SourceBadge p={target.exam_policy_provenance} />
           </View>
         )}
 
@@ -378,6 +516,12 @@ export function InputScreen(
                   onToggle={() => toggleCredit(src.id)}
                 />
               ))}
+              {/* Sits with the exams it is about: the student ticks a CLEP row
+                  here, so the consequence has to appear here rather than back up
+                  beside question 1, where they would never see it arrive. */}
+              {group.kind === 'clep' && target !== undefined && notTowardGe.length > 0 && (
+                <NotTowardGeNotice inst={target} exams={notTowardGe} />
+              )}
             </View>
           ))
         )}
@@ -405,23 +549,24 @@ export function InputScreen(
           <Text style={styles.unitsUnit}>units</Text>
         </View>
         {target !== undefined && (
-          <View style={styles.residency}>
-            {/* A zero minimum is missing data, not a school with no residency rule. */}
-            {target.residency_min_units > 0 ? (
-              <Text style={styles.residencyText}>
-                {target.name} requires {target.residency_min_units} units earned on campus to
-                graduate.
-                {shortBy > 0
-                  ? ` You are ${shortBy} short — transferring in more credit does not reduce this.`
-                  : ' You have met that minimum.'}
-              </Text>
-            ) : (
-              <Text style={styles.residencyText}>
-                We have no residency minimum on file for {target.name}. Assume there is one and
-                confirm it before you plan around transferred credit.
-              </Text>
-            )}
-            <SourceBadge p={target.provenance} />
+          <View
+            style={[
+              styles.residency,
+              // Unverified data has to look unverified. A confirmed minimum keeps
+              // the quiet grey rule; anything less — an unconfirmed row, or no
+              // figure at all — is ruled dashed in the colour of how far it
+              // actually goes, so the block cannot be read as settled.
+              residencyShaky && styles.residencyShaky,
+              residencyShaky && { borderLeftColor: residencyRuleColor },
+            ]}
+          >
+            <Text style={styles.residencyText}>
+              {residencySentence(target, value.units_in_residence)}
+            </Text>
+            {/* The residency row, never the exam policy: this block states the
+                minimum and nothing else, and the exam-policy source does not
+                cover it. */}
+            <SourceBadge p={target.residency_provenance} />
           </View>
         )}
 
@@ -645,6 +790,31 @@ const styles = StyleSheet.create({
   stickyMoney: { ...theme.font.title, color: theme.color.danger, flexShrink: 0 },
   stickyText: { ...theme.font.small, color: theme.color.text, flex: 1, lineHeight: 18 },
 
+  // A step below `alert` on every axis — amber not danger red, a 12pt radius not
+  // 16, no display figure — but still a 2pt ruled card, because the whole problem
+  // with this case is that nothing about it looks wrong.
+  noGe: {
+    marginTop: theme.space.xs,
+    marginBottom: theme.space.sm,
+    backgroundColor: theme.color.surface,
+    borderWidth: 2,
+    borderColor: theme.color.warn,
+    borderRadius: theme.radius.md,
+    padding: theme.space.md,
+    gap: theme.space.sm,
+  },
+  noGeShaky: { borderStyle: 'dashed' },
+  noGeKicker: {
+    ...theme.font.small,
+    color: theme.color.warn,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  noGeHead: { ...theme.font.heading, color: theme.color.text },
+  noGeItem: { ...theme.font.body, color: theme.color.warn },
+  noGeBody: { ...theme.font.body, color: theme.color.text, lineHeight: 21 },
+  noGeNote: { ...theme.font.small, color: theme.color.textMuted, lineHeight: 19 },
+
   group: { marginTop: theme.space.md },
   groupTitle: { ...theme.font.heading, color: theme.color.text },
   groupBlurb: {
@@ -710,6 +880,8 @@ const styles = StyleSheet.create({
     borderLeftColor: theme.color.border,
     paddingLeft: theme.space.md,
   },
+  // Border colour is set at the call site, from the row's own confidence.
+  residencyShaky: { borderStyle: 'dashed' },
   residencyText: { ...theme.font.small, color: theme.color.textMuted, lineHeight: 19 },
 
   // Quieter than question 3 on every axis — muted label, no card, body type

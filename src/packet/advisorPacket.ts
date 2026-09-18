@@ -7,8 +7,9 @@
  * full, because a printed hyperlink is a dead end.
  *
  * The document never asserts. Each row states how far we trust it, and the rows
- * we do not trust are lifted into a numbered block whose entire purpose is to be
- * replied to — "item 3 is fine, item 5 is not".
+ * we do not trust — along with the questions only the campus can answer — are
+ * lifted into a numbered block whose entire purpose is to be replied to:
+ * "item 3 is fine, item 5 is not".
  */
 import { Platform } from 'react-native';
 import * as Print from 'expo-print';
@@ -67,12 +68,14 @@ const ROUTE_LABEL: Record<RouteKind, string> = {
  *            the engine raises them in. This sorts, it does not filter.
  *   weight — 'severe' is the reversed kicker, the side bar and the larger
  *            sentence. Reserved for stranded credit, which is the one kind that
- *            reports money already gone.
+ *            reports money already gone. 'marked' is the side bar alone, for the
+ *            kind with no visible symptom: credit the campus does award, which
+ *            clears nothing. Everything else prints 'standard'.
  */
 interface WarningStyle {
   kicker: string;
   rank: number;
-  weight: 'severe' | 'standard';
+  weight: 'severe' | 'marked' | 'standard';
 }
 
 const WARNING_STYLE: Record<WarningKind, WarningStyle> = {
@@ -81,9 +84,21 @@ const WARNING_STYLE: Record<WarningKind, WarningStyle> = {
     rank: 0,
     weight: 'severe',
   },
-  transfer_cap: { kicker: 'Transfer-unit cap', rank: 1, weight: 'standard' },
-  residency: { kicker: 'Residency requirement', rank: 2, weight: 'standard' },
-  unmet_areas: { kicker: 'Gap in our data', rank: 3, weight: 'standard' },
+  /**
+   * The quiet one. The campus DOES award this credit, so the units arrive and
+   * nothing on the student's side looks wrong — and the Cal-GETC requirement is
+   * still open. CLEP at a CSU is exactly this. It ranks under stranded credit,
+   * which is money already spent, and over every kind below it, which report a
+   * constraint rather than a requirement the student believes is handled; and it
+   * is given its own weight rather than printing in the mildest one on the page.
+   */
+  credit_not_toward_ge: {
+    kicker: 'Credit accepted · clears no Cal-GETC area',
+    rank: 1,
+    weight: 'marked',
+  },
+  transfer_cap: { kicker: 'Transfer-unit cap', rank: 2, weight: 'standard' },
+  residency: { kicker: 'Residency requirement', rank: 3, weight: 'standard' },
   unverified_data: { kicker: 'Not confirmed yet', rank: 4, weight: 'standard' },
 };
 
@@ -209,7 +224,13 @@ function distinctSources(input: AdvisorPacketInput): Provenance[] {
     out.push(p);
   };
 
-  add(input.institution.provenance);
+  // The campus is three claims on three independently confirmed rows, not one
+  // row: counting only the exam policy would let the published source it rests
+  // on stand in for the residency minimum and the transfer cap, and those two are
+  // precisely the ones nobody has checked. Equal rows collapse in add().
+  add(input.institution.exam_policy_provenance);
+  add(input.institution.residency_provenance);
+  add(input.institution.transfer_cap_provenance);
   for (const item of input.route.items) add(item.provenance);
   for (const w of input.route.warnings) {
     if (w.provenance !== undefined) add(w.provenance);
@@ -218,14 +239,44 @@ function distinctSources(input: AdvisorPacketInput): Provenance[] {
   return out;
 }
 
-/** What this plan assumes about the campus itself — the row behind the warnings. */
-function campusPolicyClaim(inst: Institution): string {
-  const clep = inst.accepts_clep ? 'awards credit for CLEP' : 'awards no credit for CLEP';
-  const cap =
-    inst.max_transfer_units === null
-      ? 'no transfer-unit cap in our data'
-      : `transfer credit capped at ${inst.max_transfer_units} units`;
-  return `${inst.name} ${clep}; ${cap}; ${inst.residency_min_units} units must be earned on campus.`;
+/**
+ * What this plan assumes about the campus itself — one entry per claim, each
+ * carrying the row it actually rests on.
+ *
+ * This was a single sentence over a single provenance row, which is how the
+ * exam policy's published source came to vouch for the residency minimum and the
+ * transfer-unit cap printed beside it. Nobody has confirmed those two. Separate
+ * claims, separate rows, separate lines: an advisor can then settle one of them
+ * without being asked to stand behind the other two in the same breath.
+ */
+interface CampusClaim {
+  label: string;
+  /** Plain text — escaped where it is interpolated, like every other claim here. */
+  claim: string;
+  provenance: Provenance;
+}
+
+function campusClaims(inst: Institution): CampusClaim[] {
+  return [
+    {
+      label: 'Credit-by-exam policy',
+      claim: `${inst.name} ${inst.accepts_clep ? 'awards credit for CLEP' : 'awards no credit for CLEP'}.`,
+      provenance: inst.exam_policy_provenance,
+    },
+    {
+      label: 'Residency minimum',
+      claim: `${inst.residency_min_units} units must be earned on campus at ${inst.name} to graduate.`,
+      provenance: inst.residency_provenance,
+    },
+    {
+      label: 'Transfer-unit cap',
+      claim:
+        inst.max_transfer_units === null
+          ? `We hold no transfer-unit cap for ${inst.name}, so this plan treats transfer credit as uncapped.`
+          : `${inst.name} caps credit transferred in at ${inst.max_transfer_units} units; units above the cap are lost.`,
+      provenance: inst.transfer_cap_provenance,
+    },
+  ];
 }
 
 /** Item row plus its source row, kept together as one tbody so a page break cannot split them. */
@@ -281,8 +332,9 @@ function planTableHtml(route: Route, named: AreaNamer): string {
 /**
  * What a warning rests on. A kind carrying a provenance row prints it in full,
  * like every other claim in this document. A kind that carries none says so
- * plainly rather than going quiet: 'unmet_areas' is the absence of a row, and an
- * advisor should be able to see that it is our data that stops, not the policy.
+ * plainly rather than going quiet: 'unverified_data' fires precisely because
+ * there is no confirmed row to plan against, and an advisor should be able to
+ * see that it is our data that stops there, not the campus policy.
  */
 function warningBasisHtml(w: RouteWarning): string {
   const p = w.provenance;
@@ -323,10 +375,9 @@ function warningHtml(w: RouteWarning): string {
   // off WARNING_STYLE rather than tested inline, so a kind added to the engine
   // cannot quietly inherit the mildest treatment on the page.
   const style = WARNING_STYLE[w.kind];
-  const severe = style.weight === 'severe';
 
   return `
-        <li class="${severe ? 'w severe' : 'w'}">
+        <li class="w ${style.weight}">
           <div class="kind">${esc(style.kicker)}</div>
           <div class="msg">${esc(w.message)}</div>
           ${warningBasisHtml(w)}
@@ -349,15 +400,23 @@ function warningsHtml(warnings: RouteWarning[], instName: string): string {
     (a, b) => WARNING_STYLE[a.kind].rank - WARNING_STYLE[b.kind].rank,
   );
   const stranded = ordered.filter(w => w.kind === 'stranded_credit').length;
+  const clearsNothing = ordered.filter(w => w.kind === 'credit_not_toward_ge').length;
 
   // The heading leads with the worst kind present, so the block names its own
-  // stakes before the advisor reaches the first bullet.
+  // stakes before the advisor reaches the first bullet. It has to follow the
+  // running order below it: credit the campus awards that clears nothing ranks
+  // second, and heading a page full of it "constraints on this plan" would
+  // describe it as the mildest thing here — which is exactly how it goes unread.
   const heading =
-    stranded === 0
-      ? 'Read this first — constraints on this plan'
-      : stranded === 1
-        ? 'Read this first — credit already held that will not count here'
-        : `Read this first — ${stranded} credits already held that will not count here`;
+    stranded === 1
+      ? 'Read this first — credit already held that will not count here'
+      : stranded > 1
+        ? `Read this first — ${stranded} credits already held that will not count here`
+        : clearsNothing === 1
+          ? 'Read this first — credit that counts here but clears no Cal-GETC requirement'
+          : clearsNothing > 1
+            ? `Read this first — ${clearsNothing} credits that count here but clear no Cal-GETC requirement`
+            : 'Read this first — constraints on this plan';
 
   return `
     <section class="alert">
@@ -369,9 +428,31 @@ function warningsHtml(warnings: RouteWarning[], instName: string): string {
 }
 
 /**
+ * The confidence · source · date line every entry in the reply form carries.
+ *
+ * The list used to be nothing but rows we could not confirm, so every line in it
+ * carried the same standing and none of them had to say so. It is mixed now —
+ * the registrar questions below are asked about rows that ARE published — so an
+ * unconfirmed row takes the same bordered mark it takes everywhere else on the
+ * page. Without it 'Needs confirming' and 'Published policy' set identically, in
+ * the one block an advisor reads line by line.
+ */
+const basisLineHtml = (p: Provenance): string => {
+  const confidence = needsConfirming(p)
+    ? `<span class="unconfirmed">${esc(confidenceLabel(p.confidence))}</span>`
+    : esc(confidenceLabel(p.confidence));
+
+  return `
+            <div class="basis">
+              ${confidence} ·
+              ${sourceHtml(p)} · ${esc(checkedPhrase(p))}
+            </div>`;
+};
+
+/**
  * The reply form. Numbering runs off the plan table so "item 3" means one thing
- * across the whole document, and the campus-policy row is appended after the last
- * table row rather than competing for a number with it.
+ * across the whole document, and everything that is not a table row is appended
+ * after the last of them rather than competing for a number with it.
  */
 function confirmHtml(input: AdvisorPacketInput, named: AreaNamer): string {
   const { institution, route } = input;
@@ -379,9 +460,6 @@ function confirmHtml(input: AdvisorPacketInput, named: AreaNamer): string {
   const flagged = route.items
     .map((item, i) => ({ item, n: i + 1 }))
     .filter(({ item }) => needsConfirming(item.provenance));
-
-  const campusFlagged = needsConfirming(institution.provenance);
-  const campusN = route.items.length + 1;
 
   const entries: string[] = flagged.map(({ item, n }) => {
     const claim =
@@ -394,24 +472,55 @@ function confirmHtml(input: AdvisorPacketInput, named: AreaNamer): string {
           <span class="n">${n}.</span>
           <div>
             <b>${esc(item.label)}</b> — ${claim}.
-            <div class="basis">
-              ${esc(confidenceLabel(item.provenance.confidence))} ·
-              ${sourceHtml(item.provenance)} · ${esc(checkedPhrase(item.provenance))}
-            </div>
+            ${basisLineHtml(item.provenance)}
           </div>
         </li>`;
   });
 
-  if (campusFlagged) {
+  // Numbers for everything that is not a row in the table, handed out in the
+  // order the entries are appended.
+  let nextN = route.items.length + 1;
+
+  // One entry per campus claim that needs confirming, never one entry covering
+  // all three. Asked together, an advisor who can settle the residency minimum
+  // has to vouch for the exam policy and the transfer cap to say so — and the
+  // three do not rest on the same row or carry the same confidence.
+  for (const c of campusClaims(institution)) {
+    if (!needsConfirming(c.provenance)) continue;
     entries.push(`
         <li>
-          <span class="n">${campusN}.</span>
+          <span class="n">${nextN++}.</span>
           <div>
-            <b>Campus policy</b> (not a row in the table above) — ${esc(campusPolicyClaim(institution))}
-            <div class="basis">
-              ${esc(confidenceLabel(institution.provenance.confidence))} ·
-              ${sourceHtml(institution.provenance)} · ${esc(checkedPhrase(institution.provenance))}
-            </div>
+            <b>${esc(c.label)}</b> (not a row in the table above) — ${esc(c.claim)}
+            ${basisLineHtml(c.provenance)}
+          </div>
+        </li>`);
+  }
+
+  /*
+   * Credit the campus DOES award that clears no Cal-GETC requirement is the one
+   * question on this page a registrar can settle in a line, and the one the
+   * student cannot see going wrong: the units arrive, the transcript looks
+   * healthy, the requirement is still open. So it is asked here even when the
+   * row behind it is published — what is being confirmed is not our source but
+   * whether anything on the pattern really clears.
+   *
+   * The engine's sentence is repeated rather than referred to, because this
+   * block is a reply form: an item has to be answerable without reading back up
+   * the page to find out which credit it is about.
+   */
+  const registrarQuestions = route.warnings.filter(w => w.kind === 'credit_not_toward_ge');
+  for (const w of registrarQuestions) {
+    // The warning's own row, never the campus record: the engine attaches the
+    // provenance that actually backs this claim.
+    const p = w.provenance;
+    entries.push(`
+        <li>
+          <span class="n">${nextN++}.</span>
+          <div>
+            <b>Credit accepted that clears no Cal-GETC area</b> — ${esc(w.message)}
+            Is that right, and is there any part of the Cal-GETC pattern it does clear?
+            ${p === undefined ? '' : basisLineHtml(p)}
           </div>
         </li>`);
   }
@@ -431,13 +540,30 @@ function confirmHtml(input: AdvisorPacketInput, named: AreaNamer): string {
       : ' They are numbered to match the table above, so a reply of "item 3 is fine, item 5 is'
         + ' not" is all that is needed.';
 
+  // Two different asks share this list, and the sentence over it has to describe
+  // the ones actually below: an unconfirmed row is a gap in OUR data, while
+  // credit that clears nothing is a question only the campus can answer. Saying
+  // "we could not confirm these" over a published row would misdescribe it.
+  const unconfirmed = entries.length - registrarQuestions.length;
+  const lead =
+    unconfirmed === 0
+      ? `Nothing in this plan rests on a source we could not check. What is listed below is
+         credit ${esc(institution.name)} does award that appears to clear no Cal-GETC
+         requirement — a question for your office rather than a gap in our sources.`
+      : registrarQuestions.length === 0
+        ? `These are the items we could <b>not</b> confirm against statute or a published
+           policy page.`
+        : `These are the items we could <b>not</b> confirm against statute or a published
+           policy page, together with credit ${esc(institution.name)} does award that appears
+           to clear no Cal-GETC requirement — those last are questions for your office rather
+           than gaps in our sources.`;
+
   const body =
     entries.length === 0
       ? `<p>Every row in this plan is backed by statute or by a published policy page we can
          point you at. There is nothing here we are guessing at — but policies change between
          catalogue years, so a confirmation that none of it has moved would still be worth having.</p>`
-      : `<p>These are the items we could <b>not</b> confirm against statute or a published
-         policy page.${matchesTable}</p>
+      : `<p>${lead}${matchesTable}</p>
          <ol class="confirm-list">${entries.join('')}</ol>`;
 
   return `
@@ -470,10 +596,15 @@ function summaryHtml(route: Route, named: AreaNamer): string {
       ? 'No Cal-GETC area is cleared by this plan.'
       : `Clears ${route.areas_cleared.length} Cal-GETC area${route.areas_cleared.length === 1 ? '' : 's'}: ${esc(route.areas_cleared.map(a => named(a)).join(', '))}.`;
 
+  // The requirements this plan does not solve reach the packet as data now, not
+  // as a warning sentence as well — printing both had the advisor read the same
+  // list twice on one page. That makes this the only place they are named, so it
+  // names them in full and is set to be seen rather than skimmed past. It is
+  // stated once, here, and not repeated under the table.
   const unmet =
     route.areas_unmet.length === 0
       ? 'Every area in our data is accounted for.'
-      : `Still unmet: ${esc(route.areas_unmet.map(a => named(a)).join(', '))}.`;
+      : `<span class="unmet">Still unsolved after this plan — ${route.areas_unmet.length} Cal-GETC area${route.areas_unmet.length === 1 ? '' : 's'}: ${esc(route.areas_unmet.map(a => named(a)).join(', '))}.</span>`;
 
   return `
     <section class="summary">
@@ -507,7 +638,7 @@ const STYLES = `
       print-color-adjust: exact;
     }
     h1, h2, th, .chip, .k, .total, .facts b, .reply-k, .num, .fig, .conf,
-    .alert .kind, .alert .basis .unconfirmed {
+    .alert .kind, .basis .unconfirmed {
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
     h1 { font-size: 19px; line-height: 1.2; letter-spacing: -0.3px; margin: 0 0 3px; }
@@ -529,6 +660,13 @@ const STYLES = `
     .total-k { font-size: 8.5px; text-transform: uppercase; letter-spacing: .8px; color: #444; margin-top: 4px; }
     .facts { flex: 1; font-size: 10px; }
     .facts div { margin-bottom: 2px; }
+    /* The unsolved requirements are the one fact here that is a hole rather than
+       a number, and this line is the only place the document names them. Same
+       bordered mark the page uses everywhere else for "look at this". */
+    .facts .unmet {
+      display: inline-block; font-weight: 700; border: 1.5px solid #000;
+      padding: 1px 5px; margin-top: 2px;
+    }
     .total-basis { font-size: 8.5px; color: #444; margin-top: 5px; max-width: 150px; }
     .total-basis.flagged {
       color: #000; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
@@ -552,10 +690,12 @@ const STYLES = `
        for the sentence of a provenance note — so prose wraps normally here and
        only an unbreakable URL is allowed to split. */
     .alert .basis { margin-top: 2px; color: #222; word-break: normal; overflow-wrap: anywhere; }
-    /* A warning resting on a row nobody has confirmed gets the same bordered
-       mark an unconfirmed row gets in the plan table. Greyscale-safe, and it
-       stops 'Unverified' from setting identically to 'Guaranteed by CA law'. */
-    .alert .basis .unconfirmed {
+    /* A claim resting on a row nobody has confirmed gets the same bordered mark
+       an unconfirmed row gets in the plan table — in the warning block and in
+       the reply form, which now lists confirmed and unconfirmed rows together.
+       Greyscale-safe, and it stops 'Unverified' from setting identically to
+       'Guaranteed by CA law'. */
+    .basis .unconfirmed {
       display: inline-block; border: 1px solid #000; padding: 0 3px;
       font-size: 7.5px; font-weight: 700; text-transform: uppercase;
       letter-spacing: .5px; color: #000; vertical-align: 1px;
@@ -566,6 +706,11 @@ const STYLES = `
     .alert li.severe { border-left: 5px solid #000; padding-left: 9px; }
     .alert li.severe .kind { background: #000; color: #fff; }
     .alert li.severe .msg { font-size: 13px; line-height: 1.35; }
+    /* Credit the campus accepts that clears nothing has no visible symptom — the
+       units land, the requirement stays open — so it gets the side bar too, at
+       half the weight: more than a constraint the student can see coming, less
+       than money already gone. */
+    .alert li.marked { border-left: 2px solid #000; padding-left: 9px; }
     .alert.quiet { border-width: 1px; background: #fff; }
     .alert.quiet p { font-weight: 400; margin: 0; }
 

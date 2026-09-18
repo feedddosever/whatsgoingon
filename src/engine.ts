@@ -88,30 +88,42 @@ function heldCreditWarnings(
     const src = byId(ds.creditSources, id);
     if (!src) continue;
 
-    if (src.kind === 'clep' && !inst.accepts_clep) {
-      out.push({
-        kind: 'stranded_credit',
-        message:
-          `${inst.name} does not award credit for ${src.name}. ` +
-          `You already hold it; it will not count here.`,
-        provenance: inst.exam_policy_provenance,
-      });
+    const rules = ds.rules.filter(
+      r => r.institution_id === inst.id && r.credit_source_id === id,
+    );
+
+    if (rules.length === 0) {
+      // We hold no rule for this pair. A campus that rejects CLEP outright is
+      // explicit policy and can be stated; anything else, we simply do not know,
+      // and saying "this campus counts it toward your degree" would be inventing
+      // a policy on the student's behalf.
+      if (src.kind === 'clep' && !inst.accepts_clep) {
+        out.push({
+          kind: 'stranded_credit',
+          message:
+            `${inst.name} does not award credit for ${src.name}. ` +
+            `You already hold it; it will not count here.`,
+          provenance: inst.exam_policy_provenance,
+        });
+      } else {
+        out.push({
+          kind: 'unverified_data',
+          message:
+            `We have no record of how ${inst.name} treats ${src.name}. ` +
+            `Do not assume it counts — ask before you rely on it.`,
+        });
+      }
       continue;
     }
 
-    // Accepted by the school, but does it clear anything we are planning against?
-    const clears = ds.rules.some(
-      r => r.institution_id === inst.id
-        && r.credit_source_id === id
-        && r.satisfies_area !== null,
-    );
-    if (!clears) {
+    // A rule exists. Does any of it clear something we are planning against?
+    if (!rules.some(r => r.satisfies_area !== null)) {
       out.push({
         kind: 'credit_not_toward_ge',
         message:
           `${inst.name} counts ${src.name} toward your degree, but it does not clear any ` +
           `Cal-GETC requirement. You still have to satisfy that requirement another way.`,
-        provenance: inst.exam_policy_provenance,
+        provenance: rules[0].provenance,
       });
     }
   }
