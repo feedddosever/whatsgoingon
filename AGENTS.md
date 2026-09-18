@@ -46,6 +46,22 @@ through several rebuilds until the cache was cleared.
 
 ## Checks
 
-    npm test        # engine tests
+    npm test        # engine + validation tests
     npm run typecheck
     npm run demo    # prints the CLEP-at-UC scenario
+
+For anything touching a screen, build and drive it — typecheck passing is not
+the same as working, and most of the real bugs in this project were found this
+way rather than by the compiler:
+
+    npm run build:web
+    npm run serve:web          # then drive http://127.0.0.1:8080
+
+`scripts/e2e.mjs` has the helpers (`openApp`, `rootCost`, `tapExact`,
+`tapButton`). It uses **playwright-core**, not playwright: playwright's
+postinstall downloads a browser on every install, which is a slow or failing
+step on a deploy host. Point `E2E_CHROME` at a browser if the default path is
+wrong.
+
+Ignore `ERR_TUNNEL_CONNECTION_FAILED` console errors in this environment — that
+is RevenueCat's API being blocked by the egress proxy, not the app.
