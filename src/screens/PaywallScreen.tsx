@@ -104,7 +104,7 @@ export function PaywallScreen(props: PaywallScreenProps) {
   // and formatting. Until then, promise only what we can stand behind: that the
   // store will show the price and ask before charging.
   const priceNote = alreadyOwned
-    ? 'Already paid for. This was one payment rather than a subscription, so nothing renews and nothing further is charged — including the re-checks when your sources move.'
+    ? 'Already yours. The packet is a one-time unlock rather than a subscription, so nothing renews and nothing further is charged — including the re-checks when your sources move.'
     : price !== null
       ? `One payment of ${price}, not a subscription. Your store asks you to confirm before anything is charged — we never see your card.`
       : 'One payment, not a subscription. Your store shows the price and asks you to confirm before anything is charged — we never see your card.';
@@ -201,12 +201,12 @@ export function PaywallScreen(props: PaywallScreenProps) {
 
       <View style={styles.footer}>
         {/* Trimmed, because `error: string | null` also admits "" — which would
-            paint a red box with nothing in it and no way to dismiss it. Hidden
-            once the packet is owned: every error this screen can raise is about
-            acquiring something the student already has, and a red "Purchase
-            failed" next to "you already own this" reads as a charge that went
-            wrong. */}
-        {!alreadyOwned && error !== null && error.trim().length > 0 && (
+            paint a red box with nothing in it and no way to dismiss it. Shown
+            in every state, including `alreadyOwned`: this screen is
+            presentational, and an error the app deliberately handed it is not
+            ours to rule stale. A student whose store call really did fail must
+            not be left on a screen that says nothing happened. */}
+        {error !== null && error.trim().length > 0 && (
           <View
             style={styles.errorBox}
             accessibilityRole="alert"

@@ -184,6 +184,7 @@ export default function App() {
       <RoutesScreen
         institution={institution}
         routes={routes}
+        areas={california.areas}
         baselineCostUsd={baseline}
         onSelectRoute={(r) => { setSelected(r); setScreen('detail'); }}
         onBack={() => setScreen('input')}

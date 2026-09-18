@@ -50,32 +50,41 @@ const ROUTE_LABEL: Record<RouteKind, string> = {
 };
 
 /**
- * Names the shape of the problem above the sentence that spells it out, so an
- * advisor skimming the page can tell money already spent from a hole in our
- * data without reading either one. Kept short: it sets as a small-caps kicker.
+ * How each kind of warning prints. One record, not three parallel ones: a kind's
+ * name, its place in the running order and how much weight it carries on paper
+ * are a single editorial decision, and splitting them is how a new kind ends up
+ * titled but unranked, or ranked but set in the mildest style.
  *
  * Record<WarningKind, …> on purpose — a new kind in the engine has to be given
- * a name here before this file will compile, rather than printing untitled.
+ * all three here before this file will compile. There is deliberately no default
+ * branch to fall through to.
+ *
+ *   kicker — names the shape of the problem above the sentence that spells it
+ *            out, so an advisor skimming the page can tell money already spent
+ *            from a hole in our data without reading either one.
+ *   rank   — print order. Stranded credit leads because it is the only kind that
+ *            is money the student has already spent; the rest follow the order
+ *            the engine raises them in. This sorts, it does not filter.
+ *   weight — 'severe' is the reversed kicker, the side bar and the larger
+ *            sentence. Reserved for stranded credit, which is the one kind that
+ *            reports money already gone.
  */
-const WARNING_LABEL: Record<WarningKind, string> = {
-  stranded_credit: 'Credit already held · will not count here',
-  transfer_cap: 'Transfer-unit cap',
-  residency: 'Residency requirement',
-  unmet_areas: 'Gap in our data',
-  unverified_data: 'Not confirmed yet',
-};
+interface WarningStyle {
+  kicker: string;
+  rank: number;
+  weight: 'severe' | 'standard';
+}
 
-/**
- * Print order. Stranded credit leads because it is the only kind that is money
- * the student has already spent; the rest follow the order the engine raises
- * them in. Nothing is dropped — this sorts, it does not filter.
- */
-const WARNING_RANK: Record<WarningKind, number> = {
-  stranded_credit: 0,
-  transfer_cap: 1,
-  residency: 2,
-  unmet_areas: 3,
-  unverified_data: 4,
+const WARNING_STYLE: Record<WarningKind, WarningStyle> = {
+  stranded_credit: {
+    kicker: 'Credit already held · will not count here',
+    rank: 0,
+    weight: 'severe',
+  },
+  transfer_cap: { kicker: 'Transfer-unit cap', rank: 1, weight: 'standard' },
+  residency: { kicker: 'Residency requirement', rank: 2, weight: 'standard' },
+  unmet_areas: { kicker: 'Gap in our data', rank: 3, weight: 'standard' },
+  unverified_data: { kicker: 'Not confirmed yet', rank: 4, weight: 'standard' },
 };
 
 /**
@@ -171,6 +180,44 @@ function dataVintage(sources: Provenance[]): string {
     : `${span} ${undated} of ${sources.length} carry no recorded check date at all.`;
 }
 
+/**
+ * Every distinct row this document rests on, counted once each.
+ *
+ * Warnings now carry their own provenance, which is a second path the evidence
+ * arrives by — leave it out and the footer's vintage line silently describes
+ * only the plan table, while the loudest claims on the page go uncounted. Put it
+ * in naively and the campus row, which the engine hands to several warnings at
+ * once, is counted once per warning and the plan reads as better sourced than it
+ * is.
+ *
+ * So: deduplicate, and by VALUE rather than by object identity. Two warnings
+ * sharing one row is the common case today, but the engine is free to build an
+ * equal row per warning, and "sources behind this plan" has to mean sources
+ * either way.
+ */
+function distinctSources(input: AdvisorPacketInput): Provenance[] {
+  const seen = new Set<string>();
+  const out: Provenance[] = [];
+
+  const add = (p: Provenance): void => {
+    // JSON, not a joined separator: a source URL is free text and any
+    // separator we picked could occur inside one, collapsing two distinct
+    // rows into one.
+    const key = JSON.stringify([p.confidence, p.source_url.trim(), p.as_of.trim()]);
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(p);
+  };
+
+  add(input.institution.provenance);
+  for (const item of input.route.items) add(item.provenance);
+  for (const w of input.route.warnings) {
+    if (w.provenance !== undefined) add(w.provenance);
+  }
+
+  return out;
+}
+
 /** What this plan assumes about the campus itself — the row behind the warnings. */
 function campusPolicyClaim(inst: Institution): string {
   const clep = inst.accepts_clep ? 'awards credit for CLEP' : 'awards no credit for CLEP';
@@ -246,10 +293,19 @@ function warningBasisHtml(w: RouteWarning): string {
   }
 
   const note = noteText(p);
+
+  // The same bar the plan table applies to a row: a warning resting on something
+  // nobody has confirmed must not print in the same weight as one resting on
+  // statute. Without this the packet's most consequential sentences would be the
+  // only place where 'Unverified' reads exactly like 'Published policy'.
+  const confidence = needsConfirming(p)
+    ? `<span class="unconfirmed">${esc(confidenceLabel(p.confidence))} — confirm this</span>`
+    : esc(confidenceLabel(p.confidence));
+
   return `
           <div class="basis">
-            ${esc(confidenceLabel(p.confidence))} · ${sourceHtml(p)} · ${esc(checkedPhrase(p))}
-            ${note === null ? '' : `<div>${esc(note)}</div>`}
+            ${confidence} · ${sourceHtml(p)} · ${esc(checkedPhrase(p))}
+            ${note === null ? '' : `<div class="note"><span class="k">Note</span> ${esc(note)}</div>`}
           </div>`;
 }
 
@@ -263,12 +319,15 @@ function warningBasisHtml(w: RouteWarning): string {
  */
 function warningHtml(w: RouteWarning): string {
   // Money the student has already spent outranks everything else on the page,
-  // and greyscale printing means that has to be weight rather than colour.
-  const severe = w.kind === 'stranded_credit';
+  // and greyscale printing means that has to be weight rather than colour. Read
+  // off WARNING_STYLE rather than tested inline, so a kind added to the engine
+  // cannot quietly inherit the mildest treatment on the page.
+  const style = WARNING_STYLE[w.kind];
+  const severe = style.weight === 'severe';
 
   return `
         <li class="${severe ? 'w severe' : 'w'}">
-          <div class="kind">${esc(WARNING_LABEL[w.kind])}</div>
+          <div class="kind">${esc(style.kicker)}</div>
           <div class="msg">${esc(w.message)}</div>
           ${warningBasisHtml(w)}
         </li>`;
@@ -286,7 +345,9 @@ function warningsHtml(warnings: RouteWarning[], instName: string): string {
 
   // A copy: route.warnings belongs to the caller, and an export must not
   // reorder the array the screens are rendering from.
-  const ordered = [...warnings].sort((a, b) => WARNING_RANK[a.kind] - WARNING_RANK[b.kind]);
+  const ordered = [...warnings].sort(
+    (a, b) => WARNING_STYLE[a.kind].rank - WARNING_STYLE[b.kind].rank,
+  );
   const stranded = ordered.filter(w => w.kind === 'stranded_credit').length;
 
   // The heading leads with the worst kind present, so the block names its own
@@ -445,7 +506,8 @@ const STYLES = `
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
-    h1, h2, th, .chip, .k, .total, .facts b, .reply-k, .num, .fig, .conf, .alert .kind {
+    h1, h2, th, .chip, .k, .total, .facts b, .reply-k, .num, .fig, .conf,
+    .alert .kind, .alert .basis .unconfirmed {
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
     h1 { font-size: 19px; line-height: 1.2; letter-spacing: -0.3px; margin: 0 0 3px; }
@@ -490,6 +552,14 @@ const STYLES = `
        for the sentence of a provenance note — so prose wraps normally here and
        only an unbreakable URL is allowed to split. */
     .alert .basis { margin-top: 2px; color: #222; word-break: normal; overflow-wrap: anywhere; }
+    /* A warning resting on a row nobody has confirmed gets the same bordered
+       mark an unconfirmed row gets in the plan table. Greyscale-safe, and it
+       stops 'Unverified' from setting identically to 'Guaranteed by CA law'. */
+    .alert .basis .unconfirmed {
+      display: inline-block; border: 1px solid #000; padding: 0 3px;
+      font-size: 7.5px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .5px; color: #000; vertical-align: 1px;
+    }
     /* Stranded credit is money the student has already spent. On a greyscale
        office printer that has to read as weight: a reversed kicker, a bar down
        the side, and the sentence itself set larger than the others. */
@@ -557,8 +627,10 @@ export function buildAdvisorPacketHtml(input: AdvisorPacketInput): string {
       ? esc(studentName.trim())
       : '<span class="fill"></span>';
 
-  // The campus row is evidence too: it is what the engine's warnings rest on.
-  const vintage = dataVintage([institution.provenance, ...route.items.map(i => i.provenance)]);
+  // The campus row and the rows behind the warnings are evidence too, so the
+  // vintage line counts them alongside the plan table rather than describing
+  // only the part of the page that happens to be a table.
+  const vintage = dataVintage(distinctSources(input));
   const preparedOn = todayLocal();
 
   return `<!doctype html>

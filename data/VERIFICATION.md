@@ -52,17 +52,20 @@ proposed for 2026-27. 3 units = $138.
 
 ### P0-NEW — opened by the same brief
 
-**A. CLEP at CSU is accepted but clears no Cal-GETC area, and the app does not say so.**
-`strandedCredits()` only fires when `accepts_clep` is false, so a student holding CLEP
-and targeting a CSU gets no warning at all — their credit silently clears nothing. They
-need to be told it counts toward the degree (30-unit cap) but not toward Cal-GETC.
-**This is now the most valuable unbuilt warning in the app.**
+**A. ~~CLEP at CSU clears no Cal-GETC area and the app does not say so.~~ FIXED.**
+A new `credit_not_toward_ge` warning fires when a campus awards credit for something the
+student holds but it clears no Cal-GETC requirement. CLEP at a CSU is exactly this case:
+nothing looks wrong, the campus "accepts" it, and the student has satisfied nothing.
 
-**B. Per-field provenance.** `Institution.provenance` is one record covering several
-independent claims. The exam policy is now `published`; `residency_min_units` and
-`max_transfer_units` in the same row are still unconfirmed, and a residency warning
-therefore renders a `published` badge it has not earned. The caveat is spelled out in
-each row's `note` as a stopgap. The real fix is provenance per field.
+**B. ~~Per-field provenance.~~ FIXED.**
+`Institution.provenance` is now three fields — `exam_policy_provenance` (published),
+`residency_provenance` and `transfer_cap_provenance` (both `needs_check`). Each warning
+cites the row that actually backs it, so a residency figure can no longer wear the exam
+policy's confirmed badge. A test pins this.
+
+**Still open here:** `residency_min_units` (UC 24 / CSU 30) and `max_transfer_units` (70)
+remain unconfirmed. They are now honestly labelled rather than silently overclaimed, but
+they still need a source.
 
 **C. Missing pathways the brief documents and the engine cannot express:**
 - **ADT (Associate Degree for Transfer)** — guarantees CSU admission with junior standing.

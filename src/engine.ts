@@ -66,27 +66,57 @@ function unmetAreas(ds: Dataset, inst: Institution, held: string[]): string[] {
 }
 
 /**
- * Credit the student already holds that this institution will not honour.
- * Surfacing this is the single most valuable thing the app does — it is money
- * already spent, or about to be.
+ * What the credit a student already holds is actually worth here.
+ *
+ * Two distinct failures, and the second one is the easier to miss:
+ *   - the school awards no credit for it at all;
+ *   - the school awards credit, but it clears no Cal-GETC requirement.
+ *
+ * CLEP at a CSU is the second case. The campus "accepts" it — it counts toward
+ * the degree, capped at 30 units — yet it cannot satisfy Cal-GETC, so a student
+ * planning their transfer around it clears nothing. Saying nothing here would
+ * leave them believing a requirement was handled.
  */
-function strandedCredits(ds: Dataset, inst: Institution, held: string[]): PlanItem[] {
-  if (inst.accepts_clep) return [];
-  const stranded: PlanItem[] = [];
+function heldCreditWarnings(
+  ds: Dataset,
+  inst: Institution,
+  held: string[],
+): RouteWarning[] {
+  const out: RouteWarning[] = [];
+
   for (const id of held) {
     const src = byId(ds.creditSources, id);
-    if (src?.kind === 'clep') {
-      stranded.push({
-        credit_source_id: src.id,
-        label: src.name,
-        cost_usd: src.cost_usd,
-        units: 0,
-        satisfies_area: null,
-        provenance: inst.provenance,
+    if (!src) continue;
+
+    if (src.kind === 'clep' && !inst.accepts_clep) {
+      out.push({
+        kind: 'stranded_credit',
+        message:
+          `${inst.name} does not award credit for ${src.name}. ` +
+          `You already hold it; it will not count here.`,
+        provenance: inst.exam_policy_provenance,
+      });
+      continue;
+    }
+
+    // Accepted by the school, but does it clear anything we are planning against?
+    const clears = ds.rules.some(
+      r => r.institution_id === inst.id
+        && r.credit_source_id === id
+        && r.satisfies_area !== null,
+    );
+    if (!clears) {
+      out.push({
+        kind: 'credit_not_toward_ge',
+        message:
+          `${inst.name} counts ${src.name} toward your degree, but it does not clear any ` +
+          `Cal-GETC requirement. You still have to satisfy that requirement another way.`,
+        provenance: inst.exam_policy_provenance,
       });
     }
   }
-  return stranded;
+
+  return out;
 }
 
 function pickPerArea(
@@ -137,15 +167,7 @@ export function planRoute(ds: Dataset, input: StudentInput, kind: RouteKind): Ro
 
   const warnings: RouteWarning[] = [];
 
-  for (const stranded of strandedCredits(ds, inst, input.held_credit_ids)) {
-    warnings.push({
-      kind: 'stranded_credit',
-      message:
-        `${inst.name} does not award credit for ${stranded.label}. ` +
-        `You already hold it; it will not count here.`,
-      provenance: inst.provenance,
-    });
-  }
+  warnings.push(...heldCreditWarnings(ds, inst, input.held_credit_ids));
 
   if (inst.max_transfer_units !== null && totalUnits > inst.max_transfer_units) {
     warnings.push({
@@ -153,7 +175,7 @@ export function planRoute(ds: Dataset, input: StudentInput, kind: RouteKind): Ro
       message:
         `This route transfers in ${totalUnits} units but ${inst.name} caps transfer credit ` +
         `at ${inst.max_transfer_units}. Units above the cap are lost.`,
-      provenance: inst.provenance,
+      provenance: inst.transfer_cap_provenance,
     });
   }
 
@@ -163,20 +185,14 @@ export function planRoute(ds: Dataset, input: StudentInput, kind: RouteKind): Ro
       message:
         `${inst.name} requires at least ${inst.residency_min_units} units earned on campus to graduate. ` +
         `You have ${input.units_in_residence}. Transferring in more credit does not reduce this.`,
-      provenance: inst.provenance,
+      provenance: inst.residency_provenance,
     });
   }
 
-  if (areasUnmet.length > 0) {
-    warnings.push({
-      kind: 'unmet_areas',
-      message:
-        `No route in our data clears ${areasUnmet.join(', ')} at ${inst.name}. ` +
-        `Ask your advisor about these.`,
-    });
-  }
+  // Unmet areas are reported through `areas_unmet`, which is structured data each
+  // surface can render well. Emitting a warning saying the same thing made a
+  // student read the same sentence twice on one screen.
 
-  // Written for the student, not for us: this is rendered verbatim in the app.
   if (kind === 'lowest_risk' && areasCleared.length === 0 && areas.length > 0) {
     warnings.push({
       kind: 'unverified_data',

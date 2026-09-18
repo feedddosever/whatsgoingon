@@ -16,6 +16,8 @@ export interface InputScreenProps {
 export interface RoutesScreenProps {
   institution: Institution;
   routes: Route[];
+  /** So this screen names requirements the same way RouteDetailScreen does. */
+  areas: GeArea[];
   /** Cost of the do-nothing path, used to show the saving. */
   baselineCostUsd: number;
   onSelectRoute: (route: Route) => void;

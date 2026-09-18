@@ -2,7 +2,8 @@
  * InputScreen — the first thing a student sees.
  *
  * Deliberately not a form: three questions, answered by tapping. The only typing
- * is a unit count. Everything factual on this screen (a campus's CLEP policy, an
+ * is a unit count, plus an optional name for the advisor packet that nothing
+ * here waits for. Everything factual on this screen (a campus's CLEP policy, an
  * exam's price, a residency minimum) is quoted from the dataset and carries its
  * own provenance badge, because a student who acts on a wrong transfer-credit
  * claim loses real money and a real semester.
@@ -31,6 +32,9 @@ import type {
   StudentInput,
 } from '../types.ts';
 import type { InputScreenProps } from '../ui/contracts.ts';
+// Shared, not local: "is this claim backed?" has to mean the same thing on every
+// screen and in the packet, or one of them quietly disagrees with the rest.
+import { checkedOn, isBacked, linkable, noteText } from '../ui/provenance.ts';
 import { confidenceColor, confidenceLabel, money, theme } from '../ui/theme.ts';
 
 /** Section order is pedagogical: exams first, because they are the cheap surprise. */
@@ -40,19 +44,10 @@ const CREDIT_GROUPS: ReadonlyArray<{ kind: CreditKind; title: string; blurb: str
   { kind: 'ccc_course', title: 'Community college courses', blurb: 'Courses you have already passed' },
 ];
 
-/** Only an http(s) source can be opened; anything else would be a dead link. */
-const linkable = (url: string): boolean => /^https?:\/\//i.test(url.trim());
-
 /** A dead or unopenable source URL must never take the screen down with it. */
 const openSource = (url: string): void => {
   void Linking.openURL(url).catch(() => undefined);
 };
-
-/** Seeded rows carry an empty as_of. Saying so is the honest reading. */
-const checkedOn = (p: Provenance): string => (p.as_of.trim() === '' ? 'never checked' : p.as_of);
-
-const isShaky = (p: Provenance): boolean =>
-  p.confidence === 'unverified' || p.confidence === 'needs_check';
 
 /**
  * Provenance, never decoration: the badge states how far we trust the claim it
@@ -62,7 +57,8 @@ const isShaky = (p: Provenance): boolean =>
  */
 function SourceBadge({ p, compact }: { p: Provenance; compact?: boolean }): ReactElement {
   const color = confidenceColor(p.confidence);
-  const shaky = isShaky(p);
+  // Anything a human has not confirmed against its source is drawn as a sketch.
+  const shaky = !isBacked(p);
   const label = confidenceLabel(p.confidence);
 
   if (!linkable(p.source_url)) {
@@ -203,6 +199,13 @@ export function InputScreen(
     patch({ units_in_residence: parsed });
   };
 
+  // No local mirror and no validation: the field is driven straight from the prop,
+  // and an empty box means "no name" rather than an empty name on the packet. Only
+  // a genuinely empty box clears it, so a space typed mid-name is not swallowed.
+  const setName = (text: string): void => {
+    patch({ student_name: text === '' ? undefined : text });
+  };
+
   // The whole product in one variable: credit the student already paid for that
   // this campus will not look at.
   const stranded: CreditSource[] =
@@ -210,7 +213,9 @@ export function InputScreen(
       ? creditSources.filter(s => s.kind === 'clep' && value.held_credit_ids.includes(s.id))
       : [];
   const strandedUsd = stranded.reduce((n, s) => n + s.cost_usd, 0);
-  const strandedClaimShaky = target !== undefined && isShaky(target.provenance);
+  const strandedClaimShaky = target !== undefined && !isBacked(target.provenance);
+  // What could bite the student, if the campus row carries such a note.
+  const targetNote = target === undefined ? null : noteText(target.provenance);
   // With a waived or unknown fee the dollar total is $0 — shouting "$0" would read
   // as "nothing lost". Count the exams instead; the units are the loss either way.
   const strandedHeadline =
@@ -287,7 +292,11 @@ export function InputScreen(
         onLayout={onScrollLayout}
       >
         <Text style={styles.kicker}>DEGREE ROUTE PLANNER</Text>
-        <Text style={styles.title}>What is the rest of your degree going to cost?</Text>
+        {/* What this app actually prices is the requirements the student still has
+            to clear, at the target campus's own per-unit rate — never a whole
+            degree. The hook has to promise exactly that much, or the next screen's
+            baseline line reads as a walk-back of the first thing we said. */}
+        <Text style={styles.title}>What is the credit you still need going to cost you?</Text>
         <Text style={styles.sub}>Three taps. No account, no transcript upload.</Text>
 
         {/* 1 — target */}
@@ -332,9 +341,7 @@ export function InputScreen(
                 {s.cost_usd > 0 ? `${money(s.cost_usd)} spent, 0 units here` : '0 units here'}
               </Text>
             ))}
-            {target.provenance.note !== undefined && target.provenance.note.trim() !== '' && (
-              <Text style={styles.alertNote}>{target.provenance.note}</Text>
-            )}
+            {targetNote !== null && <Text style={styles.alertNote}>{targetNote}</Text>}
             {strandedClaimShaky && (
               <Text style={styles.alertNote}>
                 We have not confirmed this against {target.name}&apos;s own page. Check it with the
@@ -418,9 +425,39 @@ export function InputScreen(
           </View>
         )}
 
+        {/* Deliberately not a fourth question: it changes nothing the app works
+            out, and a name box that looks required is a name box that stops
+            people. No numeral, no card, no validation — just an underline. */}
+        <View style={styles.nameBlock}>
+          <Text style={styles.nameLabel}>Your name — optional</Text>
+          <TextInput
+            value={value.student_name ?? ''}
+            onChangeText={setName}
+            placeholder="Leave blank to sign it by hand"
+            placeholderTextColor={theme.color.textMuted}
+            autoCapitalize="words"
+            autoCorrect={false}
+            autoComplete="name"
+            textContentType="name"
+            returnKeyType="done"
+            maxLength={60}
+            style={styles.nameInput}
+            accessibilityLabel="Your name, optional. Printed on the advisor packet."
+            accessibilityHint="You can leave this empty. It does not affect your plan."
+          />
+          <Text style={styles.nameHint}>
+            Only used to print your name on the advisor packet, so an advisor reading it knows
+            whose plan it is. It never leaves this phone unless you share the packet yourself.
+          </Text>
+        </View>
+
+        {/* The next screen does carry confidence on every figure, but not always as
+            a badge: some of it lands as a caveat line or an unconfirmed, dimmed
+            skin on the card. Promising a badge on each one is a promise the screen
+            does not keep, and an honesty screen cannot afford a false detail. */}
         <Text style={styles.closer}>
-          Nothing here is a promise. Every figure the next screen shows carries the confidence
-          badge of the source it came from.
+          Nothing here is a promise. Every figure on the next screen is shown with how far we
+          trust the rows it rests on, and anything nobody has checked against a source says so.
         </Text>
       </ScrollView>
 
@@ -674,6 +711,21 @@ const styles = StyleSheet.create({
     paddingLeft: theme.space.md,
   },
   residencyText: { ...theme.font.small, color: theme.color.textMuted, lineHeight: 19 },
+
+  // Quieter than question 3 on every axis — muted label, no card, body type
+  // rather than the big numeral face — so it reads as an aside, not a step.
+  nameBlock: { marginTop: theme.space.xl, gap: theme.space.xs },
+  nameLabel: { ...theme.font.small, color: theme.color.textMuted },
+  nameInput: {
+    ...theme.font.body,
+    color: theme.color.text,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.color.border,
+    paddingVertical: theme.space.sm,
+    // Touch target: the underline is subtle, so the row still has to be tappable.
+    minHeight: 44,
+  },
+  nameHint: { ...theme.font.small, color: theme.color.textMuted, lineHeight: 19 },
 
   closer: {
     ...theme.font.small,

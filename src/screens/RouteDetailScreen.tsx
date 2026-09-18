@@ -113,9 +113,13 @@ function WarningCard(
   const shaky = backing !== null && !isBacked(backing);
   // Nothing to cite is its own kind of unconfirmed, and looks like one.
   const unsure = backing === null || shaky;
-  // The institution row rides on several warnings at once; repeating its note on
-  // each of them is noise, so it is spent on the one that costs the most.
-  const note = severe && backing !== null ? noteText(backing) : null;
+  // The note is where a row says what could bite the student, and it is not
+  // interchangeable between warnings: the institution row's note is the CAVEAT
+  // naming the residency minimum and the transfer cap as the parts of that row
+  // nobody has confirmed. Spending it on the loudest card alone would strip it
+  // from the two warnings it actually qualifies, leaving them looking like
+  // settled published policy. Every card that rests on a row shows that row.
+  const note = backing !== null ? noteText(backing) : null;
   return (
     <View
       style={[
@@ -172,7 +176,7 @@ function ItemCard(
           <Text style={styles.chipText}>{item.units} UNITS</Text>
         </View>
         {/* An item with no area still costs money — say where it lands. */}
-        <View style={styles.chip}>
+        <View style={[styles.chip, styles.chipArea]}>
           <Text style={styles.chipText}>
             {item.satisfies_area === null
               ? 'ELECTIVE · CLEARS NO AREA'
@@ -500,6 +504,9 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.sm,
     paddingHorizontal: theme.space.sm,
     paddingVertical: 2,
+    // Every chip here carries an area name now, so every chip can outgrow the
+    // row: let it wrap rather than run off the edge of the screen.
+    flexShrink: 1,
   },
   unmetChipText: { ...theme.font.mono, color: theme.color.warn, letterSpacing: 1 },
   unmetText: { ...theme.font.small, color: theme.color.textMuted, lineHeight: 19 },
@@ -546,6 +553,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.space.sm,
     paddingVertical: 2,
   },
+  // "CAL-GETC 2 · Mathematical Concepts & Quantitative Reasoning" is far wider
+  // than a phone, and a chip that cannot shrink runs off the card instead of
+  // wrapping — taking the requirement's name with it. Only the area chip needs
+  // this; "12 UNITS" always fits and must not be broken across two lines.
+  chipArea: { flexShrink: 1 },
   chipText: { ...theme.font.mono, color: theme.color.textMuted, letterSpacing: 1 },
 
   badge: {

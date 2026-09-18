@@ -137,8 +137,6 @@ const policyLine = (inst: Institution): string => {
 interface ProvenanceBadgeProps {
   provenance: Provenance;
   label?: string;
-  /** Suppressed only where the same note is already printed a few lines above. */
-  showNote?: boolean;
 }
 
 function ProvenanceBadge(props: ProvenanceBadgeProps) {
@@ -151,8 +149,11 @@ function ProvenanceBadge(props: ProvenanceBadgeProps) {
       : `${props.label} — ${confidenceLabel(confidence)}`;
   // `note` is where the dataset records what could bite the student — a score
   // minimum, a cap, a claim that has to be confirmed. Dropping it would turn
-  // provenance back into the decoration this product refuses to make it.
-  const note = props.showNote === false ? null : noteText(provenance);
+  // provenance back into the decoration this product refuses to make it, and it
+  // is never suppressed: the campus row here reads "published policy" while its
+  // own note says the residency minimum and the transfer cap in that row are NOT
+  // confirmed. A badge shown without that sentence promises what we do not know.
+  const note = noteText(provenance);
   // checkedOn() owns the visible phrasing; the screen reader needs a whole
   // sentence, so it asks the row itself whether anyone has opened the page.
   const opened = provenance.as_of.trim() !== '';
@@ -196,12 +197,12 @@ function ProvenanceBadge(props: ProvenanceBadgeProps) {
  * they are fired by the absence of one — and saying that plainly is the honest
  * version of a badge, not a reason to show nothing.
  */
-function WarningBacking(props: { warning: RouteWarning; showNote?: boolean }) {
+function WarningBacking(props: { warning: RouteWarning }) {
   const { provenance } = props.warning;
   if (provenance === undefined) {
     return <Text style={styles.sourceDead}>no source — this is what our data is missing</Text>;
   }
-  return <ProvenanceBadge provenance={provenance} showNote={props.showNote} />;
+  return <ProvenanceBadge provenance={provenance} />;
 }
 
 function Stat(props: { label: string; value: string }) {
@@ -324,8 +325,13 @@ function RouteCard(props: RouteCardProps) {
 
       {top !== null ? (
         <View style={[styles.cardWarn, isSevere(top) && styles.cardWarnSevere]}>
+          {/* `extraWarnings` excludes the ones banner-ed above, which still bind
+              this route — so calling them "N warnings on this route" undercounts
+              the route's constraints. Say what the number actually is. */}
           <Text style={[styles.cardWarnCount, isSevere(top) && styles.cardWarnCountSevere]}>
-            {plural(extraWarnings.length, 'warning')} on this route
+            {sharedWarningCount > 0
+              ? `${plural(extraWarnings.length, 'warning')} beyond the ${sharedWarningCount} above`
+              : `${plural(extraWarnings.length, 'warning')} on this route`}
           </Text>
           <Text style={[styles.cardWarnTitle, isSevere(top) && styles.cardWarnTitleSevere]}>
             {WARNING_TITLE[top.kind]}
@@ -333,8 +339,11 @@ function RouteCard(props: RouteCardProps) {
           {/* Never clamped: a warning the student cannot finish reading is a warning
               that did not do its job. Printed verbatim — it is written for a student. */}
           <Text style={styles.cardWarnText}>{top.message}</Text>
-          {/* The campus note is already printed under the header above. */}
-          <WarningBacking warning={top} showNote={false} />
+          {/* Badge AND note. The campus row is marked "published policy", but its
+              note is the caveat naming the residency minimum and the transfer cap
+              as the parts of that row nobody has confirmed — exactly the two
+              warnings likeliest to land here. */}
+          <WarningBacking warning={top} />
           {extraWarnings.length > 1 && (
             <Text style={styles.cardWarnMore}>+{extraWarnings.length - 1} more in the full plan</Text>
           )}
@@ -485,12 +494,12 @@ export function RoutesScreen(props: RoutesScreenProps) {
               <Text style={[styles.alertText, isSevere(w) && styles.alertTextSevere]}>
                 {w.message}
               </Text>
-              {/* Every warning shows the row it rests on. The campus note is already
-                  printed under the header above, so only a different source repeats it. */}
-              <WarningBacking
-                warning={w}
-                showNote={w.provenance?.source_url !== institution.provenance.source_url}
-              />
+              {/* Every warning shows the row it rests on, note included. Comparing
+                  source_url to the campus header's and hiding the note on a match
+                  silently stripped the "NOT yet confirmed" caveat off the residency
+                  and transfer-cap warnings, leaving them looking like settled
+                  published policy. Repetition is the cheaper mistake. */}
+              <WarningBacking warning={w} />
             </View>
           ))}
           <Text style={styles.alertFooter}>

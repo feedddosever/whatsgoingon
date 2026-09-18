@@ -31,7 +31,20 @@ export interface Institution {
   max_transfer_units: number | null;
   /** Whether this campus accepts CLEP at all. */
   accepts_clep: boolean;
-  provenance: Provenance;
+
+  /**
+   * Provenance is per claim, not per row.
+   *
+   * These three fields are confirmed independently and were genuinely at
+   * different confidence levels: the exam policy is published and checked, while
+   * the residency minimum and transfer cap are not. A single row-level record
+   * forced the UI to badge a residency warning "Published policy" on the strength
+   * of a source that only covered CLEP — implying certainty the data does not
+   * support, which is the one thing this product must never do.
+   */
+  exam_policy_provenance: Provenance;
+  residency_provenance: Provenance;
+  transfer_cap_provenance: Provenance;
 }
 
 /** A Cal-GETC area (the GE pattern that replaced IGETC / CSU GE Breadth). */
@@ -95,11 +108,16 @@ export type RouteKind = 'cheapest' | 'fastest' | 'lowest_risk';
  * silently stripped the badge off the app's most consequential claim.
  */
 export type WarningKind =
-  | 'stranded_credit'   // credit the student holds that this school will not honour
-  | 'transfer_cap'      // route exceeds the institution's transfer-unit ceiling
-  | 'residency'         // minimum units that must be earned on campus
-  | 'unmet_areas'       // no route in our data clears these requirements
-  | 'unverified_data';  // we will not stake the student's money on this yet
+  /** Credit the student holds that will not do the job here. */
+  | 'stranded_credit'
+  /** Credit that counts toward the degree but clears no Cal-GETC requirement. */
+  | 'credit_not_toward_ge'
+  /** Route exceeds the institution's transfer-unit ceiling. */
+  | 'transfer_cap'
+  /** Minimum units that must be earned on campus. */
+  | 'residency'
+  /** We will not stake the student's money on this yet. */
+  | 'unverified_data';
 
 export interface RouteWarning {
   kind: WarningKind;

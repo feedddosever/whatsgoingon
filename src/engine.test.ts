@@ -117,7 +117,9 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
     institutions: [{
       id: 'x', name: 'X', system: 'CSU' as const, residency_min_units: 0,
       cost_per_unit_usd: 400, max_transfer_units: null, accepts_clep: true,
-      provenance: { source_url: '', as_of: '', confidence: 'published' as const },
+      exam_policy_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
+      residency_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
+      transfer_cap_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
     }],
     areas: [{ id: '2', name: 'Math', required_units: 3,
       provenance: { source_url: '', as_of: '', confidence: 'published' as const } }],
@@ -170,9 +172,8 @@ test('lowest-risk route stakes nothing on unconfirmed data', () => {
     units_in_residence: 30,
   }, 'lowest_risk');
 
-  // Now that some rows are confirmed the route has content — but every item in
-  // it must be backed. An unconfirmed row appearing here is the failure this
-  // route exists to prevent.
+  // Every item must be backed. An unconfirmed row appearing here is the failure
+  // this route exists to prevent.
   assert.ok(route.items.length > 0, 'confirmed rows should now produce a route');
   for (const item of route.items) {
     assert.ok(
@@ -261,4 +262,57 @@ test('a saving is never negative — routes cost less than doing nothing', () =>
   for (const r of planAllRoutes(ds, input)) {
     assert.ok(r.total_cost_usd <= base, `${r.kind} costs more than doing nothing`);
   }
+});
+
+test('a warning cites the row it actually rests on, not the row next to it', () => {
+  // Institution provenance is per claim. A residency warning must not borrow the
+  // exam policy's confirmed status — that would badge an unchecked number
+  // "Published policy".
+  const route = planRoute(ds, {
+    target_institution_id: 'uc-berkeley',
+    held_credit_ids: ['clep-college-composition'],
+    units_in_residence: 0,
+  }, 'cheapest');
+
+  const inst = ds.institutions.find(i => i.id === 'uc-berkeley')!;
+
+  const stranded = route.warnings.find(w => w.kind === 'stranded_credit');
+  assert.equal(stranded?.provenance, inst.exam_policy_provenance);
+  assert.equal(stranded?.provenance?.confidence, 'published');
+
+  const residency = route.warnings.find(w => w.kind === 'residency');
+  assert.equal(residency?.provenance, inst.residency_provenance);
+  assert.equal(residency?.provenance?.confidence, 'needs_check',
+    'the residency figure is unconfirmed and must not claim otherwise');
+});
+
+test('CLEP held against a CSU warns that it clears no Cal-GETC requirement', () => {
+  // The quiet failure: the campus accepts the credit, so nothing looks wrong,
+  // but it satisfies no requirement the student is planning against.
+  const route = planRoute(ds, {
+    target_institution_id: 'csu-long-beach',
+    held_credit_ids: ['clep-college-composition'],
+    units_in_residence: 30,
+  }, 'cheapest');
+
+  const w = route.warnings.find(x => x.kind === 'credit_not_toward_ge');
+  assert.ok(w, 'a CSU student holding CLEP must be told it clears no Cal-GETC area');
+  assert.match(w.message, /does not clear any Cal-GETC requirement/);
+
+  // And it must NOT be reported as stranded — CSU does count it toward the degree.
+  assert.equal(route.warnings.some(x => x.kind === 'stranded_credit'), false);
+});
+
+test('AP held against a CSU raises no credit warning at all', () => {
+  const route = planRoute(ds, {
+    target_institution_id: 'csu-long-beach',
+    held_credit_ids: ['ap-english-lang'],
+    units_in_residence: 30,
+  }, 'cheapest');
+
+  assert.equal(
+    route.warnings.some(w => w.kind === 'stranded_credit' || w.kind === 'credit_not_toward_ge'),
+    false,
+    'AP clears a Cal-GETC area, so there is nothing to warn about',
+  );
 });
