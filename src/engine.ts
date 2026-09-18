@@ -1,5 +1,5 @@
 import type {
-  AcceptanceRule, GeArea, Institution, CreditSource,
+  AcceptanceRule, AreaChoice, GeArea, Institution, CreditSource,
   PlanItem, Route, RouteKind, RouteWarning, StudentInput, StudentProfile,
 } from './types.ts';
 
@@ -212,17 +212,56 @@ function heldCreditWarnings(
   return out;
 }
 
+/**
+ * Every credit this institution will accept for one requirement, cheapest first.
+ * This is what the plan map offers when a student wants to change a choice.
+ */
+export function optionsForArea(
+  ds: Dataset,
+  input: StudentInput,
+  areaId: string,
+): PlanItem[] {
+  const inst = byId(ds.institutions, input.target_institution_id);
+  if (!inst) return [];
+  return candidatesFor(ds, inst, input.profile)
+    .filter(c => c.satisfies_area === areaId)
+    .sort((a, b) => a.cost_usd - b.cost_usd);
+}
+
 function pickPerArea(
   candidates: PlanItem[],
   areas: string[],
   rank: (a: PlanItem, b: PlanItem) => number,
-): PlanItem[] {
+  overrides: Record<string, AreaChoice>,
+): { chosen: PlanItem[]; skipped: string[] } {
   const chosen: PlanItem[] = [];
+  const skipped: string[] = [];
+
   for (const area of areas) {
-    const forArea = candidates.filter(c => c.satisfies_area === area).sort(rank);
-    if (forArea.length > 0) chosen.push(forArea[0]);
+    const override = overrides[area];
+    if (override?.kind === 'skip') {
+      skipped.push(area);
+      continue;
+    }
+
+    const forArea = candidates.filter(c => c.satisfies_area === area);
+
+    if (override?.kind === 'use') {
+      const picked = forArea.find(c => c.credit_source_id === override.credit_source_id);
+      // A stale override — the student's choice is no longer offered here,
+      // usually because they changed campus. Fall through to our own pick
+      // rather than silently dropping the requirement.
+      if (picked !== undefined) {
+        chosen.push(picked);
+        continue;
+      }
+    }
+
+    const best = [...forArea].sort(rank)[0];
+    if (best !== undefined) chosen.push(best);
   }
-  return chosen;
+
+  return { chosen, skipped };
 }
 
 const RANKERS: Record<RouteKind, (a: PlanItem, b: PlanItem) => number> = {
@@ -252,10 +291,12 @@ export function planRoute(ds: Dataset, input: StudentInput, kind: RouteKind): Ro
   }
 
   const areas = unmetAreas(ds, inst, input.held_credit_ids);
-  const items = pickPerArea(candidates, areas, RANKERS[kind]);
+  const { chosen: items, skipped } = pickPerArea(
+    candidates, areas, RANKERS[kind], input.plan_overrides ?? {},
+  );
 
   const areasCleared = items.map(i => i.satisfies_area).filter((a): a is string => a !== null);
-  const areasUnmet = areas.filter(a => !areasCleared.includes(a));
+  const areasUnmet = areas.filter(a => !areasCleared.includes(a) && !skipped.includes(a));
   const totalUnits = items.reduce((n, i) => n + i.units, 0);
 
   const warnings: RouteWarning[] = [];
@@ -306,6 +347,7 @@ export function planRoute(ds: Dataset, input: StudentInput, kind: RouteKind): Ro
     total_units: totalUnits,
     areas_cleared: areasCleared,
     areas_unmet: areasUnmet,
+    areas_skipped: skipped,
     warnings,
   };
 }

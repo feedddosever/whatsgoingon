@@ -3,14 +3,15 @@ import { Alert, BackHandler, Platform, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import type { Route, StudentInput } from './src/types.ts';
-import { baselineCost, planAllRoutes, routeSaving } from './src/engine.ts';
+import type { AreaChoice, Route, RouteKind, StudentInput } from './src/types.ts';
+import { baselineCost, optionsForArea, planAllRoutes, routeSaving } from './src/engine.ts';
 import { california } from './src/dataset.ts';
 import { theme } from './src/ui/theme.ts';
 import { ProfileScreen } from './src/screens/ProfileScreen.tsx';
 import { InputScreen } from './src/screens/InputScreen.tsx';
 import { RoutesScreen } from './src/screens/RoutesScreen.tsx';
 import { RouteDetailScreen } from './src/screens/RouteDetailScreen.tsx';
+import { PlanMapScreen } from './src/screens/PlanMapScreen.tsx';
 import { exportAdvisorPacket } from './src/packet/advisorPacket.ts';
 import { PaywallScreen } from './src/screens/PaywallScreen.tsx';
 import { NATIVE_API_KEY, WEB_API_KEY } from './src/purchases/config.ts';
@@ -27,7 +28,7 @@ import {
 /** Public SDK key for this platform. Web Billing and the stores use different ones. */
 const RC_KEY = Platform.OS === 'web' ? WEB_API_KEY : NATIVE_API_KEY;
 
-type Screen = 'profile' | 'input' | 'routes' | 'detail';
+type Screen = 'profile' | 'input' | 'routes' | 'map' | 'detail';
 
 const EMPTY_INPUT: StudentInput = {
   profile: {
@@ -56,7 +57,13 @@ const EMPTY_INPUT: StudentInput = {
 export default function App() {
   const [screen, setScreen] = useState<Screen>('profile');
   const [input, setInput] = useState<StudentInput>(EMPTY_INPUT);
-  const [selected, setSelected] = useState<Route | null>(null);
+  /**
+   * The chosen route is held as its KIND, not as a Route object. Editing the
+   * plan re-runs the engine, and a stored Route would be a snapshot of the plan
+   * before the edit — the map would show a stale choice back to the student who
+   * just made it.
+   */
+  const [selectedKind, setSelectedKind] = useState<RouteKind | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -97,7 +104,8 @@ export default function App() {
       profile: null,
       input: 'profile',
       routes: 'input',
-      detail: 'routes',
+      map: 'routes',
+      detail: 'map',
     };
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
       const back = PREVIOUS[screen];
@@ -122,6 +130,19 @@ export default function App() {
     () => (institution ? baselineCost(california, input) : 0),
     [institution, input],
   );
+
+  const selected: Route | null =
+    selectedKind === null ? null : routes.find(r => r.kind === selectedKind) ?? null;
+
+  const setOverride = useCallback((areaId: string, choice: AreaChoice | null) => {
+    setInput(prev => {
+      const next = { ...(prev.plan_overrides ?? {}) };
+      if (choice === null) delete next[areaId];
+      else next[areaId] = choice;
+      return { ...prev, plan_overrides: next };
+    });
+  }, []);
+
 
   const handleExport = useCallback(() => {
     if (!institution || !selected) return;
@@ -206,6 +227,20 @@ export default function App() {
         onDismiss={() => { setPaywallOpen(false); setPurchaseError(null); }}
       />
     );
+  } else if (screen === 'map' && institution && selected) {
+    body = (
+      <PlanMapScreen
+        institution={institution}
+        route={selected}
+        areas={california.areas}
+        profile={input.profile}
+        optionsFor={(areaId) => optionsForArea(california, input, areaId)}
+        choiceFor={(areaId) => input.plan_overrides?.[areaId]}
+        onChoose={setOverride}
+        onOpenDetail={() => setScreen('detail')}
+        onBack={() => setScreen('routes')}
+      />
+    );
   } else if (screen === 'detail' && institution && selected) {
     body = (
       <RouteDetailScreen
@@ -218,7 +253,7 @@ export default function App() {
         }
         onUnlock={() => { setPurchaseError(null); setPaywallOpen(true); }}
         onExportPacket={handleExport}
-        onBack={() => setScreen('routes')}
+        onBack={() => setScreen('map')}
       />
     );
   } else if (screen === 'routes' && institution) {
@@ -228,7 +263,7 @@ export default function App() {
         routes={routes}
         areas={california.areas}
         baselineCostUsd={baseline}
-        onSelectRoute={(r) => { setSelected(r); setScreen('detail'); }}
+        onSelectRoute={(r) => { setSelectedKind(r.kind); setScreen('map'); }}
         onBack={() => setScreen('input')}
       />
     );

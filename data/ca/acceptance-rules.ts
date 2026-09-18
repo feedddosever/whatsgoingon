@@ -1,8 +1,10 @@
 import type { AcceptanceRule, Provenance } from '../../src/types.ts';
+import { institutions } from './institutions.ts';
 
-const UC_IDS = ['uc-berkeley', 'ucla', 'uc-davis', 'uc-irvine'];
-const CSU_IDS = ['csu-long-beach', 'san-jose-state'];
-const ALL_IDS = [...UC_IDS, ...CSU_IDS];
+// Derived from the institution list rather than repeated here: a campus added
+// above must never silently end up with no acceptance rules at all.
+const CSU_IDS = institutions.filter(i => i.system === 'CSU').map(i => i.id);
+const ALL_IDS = institutions.map(i => i.id);
 
 /**
  * That AP is accepted against Cal-GETC is confirmed. WHICH area each individual

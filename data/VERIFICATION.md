@@ -24,6 +24,21 @@ No engine change required.
 `npm test` fails the lowest-risk route while unverified rows remain, so the
 dataset cannot quietly ship half-checked.
 
+## Coverage
+
+The dataset now carries **all 32 of California's public four-year campuses** —
+9 UC undergraduate campuses and all 23 CSU campuses. A test asserts every one of
+them produces a complete plan, so a campus can never be listed with no
+acceptance rules behind it.
+
+Systemwide policy is uniform and confirmed. What varies per campus — residency
+minimums, transfer caps, which exam clears which *major* requirement — is
+labelled `needs_check` rather than invented, because a campus-specific number
+guessed here is exactly the claim that costs a student a semester.
+
+Community colleges appear as credit sources rather than destinations: the app
+plans a route *to* a four-year degree, and the CCC enrolment fee is statewide.
+
 ## Priority order
 
 ### P0 — RESOLVED 2026-09-18

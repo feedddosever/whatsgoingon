@@ -118,9 +118,21 @@ export interface StudentProfile {
   waiver: WaiverStatus;
 }
 
+/** What a student chose for one requirement, overriding our recommendation. */
+export type AreaChoice = { kind: 'use'; credit_source_id: string } | { kind: 'skip' };
+
 export interface StudentInput {
   /** Answered in onboarding. Personalises pricing and which advice applies. */
   profile: StudentProfile;
+  /**
+   * The student's own edits to the plan, keyed by Cal-GETC area id.
+   *
+   * A generated plan is a starting point, not a verdict — they know things we do
+   * not (a course already scheduled, an exam they will not sit). Absent means
+   * "use our recommendation", which is why this is optional rather than a map
+   * that has to be constructed before anything can be planned.
+   */
+  plan_overrides?: Record<string, AreaChoice>;
   /** Printed on the advisor packet so the advisor knows who is asking. */
   student_name?: string;
   target_institution_id: string;
@@ -182,6 +194,8 @@ export interface Route {
   total_units: number;
   areas_cleared: string[];
   areas_unmet: string[];
+  /** Requirements the student chose to handle themselves. Never priced. */
+  areas_skipped: string[];
   /** Hard constraints that bind this route — shown to the student verbatim. */
   warnings: RouteWarning[];
 }

@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { planRoute, planAllRoutes, baselineCost, routeSaving } from './engine.ts';
+import {
+  planRoute, planAllRoutes, baselineCost, routeSaving, optionsForArea,
+} from './engine.ts';
 import { california } from './dataset.ts';
 import type { StudentProfile } from './types.ts';
 
@@ -540,5 +542,88 @@ test('locked-sequence fields get a caution; others are not nagged', () => {
   for (const field of ['business', 'arts_humanities', 'undecided'] as const) {
     const r = planRoute(ds, { ...base, profile: withProfile({ field }) }, 'cheapest');
     assert.equal(r.warnings.some(w => w.kind === 'major_sequence'), false);
+  }
+});
+
+test('every campus in the dataset can actually be planned for', () => {
+  // A campus added to the list with no acceptance rules would render an app that
+  // silently offers nothing at that school.
+  assert.ok(ds.institutions.length >= 32, 'all UC and CSU campuses should be present');
+  for (const inst of ds.institutions) {
+    const route = planRoute(ds, {
+      profile: PLAIN, target_institution_id: inst.id,
+      held_credit_ids: [], units_in_residence: 30,
+    }, 'cheapest');
+    assert.ok(route.items.length > 0, `${inst.name} produced an empty plan`);
+    assert.equal(route.areas_unmet.length, 0, `${inst.name} left requirements unmet`);
+  }
+});
+
+test('a student can swap the credit used for a requirement', () => {
+  const base = {
+    profile: PLAIN, target_institution_id: 'csu-long-beach',
+    held_credit_ids: [], units_in_residence: 30,
+  };
+  const options = optionsForArea(ds, base, '2');
+  assert.ok(options.length > 1, 'area 2 should offer a choice');
+
+  const ours = planRoute(ds, base, 'cheapest').items.find(i => i.satisfies_area === '2');
+  const theirs = options.find(o => o.credit_source_id !== ours?.credit_source_id);
+  assert.ok(theirs, 'guards the premise');
+
+  const edited = planRoute(ds, {
+    ...base,
+    plan_overrides: { '2': { kind: 'use', credit_source_id: theirs.credit_source_id } },
+  }, 'cheapest');
+
+  const picked = edited.items.find(i => i.satisfies_area === '2');
+  assert.equal(picked?.credit_source_id, theirs.credit_source_id);
+  assert.equal(edited.areas_unmet.includes('2'), false, 'the requirement is still covered');
+});
+
+test('a skipped requirement is neither priced nor reported as unmet', () => {
+  const base = {
+    profile: PLAIN, target_institution_id: 'csu-long-beach',
+    held_credit_ids: [], units_in_residence: 30,
+  };
+  const full = planRoute(ds, base, 'cheapest');
+  const edited = planRoute(ds, { ...base, plan_overrides: { '2': { kind: 'skip' } } }, 'cheapest');
+
+  assert.ok(edited.areas_skipped.includes('2'));
+  assert.equal(edited.areas_unmet.includes('2'), false, 'skipping is a decision, not a gap');
+  assert.equal(edited.items.some(i => i.satisfies_area === '2'), false);
+  assert.ok(edited.total_cost_usd < full.total_cost_usd, 'and it is not charged for');
+});
+
+test('an override that no longer applies falls back instead of dropping the area', () => {
+  // The student picked something at a CSU, then switched to a UC where that
+  // credit is not accepted. Dropping the requirement silently would be worse
+  // than quietly re-planning it.
+  const edited = planRoute(ds, {
+    profile: PLAIN, target_institution_id: 'uc-berkeley',
+    held_credit_ids: [], units_in_residence: 30,
+    plan_overrides: { '1A': { kind: 'use', credit_source_id: 'clep-college-composition' } },
+  }, 'cheapest');
+
+  assert.ok(
+    edited.items.some(i => i.satisfies_area === '1A'),
+    'area 1A must still be planned for',
+  );
+  assert.equal(
+    edited.items.some(i => i.credit_source_id === 'clep-college-composition'), false,
+    'and must not use credit this campus rejects',
+  );
+});
+
+test('optionsForArea never offers credit the campus will not honour', () => {
+  for (const inst of ds.institutions.filter(i => i.system === 'UC')) {
+    for (const area of ds.areas) {
+      for (const o of optionsForArea(ds, {
+        profile: PLAIN, target_institution_id: inst.id,
+        held_credit_ids: [], units_in_residence: 30,
+      }, area.id)) {
+        assert.ok(!o.credit_source_id.startsWith('clep-'), `${inst.name} offered CLEP`);
+      }
+    }
   }
 });

@@ -5,6 +5,7 @@
  */
 import type {
   Institution, Route, StudentInput, CreditSource, GeArea, StudentProfile,
+  AreaChoice, PlanItem,
 } from '../types.ts';
 
 export interface ProfileScreenProps {
@@ -31,6 +32,21 @@ export interface RoutesScreenProps {
   /** Cost of the do-nothing path, used to show the saving. */
   baselineCostUsd: number;
   onSelectRoute: (route: Route) => void;
+  onBack: () => void;
+}
+
+export interface PlanMapScreenProps {
+  institution: Institution;
+  route: Route;
+  areas: GeArea[];
+  profile: StudentProfile;
+  /** Every credit this campus accepts for one requirement, cheapest first. */
+  optionsFor: (areaId: string) => PlanItem[];
+  /** The student's own choice for a requirement, if they made one. */
+  choiceFor: (areaId: string) => AreaChoice | undefined;
+  /** null resets the requirement back to our recommendation. */
+  onChoose: (areaId: string, choice: AreaChoice | null) => void;
+  onOpenDetail: () => void;
   onBack: () => void;
 }
 

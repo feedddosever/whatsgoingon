@@ -100,18 +100,21 @@ const CSU_COST: Provenance = {
     'rather than a price.',
 };
 
-const uc = (id: string, name: string, tagNote: string): Institution => ({
+const uc = (id: string, name: string, tag: boolean): Institution => ({
   id,
   name,
   system: 'UC',
   cost_per_unit_usd: UC_PER_UNIT,
-  cost_provenance: UC_COST,
   residency_min_units: 24,
   max_transfer_units: 70,
   accepts_clep: false,
-  exam_policy_provenance: { ...UC_EXAM_POLICY, note: UC_EXAM_POLICY.note + ' ' + tagNote },
+  exam_policy_provenance: {
+    ...UC_EXAM_POLICY,
+    note: UC_EXAM_POLICY.note + ' ' + (tag ? TAG : NO_TAG(name)),
+  },
   residency_provenance: UC_RESIDENCY,
   transfer_cap_provenance: UC_TRANSFER_CAP,
+  cost_provenance: UC_COST,
 });
 
 const csu = (id: string, name: string): Institution => ({
@@ -119,24 +122,64 @@ const csu = (id: string, name: string): Institution => ({
   name,
   system: 'CSU',
   cost_per_unit_usd: CSU_PER_UNIT,
-  cost_provenance: CSU_COST,
   residency_min_units: 30,
   max_transfer_units: 70,
   accepts_clep: true,
   exam_policy_provenance: CSU_EXAM_POLICY,
   residency_provenance: CSU_RESIDENCY,
   transfer_cap_provenance: CSU_TRANSFER_CAP,
+  cost_provenance: CSU_COST,
 });
 
-const TAG = 'This campus participates in UC TAG: guaranteed transfer admission if you sign a ' +
+const TAG =
+  'This campus participates in UC TAG: guaranteed transfer admission if you sign a ' +
   'TAG in the Sept 1-30 window and meet its terms.';
-const NO_TAG = (n: string) => `${n} does NOT participate in UC TAG.`;
+const NO_TAG = (n: string): string =>
+  `${n} does NOT participate in UC TAG — the guarantee is not available here.`;
 
+/**
+ * Every public four-year campus in California: all 9 UC undergraduate campuses
+ * and all 23 CSU campuses.
+ *
+ * Systemwide policy is genuinely uniform and confirmed — UC awards no CLEP
+ * credit anywhere, CSU accepts it toward a degree but never against Cal-GETC.
+ * What varies per campus (residency minimums, transfer caps, which exams clear
+ * which major requirement) is NOT confirmed and is labelled `needs_check`
+ * rather than guessed, because a campus-specific number invented here is
+ * exactly the kind of claim that costs a student a semester.
+ */
 export const institutions: Institution[] = [
-  uc('uc-berkeley', 'UC Berkeley', NO_TAG('Berkeley')),
-  uc('ucla', 'UCLA', NO_TAG('UCLA')),
-  uc('uc-davis', 'UC Davis', TAG),
-  uc('uc-irvine', 'UC Irvine', TAG),
-  csu('csu-long-beach', 'CSU Long Beach'),
-  csu('san-jose-state', 'San Jose State University'),
+  uc("uc-berkeley", "UC Berkeley", false),
+  uc("uc-davis", "UC Davis", true),
+  uc("uc-irvine", "UC Irvine", true),
+  uc("ucla", "UCLA", false),
+  uc("uc-merced", "UC Merced", true),
+  uc("uc-riverside", "UC Riverside", true),
+  uc("uc-san-diego", "UC San Diego", false),
+  uc("uc-santa-barbara", "UC Santa Barbara", true),
+  uc("uc-santa-cruz", "UC Santa Cruz", true),
+
+  csu("csu-bakersfield", "CSU Bakersfield"),
+  csu("csu-channel-islands", "CSU Channel Islands"),
+  csu("csu-chico", "CSU Chico"),
+  csu("csu-dominguez-hills", "CSU Dominguez Hills"),
+  csu("csu-east-bay", "CSU East Bay"),
+  csu("csu-fresno", "Fresno State"),
+  csu("csu-fullerton", "CSU Fullerton"),
+  csu("cal-poly-humboldt", "Cal Poly Humboldt"),
+  csu("csu-long-beach", "CSU Long Beach"),
+  csu("csu-los-angeles", "Cal State LA"),
+  csu("cal-maritime", "Cal State Maritime"),
+  csu("csu-monterey-bay", "CSU Monterey Bay"),
+  csu("csu-northridge", "CSU Northridge"),
+  csu("cal-poly-pomona", "Cal Poly Pomona"),
+  csu("csu-sacramento", "Sacramento State"),
+  csu("csu-san-bernardino", "CSU San Bernardino"),
+  csu("san-diego-state", "San Diego State"),
+  csu("san-francisco-state", "San Francisco State"),
+  csu("san-jose-state", "San Jose State University"),
+  csu("cal-poly-slo", "Cal Poly San Luis Obispo"),
+  csu("csu-san-marcos", "CSU San Marcos"),
+  csu("sonoma-state", "Sonoma State"),
+  csu("csu-stanislaus", "Stanislaus State"),
 ];
