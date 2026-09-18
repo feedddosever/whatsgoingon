@@ -19,7 +19,7 @@ import { checkedOn, isBacked, noteText } from '../ui/provenance.ts';
  * knows things we do not, and the map is where they say so.
  */
 
-type Status = 'chosen' | 'skipped' | 'unmet';
+type Status = 'chosen' | 'included' | 'skipped' | 'unmet';
 
 interface Branch {
   area: GeArea;
@@ -31,12 +31,14 @@ interface Branch {
 
 const STATUS_COLOR: Record<Status, string> = {
   chosen: theme.color.accent,
+  included: theme.color.accent,
   skipped: theme.color.textMuted,
   unmet: theme.color.warn,
 };
 
 const STATUS_LABEL: Record<Status, string> = {
   chosen: 'planned',
+  included: 'already covered, at no extra cost',
   skipped: 'you are handling this',
   unmet: 'nothing in our data clears this',
 };
@@ -128,9 +130,14 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
   // laboratory, but only one of them is actually supplying it — saying "also
   // clears the lab" on both is true of each exam and misleading about the plan.
   const itemByArea = new Map<string, PlanItem>();
+  /** The requirement each credit is listed under, so it is priced in one place. */
+  const ownerArea = new Map<string, string>();
   for (const i of route.items) {
     for (const a of i.satisfies_areas) {
-      if (!itemByArea.has(a)) itemByArea.set(a, i);
+      if (!itemByArea.has(a)) {
+        itemByArea.set(a, i);
+        if (!ownerArea.has(i.credit_source_id)) ownerArea.set(i.credit_source_id, a);
+      }
     }
   }
   const skipped = new Set(route.areas_skipped);
@@ -139,7 +146,15 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
     .filter(a => a.applies_to.includes(institution.system))
     .map(area => {
       const item = itemByArea.get(area.id) ?? null;
-      const status: Status = skipped.has(area.id) ? 'skipped' : item !== null ? 'chosen' : 'unmet';
+      // A requirement covered by an exam listed under an earlier requirement is
+      // 'included', not 'chosen'. Showing AP Chemistry with its $99 under both
+      // 5A and 5C reads as buying it twice; the cost is only charged once, and
+      // the map has to say so.
+      const primary = item === null ? null : ownerArea.get(item.credit_source_id) ?? null;
+      const status: Status = skipped.has(area.id)
+        ? 'skipped'
+        : item === null ? 'unmet'
+        : primary === area.id ? 'chosen' : 'included';
       const choice = choiceFor(area.id);
       return { area, status, item, edited: choice !== undefined };
     });
@@ -242,10 +257,17 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
                       <>
                         <View style={styles.nodeLine}>
                           <Text style={styles.chosenLabel} numberOfLines={2}>{b.item.label}</Text>
-                          <Text style={styles.chosenCost}>
-                            {b.item.cost_usd === 0 ? 'free' : money(b.item.cost_usd)}
+                          <Text style={b.status === 'included' ? styles.includedCost : styles.chosenCost}>
+                            {b.status === 'included'
+                              ? 'no extra cost'
+                              : b.item.cost_usd === 0 ? 'free' : money(b.item.cost_usd)}
                           </Text>
                         </View>
+                        {b.status === 'included' && (
+                          <Text style={styles.alsoClears}>
+                            Already counted under {nameFor(ownerArea.get(b.item.credit_source_id) ?? '')}
+                          </Text>
+                        )}
                         {(() => {
                           const alsoOwned = b.item.satisfies_areas.filter(
                             a => a !== b.area.id && itemByArea.get(a) === b.item,
@@ -403,6 +425,7 @@ const styles = StyleSheet.create({
   chosenCost: { ...theme.font.body, color: theme.color.accent, fontWeight: '700' },
   statusText: { ...theme.font.body, marginTop: theme.space.xs },
   alsoClears: { ...theme.font.small, color: theme.color.accent, marginTop: 2 },
+  includedCost: { ...theme.font.small, color: theme.color.textMuted, fontWeight: '600' },
   expandHint: { ...theme.font.small, color: theme.color.textMuted, marginTop: theme.space.sm },
 
   options: { marginTop: theme.space.sm, gap: theme.space.sm },
