@@ -4,7 +4,9 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import type { AreaChoice, Route, RouteKind, StudentInput } from './src/types.ts';
-import { baselineCost, optionsForArea, planAllRoutes, routeSaving } from './src/engine.ts';
+import {
+  baselineCost, optionsForArea, pathwayCosts, planAllRoutes, routeSaving,
+} from './src/engine.ts';
 import { california } from './src/dataset.ts';
 import { theme } from './src/ui/theme.ts';
 import { ProfileScreen } from './src/screens/ProfileScreen.tsx';
@@ -277,6 +279,7 @@ export default function App() {
         areas={california.areas}
         profile={input.profile}
         optionsFor={(areaId) => optionsForArea(california, input, areaId)}
+        pathways={pathwayCosts(california, input)}
         choiceFor={(areaId) => input.plan_overrides?.[areaId]}
         onChoose={setOverride}
         onOpenDetail={() => setScreen('detail')}

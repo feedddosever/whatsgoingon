@@ -41,12 +41,28 @@ const STATUS_LABEL: Record<Status, string> = {
   unmet: 'nothing in our data clears this',
 };
 
-/** The three high-school routes worth knowing about, in reachability order. */
-const HS_PATHS: ReadonlyArray<readonly [string, string]> = [
-  ['Dual enrolment (CCAP)', 'College units while still in high school, with no enrolment fee. The cheapest credit that exists.'],
-  ['AP exams', 'The only exam credit both UC and CSU accept toward Cal-GETC.'],
-  ['Community college, then transfer', 'Clear requirements at $46/unit, then transfer with junior standing.'],
-];
+/**
+ * What to call each kind of credit, and why a high-schooler should care.
+ *
+ * Priced against the student's own requirements rather than described in the
+ * abstract: "dual enrolment is cheap" is a slogan, "it clears 8 of your 9
+ * requirements for $0" is something you can act on.
+ */
+const PATH_COPY: Record<string, readonly [string, string]> = {
+  ccc_course: [
+    'Community college — free while you are in high school',
+    'Dual enrolment (CCAP) waives the enrolment fee entirely for high-school ' +
+    'students, up to 15 units a term. The same courses transfer later.',
+  ],
+  ap: [
+    'AP exams',
+    'The only exam credit both UC and CSU accept toward Cal-GETC.',
+  ],
+  clep: [
+    'CLEP exams',
+    'Cannot satisfy Cal-GETC anywhere, and UC awards no CLEP credit at all.',
+  ],
+};
 
 function Badge({ p }: { p: Provenance }): ReactElement {
   const shaky = !isBacked(p);
@@ -87,7 +103,7 @@ function Option({
 export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
   const {
     institution, route, areas, profile,
-    optionsFor, choiceFor, onChoose, onOpenDetail, onStartOver, onBack,
+    optionsFor, pathways, choiceFor, onChoose, onOpenDetail, onStartOver, onBack,
   } = props;
 
   const [open, setOpen] = useState<string | null>(null);
@@ -145,15 +161,28 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
             <View style={styles.pathsCard}>
               <Text style={styles.pathsTitle}>✓  ROUTES STILL OPEN TO YOU</Text>
               <Text style={styles.pathsSub}>
-                You are still in high school, so all three of these are reachable.
-                They stack — most students use more than one.
+                You are still in high school, so you can start banking credit now.
+                Here is what each route would actually do for this plan — they
+                stack, and most students use more than one.
               </Text>
-              {HS_PATHS.map(([name, why]) => (
-                <View key={name} style={styles.pathRow}>
-                  <Text style={styles.pathName}>{name}</Text>
-                  <Text style={styles.pathWhy}>{why}</Text>
-                </View>
-              ))}
+              {pathways.map(pw => {
+                const copy = PATH_COPY[pw.kind];
+                if (copy === undefined) return null;
+                const [name, why] = copy;
+                const none = pw.areas_covered === 0;
+                return (
+                  <View key={pw.kind} style={styles.pathRow}>
+                    <Text style={styles.pathName}>{name}</Text>
+                    <Text style={[styles.pathFigure, none && styles.pathFigureNone]}>
+                      {none
+                        ? `clears none of your ${pw.areas_required} requirements`
+                        : `clears ${pw.areas_covered} of ${pw.areas_required} · ` +
+                          `${pw.total_cost_usd === 0 ? 'free' : money(pw.total_cost_usd)}`}
+                    </Text>
+                    <Text style={styles.pathWhy}>{why}</Text>
+                  </View>
+                );
+              })}
             </View>
           )}
 
@@ -313,6 +342,8 @@ const styles = StyleSheet.create({
   pathsSub: { ...theme.font.small, color: theme.color.text, marginTop: theme.space.xs, lineHeight: 18 },
   pathRow: { marginTop: theme.space.sm },
   pathName: { ...theme.font.body, color: theme.color.text, fontWeight: '600' },
+  pathFigure: { ...theme.font.small, color: theme.color.accent, fontWeight: '700', marginTop: 1 },
+  pathFigureNone: { color: theme.color.warn },
   pathWhy: { ...theme.font.small, color: theme.color.textMuted, marginTop: 2, lineHeight: 17 },
 
   rootNode: {

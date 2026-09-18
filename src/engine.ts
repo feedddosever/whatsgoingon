@@ -1,5 +1,5 @@
 import type {
-  AcceptanceRule, AreaChoice, GeArea, Institution, CreditSource,
+  AcceptanceRule, AreaChoice, CreditKind, GeArea, Institution, CreditSource,
   PlanItem, Route, RouteKind, RouteWarning, StudentInput, StudentProfile,
 } from './types.ts';
 
@@ -395,4 +395,50 @@ export function routeSaving(ds: Dataset, input: StudentInput, route: Route): num
   );
   const avoided = clearedUnits * inst.cost_per_unit_usd;
   return Math.max(0, avoided - route.total_cost_usd);
+}
+
+export interface PathwayCost {
+  kind: CreditKind;
+  /** Requirements this pathway alone could clear at the target campus. */
+  areas_covered: number;
+  areas_required: number;
+  total_cost_usd: number;
+}
+
+/**
+ * What each kind of credit would cost if a student leaned on it alone.
+ *
+ * This is what turns "dual enrolment is cheap" from a slogan into a number they
+ * can act on: it prices THEIR requirements at THIS campus, and says plainly how
+ * many of them each route can and cannot reach. No single route clears
+ * everything, which is the point — they stack.
+ */
+export function pathwayCosts(ds: Dataset, input: StudentInput): PathwayCost[] {
+  const inst = byId(ds.institutions, input.target_institution_id);
+  if (!inst) return [];
+
+  const required = unmetAreas(ds, inst, input.held_credit_ids);
+  const candidates = candidatesFor(ds, inst, input.profile);
+  const kinds: CreditKind[] = ['ap', 'ccc_course', 'clep'];
+
+  return kinds.map(kind => {
+    let covered = 0;
+    let total = 0;
+    for (const area of required) {
+      const forArea = candidates
+        .filter(c => c.satisfies_area === area && inferKind(c) === kind)
+        .sort((a, b) => a.cost_usd - b.cost_usd);
+      const best = forArea[0];
+      if (best !== undefined) {
+        covered += 1;
+        total += best.cost_usd;
+      }
+    }
+    return {
+      kind,
+      areas_covered: covered,
+      areas_required: required.length,
+      total_cost_usd: total,
+    };
+  });
 }

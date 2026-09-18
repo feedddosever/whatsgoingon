@@ -7,6 +7,7 @@ import type {
   Institution, Route, StudentInput, CreditSource, GeArea, StudentProfile,
   AreaChoice, PlanItem,
 } from '../types.ts';
+import type { PathwayCost } from '../engine.ts';
 
 export interface ProfileScreenProps {
   value: StudentProfile;
@@ -42,6 +43,8 @@ export interface PlanMapScreenProps {
   profile: StudentProfile;
   /** Every credit this campus accepts for one requirement, cheapest first. */
   optionsFor: (areaId: string) => PlanItem[];
+  /** What each kind of credit would cost if leaned on alone. */
+  pathways: PathwayCost[];
   /** The student's own choice for a requirement, if they made one. */
   choiceFor: (areaId: string) => AreaChoice | undefined;
   /** null resets the requirement back to our recommendation. */

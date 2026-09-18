@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  planRoute, planAllRoutes, baselineCost, routeSaving, optionsForArea,
+  planRoute, planAllRoutes, baselineCost, routeSaving, optionsForArea, pathwayCosts,
 } from './engine.ts';
 import { california } from './dataset.ts';
 import type { StudentProfile } from './types.ts';
@@ -625,5 +625,48 @@ test('optionsForArea never offers credit the campus will not honour', () => {
         assert.ok(!o.credit_source_id.startsWith('clep-'), `${inst.name} offered CLEP`);
       }
     }
+  }
+});
+
+test('pathway costs price a student\'s own requirements, per kind of credit', () => {
+  const input = {
+    profile: withProfile({ year: 'grade_10', waiver: 'eligible' }),
+    target_institution_id: 'uc-davis', held_credit_ids: [], units_in_residence: 0,
+  };
+  const paths = pathwayCosts(ds, input);
+  const byKind = new Map(paths.map(p => [p.kind, p]));
+
+  // CLEP cannot satisfy Cal-GETC anywhere, so leaning on it alone clears
+  // nothing. If this ever reports coverage, the CLEP rules have regressed.
+  assert.equal(byKind.get('clep')?.areas_covered, 0);
+
+  const ccc = byKind.get('ccc_course');
+  assert.ok(ccc && ccc.areas_covered > 0, 'community college should cover requirements');
+  assert.equal(ccc.total_cost_usd, 0, 'and cost nothing for a fee-waiver student');
+
+  const ap = byKind.get('ap');
+  assert.ok(ap && ap.areas_covered > 0);
+  assert.ok(ap.total_cost_usd > 0, 'AP exam fees are not waived by CCPG');
+
+  for (const p of paths) {
+    assert.ok(p.areas_covered <= p.areas_required, `${p.kind} covers more than exists`);
+    assert.ok(p.total_cost_usd >= 0);
+  }
+});
+
+test('no single pathway is claimed to clear everything', () => {
+  // The honest shape of the advice is that routes stack. If one ever covered
+  // every requirement, the high-school card would be telling students they can
+  // stop looking — so this asserts the premise the copy rests on.
+  for (const id of ['uc-davis', 'csu-long-beach']) {
+    const paths = pathwayCosts(ds, {
+      profile: PLAIN, target_institution_id: id,
+      held_credit_ids: [], units_in_residence: 0,
+    });
+    assert.ok(paths.length > 0);
+    assert.ok(
+      paths.every(p => p.areas_covered < p.areas_required),
+      `a single pathway claims full coverage at ${id}`,
+    );
   }
 });

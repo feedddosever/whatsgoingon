@@ -332,10 +332,10 @@ export function RouteDetailScreen(
           onPress={onBack}
           hitSlop={12}
           accessibilityRole="button"
-          accessibilityLabel="Back to routes"
+          accessibilityLabel="Back to your plan"
           style={({ pressed }) => [styles.back, pressed && styles.pressed]}
         >
-          <Text style={styles.backText}>← Routes</Text>
+          <Text style={styles.backText}>← Your plan</Text>
         </Pressable>
         <Text style={styles.headerTitle} numberOfLines={1}>
           {ROUTE_LABEL[route.kind]}
