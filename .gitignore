@@ -40,3 +40,7 @@ yarn-error.*
 /ios
 /android
 dist
+
+# Local secrets / keys — never commit
+.env
+.env.local

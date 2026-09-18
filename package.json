@@ -10,10 +10,11 @@
     "test": "node --test --experimental-strip-types src/*.test.ts",
     "typecheck": "tsc --noEmit",
     "demo": "node --experimental-strip-types src/demo.ts",
-    "build:web": "expo export --platform web --output-dir dist"
+    "build:web": "expo export --platform web --output-dir dist --clear"
   },
   "dependencies": {
     "@expo/metro-runtime": "^57.0.16",
+    "@revenuecat/purchases-js": "^1.63.1",
     "expo": "~57.0.23",
     "expo-print": "^57.0.2",
     "expo-sharing": "^57.0.20",

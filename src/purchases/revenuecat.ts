@@ -25,7 +25,10 @@ import Purchases, {
 } from 'react-native-purchases';
 
 /** The entitlement configured in the RevenueCat dashboard. */
-export const ENTITLEMENT_ID = 'advisor_packet';
+// Re-exported from config so the native and web implementations can never
+// drift onto different entitlement ids.
+export { ENTITLEMENT_ID } from './config.ts';
+import { ENTITLEMENT_ID } from './config.ts';
 
 /** Preferred offering id; we fall back to whatever offering is current. */
 const OFFERING_ID = 'advisor_packet';

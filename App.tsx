@@ -12,6 +12,18 @@ import { InputScreen } from './src/screens/InputScreen.tsx';
 import { RoutesScreen } from './src/screens/RoutesScreen.tsx';
 import { RouteDetailScreen } from './src/screens/RouteDetailScreen.tsx';
 import { exportAdvisorPacket } from './src/packet/advisorPacket.ts';
+import { PaywallScreen } from './src/screens/PaywallScreen.tsx';
+import { NATIVE_API_KEY, WEB_API_KEY } from './src/purchases/config.ts';
+import {
+  configurePurchases,
+  getAdvisorPacketPrice,
+  hasAdvisorPacket,
+  purchaseAdvisorPacket,
+  restorePurchases,
+} from './src/purchases/revenuecat';
+
+/** Public SDK key for this platform. Web Billing and the stores use different ones. */
+const RC_KEY = Platform.OS === 'web' ? WEB_API_KEY : NATIVE_API_KEY;
 
 type Screen = 'profile' | 'input' | 'routes' | 'detail';
 
@@ -32,17 +44,41 @@ const EMPTY_INPUT: StudentInput = {
  * presentational. That boundary is what lets the engine be tested in Node with
  * no React in the room.
  *
- * PAYMENT IS STUBBED. The advisor packet unlocks for free. src/purchases/
- * revenuecat.ts is written and tested but deliberately not wired in: it has no
- * web implementation, it needs a real store account and a physical Galaxy device
- * to exercise, and none of that should stand between a student and the document.
- * Restoring it means putting the paywall back in place of grantPacket() below.
+ * Purchases run through RevenueCat on both platforms: react-native-purchases on
+ * a device, @revenuecat/purchases-js on web. Metro picks the implementation, so
+ * nothing here knows which one it got.
+ *
+ * With no API key configured the app still works end to end — the paywall simply
+ * reports that purchases are unavailable. Nothing crashes and nothing is hidden.
  */
 export default function App() {
   const [screen, setScreen] = useState<Screen>('profile');
   const [input, setInput] = useState<StudentInput>(EMPTY_INPUT);
   const [selected, setSelected] = useState<Route | null>(null);
   const [unlocked, setUnlocked] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [priceLabel, setPriceLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        if (RC_KEY === '') return;
+        await configurePurchases(RC_KEY);
+        const owned = await hasAdvisorPacket();
+        if (alive) setUnlocked(owned);
+        const price = await getAdvisorPacketPrice();
+        if (alive) setPriceLabel(price);
+      } catch {
+        // A purchase system that will not answer at launch means "locked", not
+        // "crash". An unhandled rejection here would take the app down on open.
+        if (alive) setUnlocked(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
 
   /**
    * Android's hardware back button. Without this the whole four-screen flow is a
@@ -103,18 +139,65 @@ export default function App() {
     });
   }, [institution, selected, input.student_name]);
 
-  /** Stands in for the paywall until purchasing is wired up. */
-  const grantPacket = useCallback(() => setUnlocked(true), []);
+  const handlePurchase = useCallback(async () => {
+    setBusy(true);
+    setPurchaseError(null);
+    try {
+      const ok = await purchaseAdvisorPacket();
+      if (ok) {
+        setUnlocked(true);
+        setPaywallOpen(false);
+      }
+      // false means the student backed out. That is a choice, not an error, and
+      // must not raise a red alert at them.
+    } catch (e) {
+      setPurchaseError(e instanceof Error ? e.message : 'Purchase failed.');
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  const handleRestore = useCallback(async () => {
+    setBusy(true);
+    setPurchaseError(null);
+    try {
+      const ok = await restorePurchases();
+      if (ok) {
+        setUnlocked(true);
+        setPaywallOpen(false);
+      } else {
+        // An answer, not a failure — but saying nothing makes the link look broken.
+        setPurchaseError('No earlier purchase found for this browser or store account.');
+      }
+    } catch (e) {
+      setPurchaseError(e instanceof Error ? e.message : 'Could not restore purchases.');
+    } finally {
+      setBusy(false);
+    }
+  }, []);
 
   let body = null;
-  if (screen === 'detail' && institution && selected) {
+  if (paywallOpen) {
+    body = (
+      <PaywallScreen
+        savingUsd={selected === null ? 0 : routeSaving(california, input, selected)}
+        priceLabel={priceLabel}
+        alreadyOwned={unlocked}
+        busy={busy}
+        error={purchaseError}
+        onPurchase={handlePurchase}
+        onRestore={handleRestore}
+        onDismiss={() => { setPaywallOpen(false); setPurchaseError(null); }}
+      />
+    );
+  } else if (screen === 'detail' && institution && selected) {
     body = (
       <RouteDetailScreen
         institution={institution}
         route={selected}
         areas={california.areas}
         unlocked={unlocked}
-        onUnlock={grantPacket}
+        onUnlock={() => { setPurchaseError(null); setPaywallOpen(true); }}
         onExportPacket={handleExport}
         onBack={() => setScreen('routes')}
       />

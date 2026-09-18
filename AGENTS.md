@@ -15,6 +15,11 @@ authoritative and they are local. Do not recall an API from memory when
 
 - Relative imports carry their extension (`.ts` / `.tsx`) — `allowImportingTsExtensions`
   is on and the whole codebase relies on it. A missing extension is a compile error.
+  **One deliberate exception:** `src/purchases/revenuecat` is imported WITHOUT an
+  extension. Metro only applies platform resolution (`.web.ts` over `.ts`) to
+  extensionless imports — with `./revenuecat.ts` it bundles the native file into
+  the web build, where `react-native-purchases` does not exist. This was verified
+  by grepping the built bundle, not assumed. Do not "fix" that import.
 - TypeScript is strict. No `any`.
 - Screens are presentational: they take props and callbacks. `App.tsx` owns all state
   and is the only caller of the engine.
@@ -30,6 +35,14 @@ unverified in the UI.
 
 This is not a style preference. A student who acts on a wrong transfer-credit claim
 loses real money and a real semester. See `data/VERIFICATION.md`.
+
+## EXPO_PUBLIC_ vars and the Metro cache
+
+`npm run build:web` passes `--clear` on purpose. Metro caches transformed
+modules, and `process.env.EXPO_PUBLIC_*` is inlined at transform time — so
+changing a key and rebuilding without clearing bakes the STALE value into the
+bundle, silently. That was observed here: the key read as an empty string
+through several rebuilds until the cache was cleared.
 
 ## Checks
 

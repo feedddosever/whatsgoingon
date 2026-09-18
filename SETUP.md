@@ -17,21 +17,35 @@ routes, open the detail screen. Only the purchase itself needs configuration.
 
 ## What needs you
 
-### 1. RevenueCat key — required for the paywall only
+### 1. RevenueCat keys — TWO of them, for two different SDKs
 
-Copy `.env.example` to `.env` and set `EXPO_PUBLIC_REVENUECAT_KEY`.
+Copy `.env.example` to `.env`. There are two keys because there are two SDKs:
 
-It is the **public** SDK key (safe in the bundle) and it is **per store** — a
-Galaxy Store build needs the Amazon/Samsung key, not the Google Play one.
+| Platform | Package | Env var | Sells through |
+|---|---|---|---|
+| Web (Vercel) | `@revenuecat/purchases-js` | `EXPO_PUBLIC_REVENUECAT_WEB_KEY` | RevenueCat Web Billing |
+| Android / Galaxy | `react-native-purchases` | `EXPO_PUBLIC_REVENUECAT_KEY` | the store's own IAP |
 
-In the RevenueCat dashboard, create an entitlement with the identifier
-**`advisor_packet`** exactly. If it is named anything else the purchase will
-complete, the student will be charged, and the unlock will not appear — the code
-detects this case and says so rather than failing silently, but it is a
-configuration error worth avoiding.
+Metro picks the implementation: `src/purchases/revenuecat.web.ts` on web,
+`revenuecat.ts` on a device. `App.tsx` never learns which one it got.
 
-Without a key the app skips store setup entirely and the paywall reports that
-purchases are unavailable. Nothing crashes.
+**The web key does not give you Galaxy Store purchases.** For the store build you
+need the **Amazon/Samsung** key — not the Google Play one, and not the web one.
+
+A `test_…` web key is **sandbox**: nothing is really charged.
+
+Dashboard must define an entitlement with the identifier **`collegemaps_pro`**
+exactly, plus the `lifetime` and `monthly` products. A mismatched entitlement id
+is the worst configuration bug available here: the purchase completes, the
+student is charged, and nothing unlocks. The native wrapper detects that exact
+case and says so rather than failing silently.
+
+Without keys the app runs end to end; the paywall just reports that purchases
+are unavailable. Nothing crashes.
+
+**Changing a key? The build script passes `--clear` for a reason** — see
+AGENTS.md. Metro inlines `EXPO_PUBLIC_*` at transform time and caches the result,
+so a cached build will happily ship the old key.
 
 ### 2. Galaxy Store publishing
 
