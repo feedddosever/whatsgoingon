@@ -258,7 +258,7 @@ function NotTowardGeNotice(
 }
 
 export function InputScreen(
-  { institutions, creditSources, value, onChange, onSubmit }: InputScreenProps,
+  { institutions, creditSources, value, onChange, onSubmit, onBack }: InputScreenProps,
 ): ReactElement {
   // Local text state so the field can sit empty mid-edit instead of snapping to 0.
   const [unitsText, setUnitsText] = useState<string>(
@@ -427,6 +427,17 @@ export function InputScreen(
         onScroll={onScroll}
         onLayout={onScrollLayout}
       >
+        <Pressable
+          onPress={onBack}
+          accessibilityRole="button"
+          hitSlop={8}
+          style={styles.backRow}
+        >
+          {/* The onboarding answers change how everything below is priced — a
+              student who mis-tapped their fee-waiver status needs a way back to
+              it that does not involve reloading the app. */}
+          <Text style={styles.backText}>‹ Your answers</Text>
+        </Pressable>
         <Text style={styles.kicker}>DEGREE ROUTE PLANNER</Text>
         {/* What this app actually prices is the requirements the student still has
             to clear, at the target campus's own per-unit rate — never a whole
@@ -667,6 +678,8 @@ const styles = StyleSheet.create({
     paddingBottom: theme.space.xl,
   },
 
+  backRow: { paddingVertical: theme.space.xs, marginBottom: theme.space.xs },
+  backText: { ...theme.font.body, color: theme.color.textMuted },
   kicker: {
     ...theme.font.small,
     color: theme.color.textMuted,

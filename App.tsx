@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Alert, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, BackHandler, Platform, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -43,6 +43,32 @@ export default function App() {
   const [input, setInput] = useState<StudentInput>(EMPTY_INPUT);
   const [selected, setSelected] = useState<Route | null>(null);
   const [unlocked, setUnlocked] = useState(false);
+
+  /**
+   * Android's hardware back button. Without this the whole four-screen flow is a
+   * trap on a real device: back from the detail screen quits the app instead of
+   * returning, and everything the student typed is gone. Web and iOS have their
+   * own gestures, so the listener is Android-only.
+   *
+   * Returning true means "handled, do not exit". At the first screen we return
+   * false so back does what the user expects and leaves.
+   */
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const PREVIOUS: Record<Screen, Screen | null> = {
+      profile: null,
+      input: 'profile',
+      routes: 'input',
+      detail: 'routes',
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      const back = PREVIOUS[screen];
+      if (back === null) return false;
+      setScreen(back);
+      return true;
+    });
+    return () => sub.remove();
+  }, [screen]);
 
   const institution = useMemo(
     () => california.institutions.find(i => i.id === input.target_institution_id) ?? null,
@@ -107,6 +133,7 @@ export default function App() {
   } else if (screen === 'input') {
     body = (
       <InputScreen
+        onBack={() => setScreen('profile')}
         institutions={california.institutions}
         creditSources={california.creditSources}
         value={input}

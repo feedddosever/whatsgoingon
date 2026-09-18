@@ -14,6 +14,8 @@ export interface ProfileScreenProps {
 }
 
 export interface InputScreenProps {
+  /** Back to the onboarding answers, which change how this plan is priced. */
+  onBack: () => void;
   institutions: Institution[];
   creditSources: CreditSource[];
   value: StudentInput;
