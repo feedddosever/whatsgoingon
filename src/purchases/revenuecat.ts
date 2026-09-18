@@ -29,6 +29,8 @@ import Purchases, {
 // drift onto different entitlement ids.
 export { ENTITLEMENT_ID } from './config.ts';
 import { ENTITLEMENT_ID } from './config.ts';
+import RevenueCatUI from 'react-native-purchases-ui';
+import { PAYWALL_RESULT } from 'react-native-purchases-ui';
 
 /** Preferred offering id; we fall back to whatever offering is current. */
 const OFFERING_ID = 'advisor_packet';
@@ -76,13 +78,6 @@ function asPurchasesError(e: unknown): PurchasesError | null {
   return typeof candidate.code === 'string' && typeof candidate.message === 'string'
     ? (e as PurchasesError)
     : null;
-}
-
-/** The one case that is not an error: the student changed their mind. */
-function isCancellation(e: unknown): boolean {
-  const err = asPurchasesError(e);
-  if (err === null) return false;
-  return err.code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR || err.userCancelled === true;
 }
 
 /**
@@ -207,35 +202,64 @@ export async function purchaseAdvisorPacket(): Promise<boolean> {
     throw new Error('Purchases are unavailable on this device. Galaxy Store needs a real Galaxy phone.');
   }
 
-  let pkg: PurchasesPackage | null = null;
+  let result: PAYWALL_RESULT;
   try {
-    const offerings = await Purchases.getOfferings();
-    pkg = pickPurchasable(offerings.all, offerings.current);
+    // RevenueCat's own paywall, configured in the dashboard. With two products
+    // (lifetime and monthly) the product choice, localised pricing and the
+    // store's purchase sheet are theirs to get right, not ours — and the same
+    // call shape is used on web, so both platforms behave alike.
+    result = await RevenueCatUI.presentPaywall({ displayCloseButton: true });
   } catch (e) {
-    throw readable(e, 'Could not load the price from the store.');
-  }
-  if (pkg === null) {
-    throw new Error('The advisor packet is not on sale in your store yet.');
-  }
-
-  let info: CustomerInfo;
-  try {
-    // Kept to just the SDK call: a throw raised below must not fall into this
-    // catch, where readable() would replace its message with the fallback.
-    info = (await Purchases.purchasePackage(pkg)).customerInfo;
-  } catch (e) {
-    if (isCancellation(e)) return false; // Backing out is a choice, not a fault.
     throw readable(e, 'The purchase did not go through. Nothing was charged.');
   }
 
+  // CANCELLED and NOT_PRESENTED are choices, not faults.
+  if (result === PAYWALL_RESULT.CANCELLED || result === PAYWALL_RESULT.NOT_PRESENTED) {
+    return false;
+  }
+  if (result === PAYWALL_RESULT.ERROR) {
+    throw new Error('The purchase did not go through. Nothing was charged.');
+  }
+
+  // PURCHASED or RESTORED — confirm against the entitlement rather than trusting
+  // the paywall's word, because the two can disagree when the dashboard's
+  // entitlement id is not ENTITLEMENT_ID.
+  let info: CustomerInfo;
+  try {
+    info = await Purchases.getCustomerInfo();
+  } catch (e) {
+    throw readable(e, 'The purchase went through but we could not confirm the unlock.');
+  }
   if (hasEntitlement(info)) return true;
-  // The store completed the payment but the entitlement did not come back —
-  // usually a dashboard whose entitlement id is not ENTITLEMENT_ID. Resolving
-  // false here would be indistinguishable from a cancellation, so a student who
-  // was just charged would watch the paywall do nothing at all.
+
+  // Paid, but the entitlement did not come back. Returning false here would be
+  // indistinguishable from a cancellation, so a student who was just charged
+  // would watch the paywall close and nothing happen.
   throw new Error(
     'The store took your payment but we could not confirm the unlock yet. Wait a moment, then tap "Restore purchases" — you will not be charged twice.',
   );
+}
+
+/**
+ * RevenueCat's Customer Center: cancel, change plan, request a refund, recover a
+ * missing purchase. Worth wiring precisely because one of the products is a
+ * monthly subscription — an app that can take a recurring payment and offers no
+ * way to manage it is the kind of thing that earns refund requests and one-star
+ * reviews.
+ *
+ * Native only. The web SDK has no equivalent; see revenuecat.web.ts.
+ */
+export const CUSTOMER_CENTER_AVAILABLE = true;
+
+export async function presentCustomerCenter(): Promise<void> {
+  if (!(await isReady())) {
+    throw new Error('Subscription management is unavailable on this device.');
+  }
+  try {
+    await RevenueCatUI.presentCustomerCenter();
+  } catch (e) {
+    throw readable(e, 'Could not open subscription management.');
+  }
 }
 
 /**

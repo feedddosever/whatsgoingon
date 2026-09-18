@@ -15,9 +15,11 @@ import { exportAdvisorPacket } from './src/packet/advisorPacket.ts';
 import { PaywallScreen } from './src/screens/PaywallScreen.tsx';
 import { NATIVE_API_KEY, WEB_API_KEY } from './src/purchases/config.ts';
 import {
+  CUSTOMER_CENTER_AVAILABLE,
   configurePurchases,
   getAdvisorPacketPrice,
   hasAdvisorPacket,
+  presentCustomerCenter,
   purchaseAdvisorPacket,
   restorePurchases,
 } from './src/purchases/revenuecat';
@@ -176,6 +178,20 @@ export default function App() {
     }
   }, []);
 
+  /**
+   * One of the products is a monthly subscription, so a student must be able to
+   * cancel it from inside the app. Null where the platform cannot, rather than
+   * an affordance that throws.
+   */
+  const handleManage = useCallback(() => {
+    presentCustomerCenter().catch((e: unknown) => {
+      Alert.alert(
+        'Could not open subscription management',
+        e instanceof Error ? e.message : 'Something went wrong.',
+      );
+    });
+  }, []);
+
   let body = null;
   if (paywallOpen) {
     body = (
@@ -197,6 +213,9 @@ export default function App() {
         route={selected}
         areas={california.areas}
         unlocked={unlocked}
+        onManageSubscription={
+          unlocked && CUSTOMER_CENTER_AVAILABLE && RC_KEY !== '' ? handleManage : null
+        }
         onUnlock={() => { setPurchaseError(null); setPaywallOpen(true); }}
         onExportPacket={handleExport}
         onBack={() => setScreen('routes')}

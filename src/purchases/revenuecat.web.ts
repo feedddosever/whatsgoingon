@@ -143,3 +143,17 @@ export async function restorePurchases(): Promise<boolean> {
     throw readable(e, 'Could not check for an earlier purchase.');
   }
 }
+
+/**
+ * Customer Center is native-only — it is not part of @revenuecat/purchases-js.
+ * Exported here so App.tsx can ask without a Platform check, and so the two
+ * implementations keep the same shape.
+ *
+ * Web Billing subscriptions are managed through the emailed receipt and
+ * RevenueCat's hosted portal, so there is nothing to open in-app.
+ */
+export const CUSTOMER_CENTER_AVAILABLE = false;
+
+export async function presentCustomerCenter(): Promise<void> {
+  throw new Error('Manage your subscription from the receipt email on this platform.');
+}

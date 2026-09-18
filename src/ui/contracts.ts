@@ -41,6 +41,12 @@ export interface RouteDetailScreenProps {
   areas: GeArea[];
   /** True once the advisor packet has been unlocked. */
   unlocked: boolean;
+  /**
+   * Opens RevenueCat's Customer Center — cancel, change plan, request a refund.
+   * Null where the platform has no equivalent, so the screen can omit the
+   * affordance instead of offering one that fails.
+   */
+  onManageSubscription: (() => void) | null;
   onUnlock: () => void;
   onExportPacket: () => void;
   onBack: () => void;

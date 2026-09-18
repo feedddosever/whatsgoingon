@@ -285,7 +285,10 @@ function ItemCard(
 }
 
 export function RouteDetailScreen(
-  { institution, route, areas, unlocked, onUnlock, onExportPacket, onBack }: RouteDetailScreenProps,
+  {
+    institution, route, areas, unlocked,
+    onUnlock, onExportPacket, onManageSubscription, onBack,
+  }: RouteDetailScreenProps,
 ): ReactElement {
   // The only place a Cal-GETC code has a human name. A handful of rows, looked
   // up by hand: a code with no row falls back to the bare code.
@@ -522,6 +525,19 @@ export function RouteDetailScreen(
             ? 'Every row above, with its source and its confidence, on one page.'
             : 'A one-page PDF your advisor can confirm — every row with its source.'}
         </Text>
+        {/* One of the plans renews monthly. Someone who can be charged every
+            month must be able to cancel without leaving the app. */}
+        {onManageSubscription !== null && (
+          <Pressable
+            onPress={onManageSubscription}
+            accessibilityRole="button"
+            accessibilityLabel="Manage your subscription, change plan, or request a refund"
+            hitSlop={8}
+            style={styles.manageRow}
+          >
+            <Text style={styles.manageText}>Manage subscription</Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -764,6 +780,12 @@ const styles = StyleSheet.create({
   },
   ctaText: { ...theme.font.heading, color: theme.color.bg },
   ctaLockedText: { ...theme.font.heading, color: theme.color.accent },
+  manageRow: { paddingTop: theme.space.sm, alignItems: 'center' },
+  manageText: {
+    ...theme.font.small,
+    color: theme.color.textMuted,
+    textDecorationLine: 'underline',
+  },
   footerNote: {
     ...theme.font.small,
     color: theme.color.textMuted,
