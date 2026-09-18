@@ -65,18 +65,25 @@ const RANK: Record<Confidence, number> = {
 const WARNING_RANK: Record<WarningKind, number> = {
   stranded_credit: 0,
   credit_not_toward_ge: 1,
-  transfer_cap: 2,
-  unverified_data: 3,
-  residency: 4,
+  budget_exceeded: 2,
+  transfer_cap: 3,
+  unverified_data: 4,
+  residency: 5,
+  major_sequence: 6,
+  // Last: it is good news, and it must not push a real warning down the card.
+  opportunity: 7,
 };
 
 /** What the student is looking at, before they read the sentence itself. */
 const WARNING_TITLE: Record<WarningKind, string> = {
   stranded_credit: 'Credit that will not count here',
   credit_not_toward_ge: 'Counts for the degree, clears no requirement',
+  budget_exceeded: 'Over the budget you set',
   transfer_cap: 'Units over the transfer cap',
   residency: 'Units you must earn on campus',
+  major_sequence: 'Your major, not your general education',
   unverified_data: 'Not confirmed against the campus',
+  opportunity: 'Money you could still save',
 };
 
 /**
@@ -97,14 +104,18 @@ const WARNING_TITLE: Record<WarningKind, string> = {
  * placed here deliberately instead of inheriting the quietest treatment by
  * falling through to the default.
  */
-type WarningTone = 'severe' | 'elevated' | 'plain';
+type WarningTone = 'severe' | 'elevated' | 'plain' | 'opportunity';
 
 const WARNING_TONE: Record<WarningKind, WarningTone> = {
   stranded_credit: 'severe',
   credit_not_toward_ge: 'elevated',
+  budget_exceeded: 'elevated',
   transfer_cap: 'plain',
   residency: 'plain',
+  major_sequence: 'plain',
   unverified_data: 'plain',
+  // Not a warning: a saving still on the table. Accent, and sorted last.
+  opportunity: 'opportunity',
 };
 
 const toneOf = (w: RouteWarning): WarningTone => WARNING_TONE[w.kind];
@@ -742,9 +753,17 @@ export function RoutesScreen(props: RoutesScreenProps) {
             return (
               <View
                 key={warningKey(w)}
-                style={[styles.alertItem, tone === 'elevated' && styles.alertItemElevated]}
+                style={[
+                  styles.alertItem,
+                  tone === 'elevated' && styles.alertItemElevated,
+                  tone === 'opportunity' && styles.alertItemOpportunity,
+                ]}
               >
-                <Text style={[styles.alertTitle, tone === 'severe' && styles.alertTitleSevere]}>
+                <Text style={[
+                  styles.alertTitle,
+                  tone === 'severe' && styles.alertTitleSevere,
+                  tone === 'opportunity' && styles.alertTitleOpportunity,
+                ]}>
                   {WARNING_TITLE[w.kind]}
                 </Text>
                 {/* Verbatim: the engine writes these for a student, and a warning the
@@ -753,6 +772,7 @@ export function RoutesScreen(props: RoutesScreenProps) {
                   style={[
                     styles.alertText,
                     tone === 'severe' && styles.alertTextSevere,
+                    tone === 'opportunity' && styles.alertTextOpportunity,
                   ]}
                 >
                   {w.message}
@@ -1006,6 +1026,11 @@ const styles = StyleSheet.create({
   // A card carrying stranded credit reads as loudly as the banner above it: same
   // colour, thicker rule. This is the claim the whole product exists to make.
   cardWarnSevere: { borderLeftWidth: 6, borderLeftColor: theme.color.danger },
+  // An opportunity is a saving still on the table, not a problem. Drawing it in
+  // the same amber as the constraints would train the student to skim all of it.
+  alertItemOpportunity: { borderColor: theme.color.accent, backgroundColor: theme.color.accentDim },
+  alertTitleOpportunity: { color: theme.color.accent },
+  alertTextOpportunity: { color: theme.color.text },
   // Credit the campus does award, clearing no Cal-GETC requirement: filled and
   // thick-ruled, because this is the warning a student would never think to look
   // for. Not the red of money already lost, and not the default either.

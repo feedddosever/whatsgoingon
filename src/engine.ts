@@ -1,6 +1,6 @@
 import type {
   AcceptanceRule, GeArea, Institution, CreditSource,
-  PlanItem, Route, RouteKind, RouteWarning, StudentInput,
+  PlanItem, Route, RouteKind, RouteWarning, StudentInput, StudentProfile,
 } from './types.ts';
 
 export interface Dataset {
@@ -19,11 +19,30 @@ const byId = <T extends { id: string }>(xs: T[], id: string): T | undefined =>
 /** A CLEP exam is instant; a community college course costs you a term. */
 const termsFor = (kind: CreditSource['kind']): number => (kind === 'ccc_course' ? 1 : 0);
 
-function toPlanItem(rule: AcceptanceRule, src: CreditSource): PlanItem {
+/**
+ * What this credit actually costs THIS student.
+ *
+ * Two California waivers routinely take a sticker price to zero:
+ *   - the California College Promise Grant waives the CCC $46/unit fee;
+ *   - Modern States "Freshman Year for Free" covers the CLEP exam fee.
+ *
+ * A student who has one and is shown the sticker price is being told to budget
+ * for money they will not spend — and the ordering of the routes can change.
+ * "Unsure" deliberately pays full price here; we quote what they will actually
+ * be charged if the waiver does not come through, and flag it as worth checking.
+ */
+export function effectiveCost(src: CreditSource, profile: StudentProfile): number {
+  if (profile.waiver !== 'eligible') return src.cost_usd;
+  if (src.kind === 'ccc_course') return 0; // CCPG waives the enrolment fee
+  if (src.kind === 'clep') return 0;       // Modern States covers the exam fee
+  return src.cost_usd;                      // AP has no equivalent blanket waiver
+}
+
+function toPlanItem(rule: AcceptanceRule, src: CreditSource, profile: StudentProfile): PlanItem {
   return {
     credit_source_id: src.id,
     label: src.name,
-    cost_usd: src.cost_usd,
+    cost_usd: effectiveCost(src, profile),
     units: rule.units_granted,
     satisfies_area: rule.satisfies_area,
     // The rule's provenance governs: what matters is what THIS school accepts,
@@ -39,16 +58,73 @@ function toPlanItem(rule: AcceptanceRule, src: CreditSource): PlanItem {
  * pile of CLEP credit that a UC campus will not look at, and no amount of
  * course-level articulation data will tell them that.
  */
-function candidatesFor(ds: Dataset, inst: Institution): PlanItem[] {
+function candidatesFor(ds: Dataset, inst: Institution, profile: StudentProfile): PlanItem[] {
   const items: PlanItem[] = [];
   for (const rule of ds.rules) {
     if (rule.institution_id !== inst.id) continue;
     const src = byId(ds.creditSources, rule.credit_source_id);
     if (!src) continue;
     if (src.kind === 'clep' && !inst.accepts_clep) continue;
-    items.push(toPlanItem(rule, src));
+    items.push(toPlanItem(rule, src, profile));
   }
   return items;
+}
+
+/**
+ * Advice that depends on who the student is rather than where they are going.
+ * Kept separate from the route constraints so it cannot drown them out.
+ */
+function profileWarnings(
+  profile: StudentProfile,
+  inst: Institution,
+  routeCost: number,
+): RouteWarning[] {
+  const out: RouteWarning[] = [];
+
+  if (profile.budget_usd !== null && routeCost > profile.budget_usd) {
+    out.push({
+      kind: 'budget_exceeded',
+      message:
+        `This route costs $${routeCost.toLocaleString('en-US')}, which is ` +
+        `$${(routeCost - profile.budget_usd).toLocaleString('en-US')} over the ` +
+        `$${profile.budget_usd.toLocaleString('en-US')} you set. The cheaper routes may fit.`,
+    });
+  }
+
+  // Still in high school: dual enrolment is tuition-free college credit, and it
+  // is the largest saving available to anyone who can still reach it.
+  if (profile.year === 'grade_9' || profile.year === 'grade_10' || profile.year === 'grade_11') {
+    out.push({
+      kind: 'opportunity',
+      message:
+        'You are still in high school, so dual enrolment (CCAP) can earn you college ' +
+        'units for free — no enrolment fee, up to 15 units a term. Ask your counsellor ' +
+        'before you pay for any of the credit below.',
+    });
+  }
+
+  if (profile.waiver === 'unsure') {
+    out.push({
+      kind: 'opportunity',
+      message:
+        'Prices below assume you pay in full. If you qualify for the California College ' +
+        'Promise Grant it waives community-college fees entirely, and Modern States can ' +
+        'cover CLEP exam fees. Both are worth ten minutes to check.',
+    });
+  }
+
+  if (profile.field === 'stem' || profile.field === 'health') {
+    out.push({
+      kind: 'major_sequence',
+      message:
+        `${profile.field === 'health' ? 'Health' : 'STEM'} majors run on locked course ` +
+        'sequences that general-education planning cannot compress, and they often want ' +
+        'higher exam scores than the general-education minimum. This plan covers ' +
+        'Cal-GETC only — it says nothing about your major requirements.',
+    });
+  }
+
+  return out;
 }
 
 /** The Cal-GETC areas this institution actually requires. */
@@ -170,7 +246,7 @@ export function planRoute(ds: Dataset, input: StudentInput, kind: RouteKind): Ro
   const inst = byId(ds.institutions, input.target_institution_id);
   if (!inst) throw new Error(`unknown institution: ${input.target_institution_id}`);
 
-  let candidates = candidatesFor(ds, inst);
+  let candidates = candidatesFor(ds, inst, input.profile);
   if (kind === 'lowest_risk') {
     candidates = candidates.filter(c => TRUSTED.has(c.provenance.confidence));
   }
@@ -185,6 +261,9 @@ export function planRoute(ds: Dataset, input: StudentInput, kind: RouteKind): Ro
   const warnings: RouteWarning[] = [];
 
   warnings.push(...heldCreditWarnings(ds, inst, input.held_credit_ids));
+  warnings.push(...profileWarnings(
+    input.profile, inst, items.reduce((n, i) => n + i.cost_usd, 0),
+  ));
 
   if (inst.max_transfer_units !== null && totalUnits > inst.max_transfer_units) {
     warnings.push({

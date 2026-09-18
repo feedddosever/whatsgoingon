@@ -90,7 +90,37 @@ export interface AcceptanceRule {
   provenance: Provenance;
 }
 
+/** Where the student is in school. Decides which pathways are still open. */
+export type SchoolYear =
+  | 'grade_9' | 'grade_10' | 'grade_11' | 'grade_12' | 'in_college';
+
+/**
+ * Broad field, deliberately few options. This is not career guidance — it exists
+ * because some sequences cannot be compressed the way general education can.
+ */
+export type FieldOfStudy =
+  | 'stem' | 'business' | 'health' | 'social_sciences' | 'arts_humanities' | 'undecided';
+
+/**
+ * Fee-waiver status, asked without asking about income.
+ *
+ * This is the highest-leverage question in the app: the California College
+ * Promise Grant waives the CCC $46/unit fee outright, and Modern States covers
+ * the CLEP exam fee. Either can take a route to $0 and reorder the results.
+ */
+export type WaiverStatus = 'eligible' | 'unsure' | 'not_eligible';
+
+export interface StudentProfile {
+  year: SchoolYear;
+  field: FieldOfStudy;
+  /** What they can actually spend, in USD. Null when they would rather not say. */
+  budget_usd: number | null;
+  waiver: WaiverStatus;
+}
+
 export interface StudentInput {
+  /** Answered in onboarding. Personalises pricing and which advice applies. */
+  profile: StudentProfile;
   /** Printed on the advisor packet so the advisor knows who is asking. */
   student_name?: string;
   target_institution_id: string;
@@ -129,7 +159,13 @@ export type WarningKind =
   /** Minimum units that must be earned on campus. */
   | 'residency'
   /** We will not stake the student's money on this yet. */
-  | 'unverified_data';
+  | 'unverified_data'
+  /** This route costs more than the student said they can spend. */
+  | 'budget_exceeded'
+  /** A saving they are eligible for that this plan has not used. */
+  | 'opportunity'
+  /** Their field has sequences that general-education planning cannot compress. */
+  | 'major_sequence';
 
 export interface RouteWarning {
   kind: WarningKind;

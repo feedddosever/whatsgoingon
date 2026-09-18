@@ -44,19 +44,24 @@ const ROUTE_LABEL: Record<RouteKind, string> = {
  * has to be placed here deliberately instead of inheriting the quietest
  * treatment by falling through.
  */
-type WarningTier = 'severe' | 'elevated' | 'plain';
+type WarningTier = 'severe' | 'elevated' | 'plain' | 'opportunity';
 
 const WARNING_TIER: Record<WarningKind, WarningTier> = {
   stranded_credit: 'severe',
   credit_not_toward_ge: 'elevated',
+  budget_exceeded: 'elevated',
   transfer_cap: 'plain',
   residency: 'plain',
+  major_sequence: 'plain',
   unverified_data: 'plain',
+  // Not a warning at all: money they could still save. Drawn in the accent
+  // colour and sorted last, so it cannot dilute the amber stack above it.
+  opportunity: 'opportunity',
 };
 
 const tierOf = (w: RouteWarning): WarningTier => WARNING_TIER[w.kind];
 
-const TIER_RANK: Record<WarningTier, number> = { severe: 0, elevated: 1, plain: 2 };
+const TIER_RANK: Record<WarningTier, number> = { severe: 0, elevated: 1, plain: 2, opportunity: 3 };
 
 /**
  * Most severe first — the cards have to agree with the tiers they are drawn in.
@@ -79,9 +84,12 @@ const bySeverity = (ws: RouteWarning[]): RouteWarning[] =>
 const WARNING_KICKER: Record<WarningKind, string> = {
   stranded_credit: '✗  CREDIT YOU ALREADY HOLD',
   credit_not_toward_ge: '⚠  CREDIT YOU HOLD · CLEARS NO REQUIREMENT',
+  budget_exceeded: '⚠  OVER YOUR BUDGET',
   transfer_cap: '⚠  BEFORE YOU PAY · TRANSFER CAP',
   residency: '⚠  BEFORE YOU PAY · RESIDENCY',
+  major_sequence: '⚠  YOUR MAJOR, NOT YOUR GENERAL EDUCATION',
   unverified_data: '⚠  NOT CONFIRMED YET',
+  opportunity: '✓  MONEY YOU COULD STILL SAVE',
 };
 
 /** A source that will not open must never take the screen down with it. */
@@ -199,7 +207,9 @@ function WarningCard(
           ? styles.warningSevere
           : tier === 'elevated'
             ? styles.warningElevated
-            : styles.warningPlain,
+            : tier === 'opportunity'
+              ? styles.warningOpportunity
+              : styles.warningPlain,
         unsure && styles.warningShaky,
       ]}
       accessibilityRole="alert"
@@ -611,6 +621,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.color.surfaceAlt,
   },
   warningPlain: { borderColor: theme.color.warn },
+  warningOpportunity: { borderColor: theme.color.accent },
   // Still loud, but dashed while the policy row behind it is unconfirmed.
   warningShaky: { borderStyle: 'dashed' },
   warningKicker: { ...theme.font.small, fontWeight: '700', letterSpacing: 1 },

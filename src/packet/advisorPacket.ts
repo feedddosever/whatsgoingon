@@ -85,6 +85,28 @@ const WARNING_STYLE: Record<WarningKind, WarningStyle> = {
     weight: 'severe',
   },
   /**
+   * Budget and major-sequence notes are context the student brought, not campus
+   * policy, so they print standard and sit below anything about their credit.
+   * The opportunity note ranks last: an advisor reading this page is being asked
+   * to confirm requirements, and a saving the student has not taken yet is the
+   * least urgent line on it.
+   */
+  budget_exceeded: {
+    kicker: 'Over the budget the student set',
+    rank: 2,
+    weight: 'standard',
+  },
+  major_sequence: {
+    kicker: 'Major requirements · outside this plan',
+    rank: 6,
+    weight: 'standard',
+  },
+  opportunity: {
+    kicker: 'Saving not yet taken',
+    rank: 7,
+    weight: 'standard',
+  },
+  /**
    * The quiet one. The campus DOES award this credit, so the units arrive and
    * nothing on the student's side looks wrong — and the Cal-GETC requirement is
    * still open. CLEP at a CSU is exactly this. It ranks under stranded credit,

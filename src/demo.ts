@@ -2,6 +2,14 @@ import { planAllRoutes } from './engine.ts';
 import { california } from './dataset.ts';
 
 const ds = california;
+
+/** A 12th-grader in a locked-sequence field who has not checked for a waiver. */
+const PROFILE = {
+  year: 'grade_12' as const,
+  field: 'stem' as const,
+  budget_usd: 400,
+  waiver: 'unsure' as const,
+};
 const money = (n: number) => `$${n.toLocaleString('en-US')}`;
 
 function show(label: string, input: Parameters<typeof planAllRoutes>[1]) {
@@ -17,12 +25,14 @@ function show(label: string, input: Parameters<typeof planAllRoutes>[1]) {
 }
 
 show('A student holding two CLEP credits who wants UC Berkeley', {
+  profile: PROFILE,
   target_institution_id: 'uc-berkeley',
   held_credit_ids: ['clep-college-composition', 'clep-college-algebra'],
   units_in_residence: 12,
 });
 
 show('The same two CLEP credits, aimed at CSU Long Beach instead', {
+  profile: PROFILE,
   target_institution_id: 'csu-long-beach',
   held_credit_ids: ['clep-college-composition', 'clep-college-algebra'],
   units_in_residence: 30,

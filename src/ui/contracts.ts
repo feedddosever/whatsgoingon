@@ -3,7 +3,15 @@
  * callbacks, never reach into the engine or the dataset themselves. App.tsx owns
  * all state and is the only place the engine is called.
  */
-import type { Institution, Route, StudentInput, CreditSource, GeArea } from '../types.ts';
+import type {
+  Institution, Route, StudentInput, CreditSource, GeArea, StudentProfile,
+} from '../types.ts';
+
+export interface ProfileScreenProps {
+  value: StudentProfile;
+  onChange: (next: StudentProfile) => void;
+  onSubmit: () => void;
+}
 
 export interface InputScreenProps {
   institutions: Institution[];

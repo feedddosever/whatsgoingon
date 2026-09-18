@@ -2,11 +2,19 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { planRoute, planAllRoutes, baselineCost, routeSaving } from './engine.ts';
 import { california } from './dataset.ts';
+import type { StudentProfile } from './types.ts';
 
 const ds = california;
 
+/** A neutral profile: nothing waived, no budget, nothing field-specific. */
+const PLAIN: StudentProfile = {
+  year: 'in_college', field: 'undecided', budget_usd: null, waiver: 'not_eligible',
+};
+const withProfile = (p: Partial<StudentProfile> = {}): StudentProfile => ({ ...PLAIN, ...p });
+
+
 test('CLEP credit is excluded at a UC campus that does not accept it', () => {
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'uc-berkeley',
     held_credit_ids: [],
     units_in_residence: 30,
@@ -20,7 +28,7 @@ test('CLEP credit is excluded at a UC campus that does not accept it', () => {
 });
 
 test('holding CLEP credit for a UC target produces a stranded-credit warning', () => {
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'uc-berkeley',
     held_credit_ids: ['clep-college-composition', 'clep-college-algebra'],
     units_in_residence: 30,
@@ -34,7 +42,7 @@ test('holding CLEP credit for a UC target produces a stranded-credit warning', (
 
 test('held CLEP credit does NOT clear an area at a UC campus', () => {
   // The trap: a student believes area 1A is done. It is not.
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'uc-berkeley',
     held_credit_ids: ['clep-college-composition'],
     units_in_residence: 30,
@@ -63,7 +71,7 @@ test('CLEP clears no Cal-GETC area at ANY institution', () => {
 });
 
 test('holding CLEP does not clear an area even at a CSU campus', () => {
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
     held_credit_ids: ['clep-college-composition'],
     units_in_residence: 30,
@@ -77,8 +85,8 @@ test('holding CLEP does not clear an area even at a CSU campus', () => {
 
 test('AP clears Cal-GETC areas at both UC and CSU', () => {
   for (const id of ['uc-berkeley', 'csu-long-beach']) {
-    const route = planRoute(ds, {
-      target_institution_id: id, held_credit_ids: ['ap-english-lang'], units_in_residence: 30,
+    const route = planRoute(ds, { profile: PLAIN,
+    target_institution_id: id, held_credit_ids: ['ap-english-lang'], units_in_residence: 30,
     }, 'cheapest');
     assert.equal(
       route.items.some(i => i.satisfies_area === '1A'), false,
@@ -96,7 +104,7 @@ test('Cal-GETC area 1C is offered at CSU but not at UC', () => {
 });
 
 test('cheapest route picks the lowest-cost option for an area', () => {
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
     held_credit_ids: [],
     units_in_residence: 30,
@@ -140,13 +148,13 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
     ],
   };
 
-  const input = { target_institution_id: 'x', held_credit_ids: [], units_in_residence: 0 };
+  const input = { profile: PLAIN, target_institution_id: 'x', held_credit_ids: [], units_in_residence: 0 };
   assert.equal(planRoute(synthetic, input, 'cheapest').items[0].credit_source_id, 'ccc-cheap');
   assert.equal(planRoute(synthetic, input, 'fastest').items[0].credit_source_id, 'clep-fast');
 });
 
 test('fastest route prefers the exam over a term-long course', () => {
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
     held_credit_ids: [],
     units_in_residence: 30,
@@ -157,7 +165,7 @@ test('fastest route prefers the exam over a term-long course', () => {
 });
 
 test('residency shortfall is reported and cannot be transferred away', () => {
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
     held_credit_ids: [],
     units_in_residence: 12,
@@ -167,7 +175,7 @@ test('residency shortfall is reported and cannot be transferred away', () => {
 });
 
 test('lowest-risk route stakes nothing on unconfirmed data', () => {
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
     held_credit_ids: [],
     units_in_residence: 30,
@@ -196,7 +204,7 @@ test('lowest-risk never beats cheapest on the areas they both clear', () => {
   // because it covers fewer areas. Certainty costs money, so the real invariant
   // is per-area — and this is also why a route card must never show cost without
   // showing coverage next to it.
-  const input = {
+  const input = { profile: PLAIN,
     target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
   };
   const cheapest = planRoute(ds, input, 'cheapest');
@@ -214,7 +222,7 @@ test('lowest-risk never beats cheapest on the areas they both clear', () => {
 });
 
 test('all three routes are produced and are internally consistent', () => {
-  const routes = planAllRoutes(ds, {
+  const routes = planAllRoutes(ds, { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
     held_credit_ids: [],
     units_in_residence: 30,
@@ -232,8 +240,8 @@ test('no warning leaks developer-facing language to a student', () => {
   // The lowest-risk route once told students the "dataset is not ready to ship".
   const leaks = /ship|dataset|unverified row|TODO|FIXME/i;
   for (const id of ['uc-berkeley', 'csu-long-beach']) {
-    for (const r of planAllRoutes(ds, {
-      target_institution_id: id, held_credit_ids: [], units_in_residence: 0,
+    for (const r of planAllRoutes(ds, { profile: PLAIN,
+    target_institution_id: id, held_credit_ids: [], units_in_residence: 0,
     })) {
       for (const w of r.warnings) {
         assert.ok(!leaks.test(w.message), `developer language in: ${w.message}`);
@@ -243,7 +251,7 @@ test('no warning leaks developer-facing language to a student', () => {
 });
 
 test('baseline prices only the areas still unmet, at the school\'s own rate', () => {
-  const input = {
+  const input = { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
     held_credit_ids: [],
     units_in_residence: 30,
@@ -261,7 +269,7 @@ test('baseline prices only the areas still unmet, at the school\'s own rate', ()
 });
 
 test('a saving is never negative — routes cost less than doing nothing', () => {
-  const input = {
+  const input = { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
     held_credit_ids: [],
     units_in_residence: 30,
@@ -276,7 +284,7 @@ test('a warning cites the row it actually rests on, not the row next to it', () 
   // Institution provenance is per claim. A residency warning must not borrow the
   // exam policy's confirmed status — that would badge an unchecked number
   // "Published policy".
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'uc-berkeley',
     held_credit_ids: ['clep-college-composition'],
     units_in_residence: 0,
@@ -297,7 +305,7 @@ test('a warning cites the row it actually rests on, not the row next to it', () 
 test('CLEP held against a CSU warns that it clears no Cal-GETC requirement', () => {
   // The quiet failure: the campus accepts the credit, so nothing looks wrong,
   // but it satisfies no requirement the student is planning against.
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
     held_credit_ids: ['clep-college-composition'],
     units_in_residence: 30,
@@ -312,7 +320,7 @@ test('CLEP held against a CSU warns that it clears no Cal-GETC requirement', () 
 });
 
 test('AP held against a CSU raises no credit warning at all', () => {
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
     held_credit_ids: ['ap-english-lang'],
     units_in_residence: 30,
@@ -331,7 +339,7 @@ test('the app never invents a policy it has no record of', () => {
   // "UC Berkeley counts CCC Communication Studies 1 toward your degree" — nothing
   // in the dataset says that, and asserting it is exactly the certainty this
   // product must never imply.
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'uc-berkeley',
     held_credit_ids: ['ccc-comm-1'],
     units_in_residence: 30,
@@ -348,7 +356,7 @@ test('the app never invents a policy it has no record of', () => {
 });
 
 test('credit_not_toward_ge cites the rule that backs it, not the campus row', () => {
-  const route = planRoute(ds, {
+  const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
     held_credit_ids: ['clep-college-composition'],
     units_in_residence: 30,
@@ -377,7 +385,7 @@ test('a route that clears nothing saves nothing', () => {
   // The trap: saving computed as (baseline - route cost) credits a route for
   // requirements it never touched, so the empty safe route showed the biggest
   // number on screen.
-  const input = {
+  const input = { profile: PLAIN,
     target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
   };
   const safest = planRoute(ds, input, 'lowest_risk');
@@ -388,7 +396,7 @@ test('a route that clears nothing saves nothing', () => {
 });
 
 test('saving is never more than the requirements a route actually clears', () => {
-  const input = {
+  const input = { profile: PLAIN,
     target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
   };
   const inst = ds.institutions.find(i => i.id === 'csu-long-beach')!;
@@ -405,7 +413,7 @@ test('saving is never more than the requirements a route actually clears', () =>
 });
 
 test('a fuller route saves more than a narrower one', () => {
-  const input = {
+  const input = { profile: PLAIN,
     target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
   };
   const cheapest = planRoute(ds, input, 'cheapest');
@@ -422,13 +430,13 @@ test('a CSU-only requirement is not imposed on a UC student', () => {
   // Cal-GETC area 1C (Oral Communication) is a CSU requirement, not a UC one.
   // Listing it as unmet at a UC campus sends the student to solve something that
   // does not apply — and its units inflate their baseline, overstating the saving.
-  const uc = planRoute(ds, {
+  const uc = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'uc-berkeley', held_credit_ids: [], units_in_residence: 30,
   }, 'cheapest');
   assert.equal(uc.areas_unmet.includes('1C'), false, '1C must not be required at UC');
   assert.equal(uc.areas_cleared.includes('1C'), false);
 
-  const csu = planRoute(ds, {
+  const csu = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
   }, 'cheapest');
   assert.ok(
@@ -438,7 +446,7 @@ test('a CSU-only requirement is not imposed on a UC student', () => {
 });
 
 test('the baseline excludes requirements the campus does not impose', () => {
-  const ucBase = baselineCost(ds, {
+  const ucBase = baselineCost(ds, { profile: PLAIN,
     target_institution_id: 'uc-berkeley', held_credit_ids: [], units_in_residence: 30,
   });
   const inst = ds.institutions.find(i => i.id === 'uc-berkeley')!;
@@ -449,4 +457,88 @@ test('the baseline excludes requirements the campus does not impose', () => {
 
   const area1C = ds.areas.find(a => a.id === '1C')!;
   assert.equal(area1C.applies_to.includes('UC'), false, 'guards the premise of this test');
+});
+
+test('a fee waiver actually changes what the student pays', () => {
+  const base = {
+    target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
+  };
+  const full = planRoute(ds, { ...base, profile: PLAIN }, 'cheapest');
+  const waived = planRoute(
+    ds, { ...base, profile: withProfile({ waiver: 'eligible' }) }, 'cheapest');
+
+  assert.ok(full.total_cost_usd > 0, 'guards the premise');
+  assert.ok(
+    waived.total_cost_usd < full.total_cost_usd,
+    'CCPG waives CCC fees and Modern States covers CLEP — the price must move',
+  );
+  for (const item of waived.items) {
+    if (item.credit_source_id.startsWith('ccc-')) {
+      assert.equal(item.cost_usd, 0, 'CCPG waives the community-college enrolment fee');
+    }
+  }
+});
+
+test('"unsure" pays full price but is told to check', () => {
+  const input = {
+    profile: withProfile({ waiver: 'unsure' }),
+    target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
+  };
+  const route = planRoute(ds, input, 'cheapest');
+  const plain = planRoute(ds, { ...input, profile: PLAIN }, 'cheapest');
+
+  assert.equal(route.total_cost_usd, plain.total_cost_usd,
+    'we quote what they will be charged if the waiver does not come through');
+  assert.ok(
+    route.warnings.some(w => w.kind === 'opportunity' && /Promise Grant/.test(w.message)),
+    'and we tell them it is worth checking',
+  );
+});
+
+test('a budget is compared against what the route actually costs', () => {
+  const base = {
+    target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
+  };
+  const tight = planRoute(ds, { ...base, profile: withProfile({ budget_usd: 50 }) }, 'cheapest');
+  assert.ok(tight.warnings.some(w => w.kind === 'budget_exceeded'));
+
+  const roomy = planRoute(
+    ds, { ...base, profile: withProfile({ budget_usd: 100000 }) }, 'cheapest');
+  assert.equal(roomy.warnings.some(w => w.kind === 'budget_exceeded'), false);
+
+  const unsaid = planRoute(ds, { ...base, profile: PLAIN }, 'cheapest');
+  assert.equal(unsaid.warnings.some(w => w.kind === 'budget_exceeded'), false,
+    'no budget given is not a budget of zero');
+});
+
+test('a high-schooler is told about dual enrolment; a college student is not', () => {
+  const base = {
+    target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
+  };
+  for (const year of ['grade_9', 'grade_10', 'grade_11'] as const) {
+    const r = planRoute(ds, { ...base, profile: withProfile({ year }) }, 'cheapest');
+    assert.ok(
+      r.warnings.some(w => w.kind === 'opportunity' && /dual enrolment/i.test(w.message)),
+      `${year} can still reach free college units`,
+    );
+  }
+  const senior = planRoute(ds, { ...base, profile: withProfile({ year: 'in_college' }) }, 'cheapest');
+  assert.equal(
+    senior.warnings.some(w => /dual enrolment/i.test(w.message)), false,
+    'already enrolled — that door has closed, do not waste their attention',
+  );
+});
+
+test('locked-sequence fields get a caution; others are not nagged', () => {
+  const base = {
+    target_institution_id: 'csu-long-beach', held_credit_ids: [], units_in_residence: 30,
+  };
+  for (const field of ['stem', 'health'] as const) {
+    const r = planRoute(ds, { ...base, profile: withProfile({ field }) }, 'cheapest');
+    assert.ok(r.warnings.some(w => w.kind === 'major_sequence'));
+  }
+  for (const field of ['business', 'arts_humanities', 'undecided'] as const) {
+    const r = planRoute(ds, { ...base, profile: withProfile({ field }) }, 'cheapest');
+    assert.equal(r.warnings.some(w => w.kind === 'major_sequence'), false);
+  }
 });
