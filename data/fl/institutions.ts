@@ -75,6 +75,7 @@ const fl = (id: string, name: string): Institution => ({
   residency_min_units: 30,
   max_transfer_units: 60,
   accepts_clep: true,
+  accepts_third_party_transcript: true,
   exam_policy_provenance: FL_EXAM_POLICY,
   residency_provenance: FL_RESIDENCY,
   transfer_cap_provenance: FL_TRANSFER_CAP,

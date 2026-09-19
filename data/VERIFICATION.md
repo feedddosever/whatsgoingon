@@ -59,6 +59,45 @@ They carry no campuses and no invented requirements — what they carry is an
 honest statement that we have not mapped them, the ECS finding that at least 31
 states have a transferable lower-division core, and a pointer to go and ask.
 
+### Two tiers, and the app never blurs them (added 2026-09-19)
+
+**Campus pricing** — California, Texas, Florida. 79 campuses, a requirement
+list, per-unit costs, acceptance rules. This is what can produce a number.
+
+**The statewide layer** — 25 of 51 jurisdictions now carry their actual
+statewide transfer rule: Ohio Transfer 36, the Illinois Articulation Initiative,
+the Michigan Transfer Agreement, Missouri's CORE 42, Arizona's AGEC, Colorado's
+gtPathways and the rest. A statewide guarantee applies to every public campus in
+the state at once, it is usually the single most valuable thing a student can be
+told, and — unlike per-campus tuition — it is one fact rather than four hundred.
+
+Every row in that layer is `needs_check`: assembled from search results rather
+than read out of the statute, the board policy or the agreement itself. The
+difference between those two things is the entire product, so the note on each
+row says which it is. Confirming one is a matter of reading one document.
+
+A state in the statewide layer has `framework_id: null` deliberately. We hold
+the guarantee, not the requirement list it refers to, and pointing a state at a
+framework we cannot enumerate would let the engine plan against an empty area
+list and call the result a complete plan. A test asserts it.
+
+The remaining 26 carry an honest "we have not confirmed one", which is a fact
+about us and not about them — ECS counts at least 31 states with a transferable
+core, so most of those 26 have one we simply have not checked.
+
+### Third-party credit providers (added 2026-09-19)
+
+Sophia, Study.com, StraighterLine, Saylor, TEEX and Modern States are in
+`data/us/alt-credit.ts` with prices, who recommends them, and — the field that
+actually decides their worth — **whose transcript the credit lands on**. See
+`docs/CREDIT-SOURCES.md`.
+
+They have no acceptance rules anywhere, and that is correct: only UC publishes a
+position, and it is a refusal. So the app tells a UC-bound student their Sophia
+credit will not count, tells everyone else it has no record, and never plans
+with any of it. `Institution.accepts_third_party_transcript` carries the
+published refusal the same way `accepts_clep` does.
+
 ### What generalising cost
 
 Almost nothing in code. Exactly two lines bound the engine to California:

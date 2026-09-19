@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Degree Route — which college credit will your campus actually take?</title>
+<meta name="description" content="Three CLEP exams clear nothing at UC Berkeley and three whole requirements in Florida. Degree Route prices the credit you still need, and cites a source for every claim.">
+<link rel="icon" href="/favicon.ico">
+
+<!-- Link previews. This page exists to be pasted into a bio, a DM and a
+     counsellor's email, so the card those produce is not decoration. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Which college credit will your campus actually take?">
+<meta property="og:description" content="The same CLEP exam is worth $0 at a UC and clears a whole requirement in Florida. Free, open source, and it cites a source for every claim.">
+<meta property="og:image" content="/og.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<style>
+  :root{
+    --bg:#0B0F14; --surface:#141C24; --surface-2:#1C2530; --border:#26313D;
+    --text:#F2F6FA; --muted:#8A97A6; --accent:#5BE895; --accent-dim:#1B3A2A;
+    --warn:#F5C542;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font:400 17px/1.6 Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:0 20px}
+  a{color:var(--accent)}
+
+  header{padding:56px 0 8px}
+  .kicker{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin:0 0 20px}
+  h1{font-size:clamp(32px,7vw,52px);line-height:1.08;letter-spacing:-1px;margin:0 0 20px;font-weight:800}
+  .lede{font-size:clamp(18px,3.4vw,21px);color:var(--muted);margin:0 0 28px}
+
+  .cta{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 12px}
+  .btn{
+    display:inline-block;padding:15px 26px;border-radius:10px;text-decoration:none;
+    font-weight:600;font-size:17px;
+  }
+  .btn-go{background:var(--accent);color:#06210F}
+  .btn-alt{border:1px solid var(--border);color:var(--text)}
+  .free{font-size:14px;color:var(--muted);margin:0 0 48px}
+
+  /* The proof. One table, three rows, no adjectives. */
+  .proof{background:var(--surface);border-radius:14px;padding:22px;margin:0 0 20px}
+  .proof h2{font-size:15px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 16px;font-weight:600}
+  table{width:100%;border-collapse:collapse;font-size:15px}
+  th{text-align:left;font-weight:600;color:var(--muted);font-size:13px;padding:0 0 10px}
+  td{padding:11px 0;border-top:1px solid var(--border);vertical-align:top}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .save{color:var(--accent);font-weight:700}
+  .note{font-size:13px;color:var(--muted);margin:14px 0 0}
+
+  section{margin:0 0 44px}
+  h2.sec{font-size:clamp(24px,4.6vw,30px);line-height:1.2;margin:0 0 14px;letter-spacing:-0.5px}
+  p{margin:0 0 16px;color:var(--muted)}
+  p.body{color:var(--text)}
+
+  .cards{display:grid;gap:14px;grid-template-columns:1fr}
+  @media(min-width:620px){.cards{grid-template-columns:1fr 1fr}}
+  .card{background:var(--surface);border-radius:12px;padding:18px}
+  .card h3{margin:0 0 8px;font-size:17px}
+  .card p{margin:0;font-size:15px}
+
+  /* The refusal. The most distinctive thing here, so it gets the accent rule. */
+  .refuse{border-left:3px solid var(--accent);background:var(--surface);padding:20px;border-radius:0 12px 12px 0}
+  .refuse .quote{color:var(--text);font-size:17px;margin:0 0 10px}
+
+  .badge{
+    display:inline-block;font-size:12px;padding:3px 9px;border-radius:5px;
+    border:1px dashed var(--warn);color:var(--warn);margin:0 6px 6px 0;
+  }
+  .badge.ok{border:1px solid var(--accent);color:var(--accent)}
+
+  .stats{display:flex;flex-wrap:wrap;gap:26px;margin:0 0 8px}
+  .stat b{display:block;font-size:30px;font-weight:800;letter-spacing:-1px}
+  .stat span{font-size:13px;color:var(--muted)}
+
+  footer{border-top:1px solid var(--border);padding:28px 0 56px;font-size:14px;color:var(--muted)}
+  footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="kicker">Degree Route</p>
+  <h1>Which college credit will your campus <em>actually</em> take?</h1>
+  <p class="lede">
+    Three CLEP exams clear nothing at UC Berkeley and three whole requirements at the
+    University of Florida. Same exams, same scores, same week. Nobody tells you which
+    sentence applies to you until after you have paid.
+  </p>
+  <div class="cta">
+    <a class="btn btn-go" href="/">Open the planner →</a>
+    <a class="btn btn-alt" href="https://github.com/feedddosever/whatsgoingon">Read the source</a>
+  </div>
+  <p class="free">Free. No account, no transcript upload, nothing stored on a server.</p>
+</header>
+
+<section class="proof">
+  <h2>What it costs to clear what you still owe</h2>
+  <table>
+    <thead>
+      <tr><th>First year, nothing banked</th><th class="n">Do nothing</th><th class="n">Cheapest route</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>UT Austin <span style="color:var(--muted)">· Texas Core, 42 SCH</span></td><td class="n">$12,600</td><td class="n save">$859</td></tr>
+      <tr><td>UC Berkeley <span style="color:var(--muted)">· Cal-GETC</span></td><td class="n">$17,825</td><td class="n save">$969</td></tr>
+      <tr><td>University of Florida <span style="color:var(--muted)">· GE Core</span></td><td class="n">$2,505</td><td class="n save">$475</td></tr>
+    </tbody>
+  </table>
+  <p class="note">
+    Every figure produced by the planner itself, not written by hand. Prices are the
+    campus's own per-unit rate applied to the requirements you have not cleared — never the
+    cost of a whole degree.
+  </p>
+</section>
+
+<section>
+  <h2 class="sec">It cites a source for every claim</h2>
+  <p class="body">
+    Each row carries where it came from, the date it was last read, and how far we trust it.
+    Anything unconfirmed looks unconfirmed:
+  </p>
+  <p>
+    <span class="badge ok">Guaranteed by state law</span>
+    <span class="badge ok">Published policy</span>
+    <span class="badge">Needs confirming</span>
+  </p>
+  <p>
+    A student who acts on a wrong transfer-credit claim loses real money and a real
+    semester. So the app is built to be checkable rather than convincing.
+  </p>
+</section>
+
+<section>
+  <div class="refuse">
+    <p class="quote"><strong>And it is allowed to say “I don't know.”</strong></p>
+    <p>
+      In Texas we have not confirmed exam mappings against each campus's published policy.
+      So the conservative route comes back <em>empty</em> and says so: “there is nothing here
+      we would stake your money on.”
+    </p>
+    <p style="margin:0">
+      We could have made Texas look as strong as California by relaxing one confidence
+      level. The whole thing would have been worth less.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2 class="sec">The rule nobody tells you</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Texas</h3>
+      <p>Finish the 42-hour core at <em>any</em> Texas public college and the receiving
+      university must substitute it for its own. That is statute, not policy.</p>
+    </div>
+    <div class="card">
+      <h3>Florida</h3>
+      <p>An Associate in Arts guarantees admission to a state university with junior
+      standing — though not to the campus you want. We say both halves.</p>
+    </div>
+    <div class="card">
+      <h3>Ohio, Illinois, Michigan…</h3>
+      <p>25 states carry a statewide transfer rule in the app today. It applies to every
+      public campus at once, which is why no single campus page mentions it.</p>
+    </div>
+    <div class="card">
+      <h3>Everywhere else</h3>
+      <p>The other 26 get the truth — we have not confirmed yours — plus what is national
+      anyway, and the offer to tell you when that changes.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="sec">Also: the cheap credit, and the trap in it</h2>
+  <p class="body">
+    Sophia, Study.com, Saylor, StraighterLine, TEEX, Modern States — the cheapest credit in
+    America. The app lists what each costs, who recommends it, and whose transcript the
+    credit lands on.
+  </p>
+  <p>
+    That last one is what decides whether it is worth anything. Your college is not asking
+    “was that course any good?” — it is asking “do we accept this company's paperwork?”.
+    The University of California answers no, in writing, for all of them.
+  </p>
+</section>
+
+<section>
+  <h2 class="sec">Where it stands</h2>
+  <div class="stats">
+    <div class="stat"><b>51</b><span>states in the dataset</span></div>
+    <div class="stat"><b>25</b><span>with a statewide rule</span></div>
+    <div class="stat"><b>79</b><span>campuses priced</span></div>
+    <div class="stat"><b>3,150</b><span>acceptance rules</span></div>
+  </div>
+  <p class="note">
+    Campus-level planning covers California, Texas and Florida. Everywhere else gets the
+    statewide layer. The app never pretends otherwise.
+  </p>
+</section>
+
+<section>
+  <div class="cta">
+    <a class="btn btn-go" href="/">Open the planner →</a>
+  </div>
+  <p class="free">
+    Planning help, not academic advice. Confirm every item with the campus before you pay
+    for it.
+  </p>
+</section>
+
+<footer>
+  <p style="margin:0 0 8px">
+    Open source under the MIT licence ·
+    <a href="https://github.com/feedddosever/whatsgoingon">github.com/feedddosever/whatsgoingon</a>
+  </p>
+  <p style="margin:0">
+    <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> ·
+    Built for the RevenueCat Shipaton 2026
+  </p>
+</footer>
+
+</div>
+</body>
+</html>

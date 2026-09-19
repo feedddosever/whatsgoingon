@@ -64,6 +64,7 @@ const tx = (id: string, name: string): Institution => ({
   residency_min_units: 30,
   max_transfer_units: 66,
   accepts_clep: true,
+  accepts_third_party_transcript: true,
   exam_policy_provenance: TX_EXAM_POLICY,
   residency_provenance: TX_RESIDENCY,
   transfer_cap_provenance: TX_TRANSFER_CAP,

@@ -5,6 +5,7 @@ import { frameworks } from '../data/us/frameworks.ts';
 import { systems } from '../data/us/systems.ts';
 import { jurisdictions } from '../data/us/states.ts';
 import { examSources } from '../data/us/exams.ts';
+import { altCreditSources } from '../data/us/alt-credit.ts';
 
 import { institutions as caInstitutions } from '../data/ca/institutions.ts';
 import { calGetcAreas } from '../data/ca/cal-getc.ts';
@@ -38,7 +39,10 @@ export const unitedStates: Dataset = {
   systems,
   institutions: [...caInstitutions, ...texasInstitutions, ...floridaInstitutions],
   areas: [...calGetcAreas, ...texasCoreAreas, ...floridaCoreAreas],
-  creditSources: [...examSources, ...cccCourses, ...texasCourses, ...floridaCourses],
+  creditSources: [
+    ...examSources, ...altCreditSources,
+    ...cccCourses, ...texasCourses, ...floridaCourses,
+  ],
   rules: [...caRules, ...texasRules, ...floridaRules],
 };
 
@@ -67,7 +71,13 @@ export function forState(ds: Dataset, state: StateCode): Dataset {
     systems: ds.systems.filter(s => systemIds.has(s.id)),
     institutions,
     areas: ds.areas.filter(a => a.applies_to.some(s => systemIds.has(s))),
-    creditSources: ds.creditSources.filter(c => sourceIds.has(c.id)),
+    // Third-party providers survive the slice even with no rule behind them.
+    // The whole reason to list Sophia is to tell a UC-bound student that UC
+    // will not look at it, and a source filtered out for having no acceptance
+    // rule is a source that can never produce that warning.
+    creditSources: ds.creditSources.filter(
+      c => sourceIds.has(c.id) || c.kind === 'alt_provider',
+    ),
     rules,
   };
 }

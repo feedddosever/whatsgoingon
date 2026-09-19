@@ -142,6 +142,7 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
     institutions: [{
       id: 'x', name: 'X', system: 'CSU' as const, residency_min_units: 0,
       cost_per_unit_usd: 400, max_transfer_units: null, accepts_clep: true,
+      accepts_third_party_transcript: true,
       cost_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
       exam_policy_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
       residency_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
@@ -958,4 +959,101 @@ test('every campus in the country plans without blowing up or inventing money', 
       }
     }
   }
+});
+
+// ---------------------------------------------------------------------------
+// The statewide layer, and the credit that arrives on someone else's transcript
+// ---------------------------------------------------------------------------
+
+test('a statewide guarantee always says where it came from', () => {
+  // The guarantee is the most quotable sentence in the app — a student repeats
+  // it to a counsellor. An unsourced one is a rumour with our name on it.
+  for (const jur of us.jurisdictions) {
+    if (jur.transfer_guarantee === null) continue;
+    assert.match(
+      jur.transfer_provenance.source_url, /^https?:\/\//,
+      `${jur.code} states a guarantee with no source`,
+    );
+    assert.notEqual(jur.transfer_provenance.as_of.trim(), '', `${jur.code} has no as_of`);
+    assert.ok(
+      (jur.transfer_provenance.note ?? '').trim() !== '',
+      `${jur.code} has no note saying how far the claim goes`,
+    );
+  }
+});
+
+test('a state only claims a framework when the areas behind it exist', () => {
+  // 25 states carry a statewide guarantee; 3 carry a requirement list. Pointing
+  // a state at a framework we cannot enumerate would let the engine plan
+  // against an empty area list and call the result a complete plan.
+  for (const jur of us.jurisdictions) {
+    if (jur.framework_id === null) continue;
+    const fw = us.frameworks.find(f => f.id === jur.framework_id);
+    assert.ok(fw, `${jur.code} points at unknown framework ${jur.framework_id}`);
+    assert.ok(
+      us.areas.some(a => a.framework_id === fw.id),
+      `${jur.code} claims ${fw.id}, which has no areas`,
+    );
+  }
+});
+
+test('most of the country now gets a real statewide answer', () => {
+  const withGuarantee = us.jurisdictions.filter(j => j.transfer_guarantee !== null);
+  assert.ok(
+    withGuarantee.length >= 25,
+    `only ${withGuarantee.length} states carry a statewide rule`,
+  );
+  assert.equal(us.jurisdictions.length, 51);
+});
+
+test('UC strands third-party transcript credit, and says so', () => {
+  // The same shape of failure as CLEP-at-UC, and the same price: a student buys
+  // a Sophia subscription for credit their campus will not look at.
+  const sophia = us.creditSources.find(c => c.id === 'alt-sophia');
+  assert.ok(sophia && sophia.kind === 'alt_provider');
+
+  const input = {
+    profile: PLAIN, target_institution_id: 'uc-berkeley',
+    held_credit_ids: ['alt-sophia'], units_in_residence: 0,
+  };
+  const route = planRoute(us, input, 'cheapest');
+  const stranded = route.warnings.filter(w => w.kind === 'stranded_credit');
+  assert.equal(stranded.length, 1, 'UC must say it will not count');
+  assert.match(stranded[0].message, /third-party transcript/);
+
+  // And it is never quietly planned with, either.
+  assert.ok(!route.items.some(i => i.kind === 'alt_provider'));
+});
+
+test('a campus with no published refusal says it has no record, not yes', () => {
+  // Absence of a refusal is not acceptance. CSU has published nothing about
+  // Sophia, and inventing a policy on the student's behalf is the failure this
+  // whole dataset is built to avoid.
+  const input = {
+    profile: PLAIN, target_institution_id: 'csu-long-beach',
+    held_credit_ids: ['alt-sophia'], units_in_residence: 0,
+  };
+  const warnings = planRoute(us, input, 'cheapest').warnings;
+  assert.ok(warnings.some(w => w.kind === 'unverified_data' && /no record/.test(w.message)));
+  assert.ok(!warnings.some(w => w.kind === 'stranded_credit'));
+});
+
+test('every third-party provider names its transcript and who recommends it', () => {
+  const alt = us.creditSources.filter(c => c.kind === 'alt_provider');
+  assert.ok(alt.length >= 5);
+  for (const c of alt) {
+    assert.ok(c.recognition !== undefined, `${c.id} does not say who recommends it`);
+    assert.ok(
+      (c.transcript_provider ?? '').trim() !== '',
+      `${c.id} does not say whose transcript the credit lands on`,
+    );
+    assert.ok(c.provenance.source_url.startsWith('http'), `${c.id} has no source`);
+  }
+});
+
+test('third-party providers survive a state slice even with no rule behind them', () => {
+  // They have no acceptance rules anywhere, so a slice that filtered unused
+  // sources would drop them — and the UC warning that justifies listing them
+  // at all can only fire for a source the student can actually tick.
+  assert.ok(california.creditSources.some(c => c.kind === 'alt_provider'));
 });

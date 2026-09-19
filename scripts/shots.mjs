@@ -24,5 +24,12 @@ await page.waitForTimeout(600);
 await shot('04-plan-map');
 await tap('See the full breakdown');
 await shot('05-breakdown');
+
+// The answer a student in one of the 48 states without campus pricing gets.
+// Worth photographing precisely because it is the app declining to overreach.
+await btn(/^(‹|←)/); await btn(/^(‹|←)/); await btn(/^(‹|←)/);
+await tap('Another state');
+await tap('OH');
+await shot('06-any-state');
 await b.close();
 console.log('ERRORS:', errs.join('; ') || 'none');

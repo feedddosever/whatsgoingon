@@ -105,7 +105,17 @@ student sees:
 - [ ] **No community colleges as destinations, in any state.** They are credit
       sources only. In Florida that is a real gap, because the Associate in Arts
       — not the university — is the thing the statutory guarantee attaches to.
-- [ ] **47 states and DC have no campuses.** They are in the dataset, and they
+- [x] ~~**47 states and DC have no campuses and say nothing.**~~ 25 of 51 now
+      carry their real statewide transfer rule, and the picker offers all 51.
+      Campus-level pricing is still CA/TX/FL only, and the UI says so in those
+      words rather than implying coverage it does not have.
+- [ ] **The 25 statewide rules are all `needs_check`.** Each one is a single
+      document away from `statute` or `published`. Highest value per minute
+      after Florida's exam table: Ohio Transfer 36, Illinois IAI, Michigan MTA
+      and Missouri CORE 42 cover the largest student populations.
+- [ ] **26 jurisdictions still unconfirmed.** ECS counts at least 31 states with
+      a transferable core, so most of these have one we have not checked.
+- [ ] **No campuses outside CA/TX/FL.** They are in the dataset, and they
       say honestly that we have not mapped them. Next most valuable by
       enrolment: New York (SUNY/CUNY transfer policy), Illinois (IAI, a genuine
       statewide articulation initiative), Georgia (USG core, Areas A-F),

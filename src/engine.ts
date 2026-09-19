@@ -115,10 +115,25 @@ function candidatesFor(ds: Dataset, inst: Institution, profile: StudentProfile):
     if (rule.institution_id !== inst.id) continue;
     const src = byId(ds.creditSources, rule.credit_source_id);
     if (!src) continue;
-    if (src.kind === 'clep' && !inst.accepts_clep) continue;
+    if (!willLookAt(inst, src)) continue;
     items.push(toPlanItem(rule, src, profile, jur));
   }
   return items;
+}
+
+/**
+ * Whether this campus will even look at credit of this kind.
+ *
+ * Two published refusals, and they are the most valuable rows in the dataset
+ * because they are the ones a student discovers too late: UC awards nothing for
+ * CLEP, and UC awards nothing for credit posted to a third-party transcript.
+ * Both are policy we can point at, so both are enforced here rather than left
+ * to an acceptance rule that happens not to exist.
+ */
+function willLookAt(inst: Institution, src: CreditSource): boolean {
+  if (src.kind === 'clep' && !inst.accepts_clep) return false;
+  if (src.kind === 'alt_provider' && !inst.accepts_third_party_transcript) return false;
+  return true;
 }
 
 /**
@@ -229,7 +244,7 @@ function unmetAreas(ds: Dataset, inst: Institution, held: string[]): string[] {
     if (!held.includes(rule.credit_source_id)) continue;
     const src = byId(ds.creditSources, rule.credit_source_id);
     if (!src) continue;
-    if (src.kind === 'clep' && !inst.accepts_clep) continue; // held, but worthless here
+    if (!willLookAt(inst, src)) continue; // held, but worthless here
     for (const area of rule.satisfies_areas) cleared.add(area);
   }
   return areasRequiredBy(ds, inst).map(a => a.id).filter(id => !cleared.has(id));
@@ -268,12 +283,15 @@ function heldCreditWarnings(
       // explicit policy and can be stated; anything else, we simply do not know,
       // and saying "this campus counts it toward your degree" would be inventing
       // a policy on the student's behalf.
-      if (src.kind === 'clep' && !inst.accepts_clep) {
+      if (!willLookAt(inst, src)) {
         out.push({
           kind: 'stranded_credit',
           message:
-            `${inst.name} does not award credit for ${src.name}. ` +
-            `You already hold it; it will not count here.`,
+            src.kind === 'alt_provider'
+              ? `${inst.name} does not award credit for anything posted to a third-party ` +
+                `transcript, including ${src.name}. You already hold it; it will not count here.`
+              : `${inst.name} does not award credit for ${src.name}. ` +
+                `You already hold it; it will not count here.`,
           provenance: inst.exam_policy_provenance,
         });
       } else {
@@ -521,7 +539,7 @@ export function pathwayCosts(ds: Dataset, input: StudentInput): PathwayCost[] {
 
   const required = unmetAreas(ds, inst, input.held_credit_ids);
   const candidates = candidatesFor(ds, inst, input.profile);
-  const kinds: CreditKind[] = ['ap', 'cc_course', 'clep'];
+  const kinds: CreditKind[] = ['ap', 'cc_course', 'clep', 'alt_provider'];
 
   return kinds.map(kind => {
     let covered = 0;

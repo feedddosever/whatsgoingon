@@ -31,6 +31,7 @@ import type {
 } from 'react-native';
 import type {
   CreditKind,
+  CreditRecognition,
   CreditSource,
   Institution,
   Jurisdiction,
@@ -50,6 +51,12 @@ const CREDIT_GROUPS: ReadonlyArray<{ kind: CreditKind; title: string; blurb: str
   { kind: 'clep', title: 'CLEP exams', blurb: 'Credit by exam — not every campus takes it' },
   { kind: 'ap', title: 'AP exams', blurb: 'Scores you already hold from high school' },
   { kind: 'cc_course', title: 'Community college courses', blurb: 'Courses you have already passed' },
+  {
+    kind: 'alt_provider',
+    title: 'Third-party course providers',
+    blurb: 'Sophia, Study.com, Saylor and the rest — cheapest credit there is, and the ' +
+      'easiest to waste',
+  },
 ];
 
 /** A dead or unopenable source URL must never take the screen down with it. */
@@ -182,6 +189,21 @@ function InstitutionCard(
   );
 }
 
+/**
+ * "ACE recommended" is the most misread phrase in this whole category.
+ *
+ * ACE and NCCRS review a course and RECOMMEND credit. Neither is an accreditor;
+ * neither can make any college award anything. A student who reads the phrase
+ * as "counts everywhere" buys a subscription against a promise nobody made, so
+ * the recommendation is printed next to the price — where the decision is — and
+ * worded as a recommendation rather than as a status.
+ */
+const RECOGNITION_LABEL: Record<CreditRecognition, string> = {
+  ace: 'ACE recommends credit',
+  nccrs: 'NCCRS recommends credit',
+  ace_and_nccrs: 'ACE and NCCRS both recommend credit',
+};
+
 function CreditRow(
   { src, held, strandedAt, onToggle }:
   { src: CreditSource; held: boolean; strandedAt: string | null; onToggle: () => void },
@@ -208,6 +230,13 @@ function CreditRow(
           </Text>
           <SourceBadge p={src.provenance} compact />
         </View>
+        {src.recognition !== undefined && (
+          <Text style={styles.recognition}>
+            {RECOGNITION_LABEL[src.recognition]} — a recommendation, not a guarantee.
+            {src.transcript_provider !== undefined && src.transcript_provider !== '' &&
+              ` Credit arrives on: ${src.transcript_provider}.`}
+          </Text>
+        )}
         {strandedAt !== null && (
           <Text style={styles.deadTag}>Worth nothing at {strandedAt}</Text>
         )}
@@ -349,21 +378,34 @@ function StateRow(
         </View>
       )}
 
-      {/* An unmapped state is not an error state. The student gets the true
-          answer — we have not done this one — plus the two things that are
-          national anyway, and the offer to be told when it changes. */}
+      {/* Not an error state, and — since the statewide layer landed — usually
+          not an empty one either. Most states now get their actual transfer
+          rule above; what is missing is campus pricing, and saying "we have not
+          mapped Ohio" directly under a paragraph about Ohio Transfer 36 would
+          be the app contradicting itself. */}
       {chosen !== undefined && chosenIsUnmapped && (
         <View style={styles.notMapped}>
-          <Text style={styles.notMappedKicker}>WE HAVE NOT MAPPED {chosen.name.toUpperCase()}</Text>
-          <Text style={styles.notMappedText}>
-            We hold no campuses or requirements for {chosen.name}, so there is nothing here we
-            could price for you without making it up.
+          <Text style={styles.notMappedKicker}>
+            {chosen.transfer_guarantee !== null
+              ? `NO CAMPUS PRICING FOR ${chosen.name.toUpperCase()} YET`
+              : `WE HAVE NOT MAPPED ${chosen.name.toUpperCase()}`}
           </Text>
           <Text style={styles.notMappedText}>
-            Two things are true anyway, wherever you are: AP and CLEP exams are national, and
-            Modern States can cover a CLEP exam fee outright. Your state very likely has a
-            transferable general-education core as well — we have not confirmed which, so we
-            will not describe it.
+            {chosen.transfer_guarantee !== null
+              ? `The rule above applies to every public campus in ${chosen.name}. What we do ` +
+                `not hold yet is the campuses themselves and the requirement list behind them, ` +
+                `so we cannot price a plan here without making the numbers up.`
+              : `We hold no campuses or requirements for ${chosen.name}, so there is nothing ` +
+                `here we could price for you without making it up.`}
+          </Text>
+          <Text style={styles.notMappedText}>
+            {chosen.transfer_guarantee !== null
+              ? 'Two things are true anyway, wherever you are: AP and CLEP exams are national, ' +
+                'and Modern States can cover a CLEP exam fee outright.'
+              : 'Two things are true anyway, wherever you are: AP and CLEP exams are national, ' +
+                'and Modern States can cover a CLEP exam fee outright. Your state very likely ' +
+                'has a transferable general-education core as well — we have not confirmed ' +
+                'which, so we will not describe it.'}
           </Text>
           <SourceBadge p={chosen.transfer_provenance} />
           {hasContact() && (
@@ -378,6 +420,51 @@ function StateRow(
           )}
         </View>
       )}
+    </View>
+  );
+}
+
+/**
+ * What actually decides whether third-party credit is worth anything.
+ *
+ * It is not the course and it is not the price. It is whose transcript the
+ * credit lands on, and whether the receiving college accepts that company's
+ * paperwork — a question most students never think to ask, because every
+ * provider's marketing answers a different one.
+ *
+ * The accreditation half is stated carefully. The federal government stopped
+ * classifying accreditors as "regional" or "national" in July 2020; the
+ * categories a student will still be told about do not formally exist. What
+ * still exists is the behaviour: institutions discriminate between accreditors
+ * when deciding what to accept, and that behaviour is what costs money.
+ * Repeating the old labels as though they were current would be wrong, and
+ * pretending the distinction stopped mattering would be worse.
+ */
+function ThirdPartyNotice({ inst }: { inst: Institution | null }): ReactElement {
+  return (
+    <View style={styles.thirdParty}>
+      <Text style={styles.thirdPartyTitle}>Before you buy a subscription</Text>
+      <Text style={styles.thirdPartyText}>
+        These are the cheapest credits in this app, and the easiest to waste. The credit is
+        posted to the provider's own transcript, so your college is not asking "was that
+        course any good?" — it is asking "do we accept this company's paperwork?". Those are
+        different questions with different answers.
+      </Text>
+      <Text style={styles.thirdPartyText}>
+        {inst !== null && !inst.accepts_third_party_transcript
+          ? `${inst.name} answers no, in writing. Nothing in this section will count there.`
+          : inst !== null
+            ? `We have no published policy on file for ${inst.name} either way. Ask the ` +
+              'registrar, in writing, before you pay for anything here.'
+            : 'Pick your campus above and we will tell you what we know about it.'}
+      </Text>
+      <Text style={styles.thirdPartyText}>
+        You will also see schools sorted into "regionally" and "nationally" accredited. The
+        US Department of Education stopped making that distinction in July 2020 and the
+        formal categories no longer exist — but plenty of institutions still behave as though
+        they do when deciding what to accept. Ask about the specific provider by name rather
+        than about accreditation in the abstract.
+      </Text>
     </View>
   );
 }
@@ -715,6 +802,7 @@ export function InputScreen(
               {group.kind === 'clep' && target !== undefined && notTowardGe.length > 0 && (
                 <NotTowardGeNotice inst={target} exams={notTowardGe} />
               )}
+              {group.kind === 'alt_provider' && <ThirdPartyNotice inst={target ?? null} />}
             </View>
           ))
         )}
@@ -949,6 +1037,22 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   chipText: { ...theme.font.mono, color: theme.color.textMuted, letterSpacing: 1 },
+
+  recognition: { ...theme.font.small, color: theme.color.textMuted, marginTop: 2 },
+  thirdParty: {
+    marginTop: theme.space.sm,
+    padding: theme.space.md,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.color.surfaceAlt,
+    borderLeftWidth: 3,
+    borderLeftColor: theme.color.warn,
+  },
+  thirdPartyTitle: {
+    ...theme.font.heading, color: theme.color.text, marginBottom: theme.space.xs,
+  },
+  thirdPartyText: {
+    ...theme.font.small, color: theme.color.textMuted, marginBottom: theme.space.sm,
+  },
 
   stateRow: {
     flexDirection: 'row',

@@ -94,10 +94,17 @@ that clears two requirements is charged once, and a route's unmet requirements
 are priced back in so a plan that clears less can never *look* cheaper than it is.
 
 The dataset is typed TypeScript modules rather than JSON, so a malformed row is a
-compile error. It currently holds **79 public campuses across three states**,
-25 requirement areas, 71 credit sources and **3,150 acceptance rules** — plus a
-row for all 51 US jurisdictions, including the 48 we have not mapped, which say
-so plainly instead of 404-ing.
+compile error. It currently holds **79 public campuses across three states**, 25 requirement
+areas, 77 credit sources and **3,150 acceptance rules**.
+
+Coverage is deliberately two-tiered and the app never blurs them. Campus-level
+planning — the part that produces a number — is California, Texas and Florida.
+On top of that sits a **statewide layer**: 25 of the 51 US jurisdictions carry
+their actual statewide transfer rule (Ohio Transfer 36, the Illinois
+Articulation Initiative, the Michigan Transfer Agreement, Missouri's CORE 42,
+Arizona's AGEC…). That rule applies to every public campus in the state at once
+and is usually the most valuable thing a student can be told. The remaining 26
+say honestly that we have not confirmed one.
 
 RevenueCat powers the one-time advisor-packet unlock on both platforms:
 `react-native-purchases` + `react-native-purchases-ui` (Paywalls and Customer
@@ -184,9 +191,15 @@ that in the same breath as the guarantee.
   every public institution in the state must follow. Reading it flips every
   Florida AP and CLEP row from "needs confirming" to statute in a single pass,
   and turns Florida's empty lowest-risk route into the strongest demo in the app.
-- **The next five states by enrolment**, each with a real statewide framework:
-  New York, Illinois (IAI), Georgia (USG Areas A–F), North Carolina (CAA),
-  Ohio (OTM).
+- **Promote the statewide layer from `needs_check` to statute.** All 25 rules
+  are one document away each. Ohio Transfer 36, Illinois IAI, Michigan MTA and
+  Missouri CORE 42 cover the largest student populations.
+- **Campus pricing for those states**, in the same order.
+- **Third-party credit providers** (Sophia, Study.com, Saylor, StraighterLine,
+  TEEX, Modern States) are listed with price, who recommends them and — the
+  field that actually decides their worth — whose transcript the credit lands
+  on. UC publishes a refusal for all of them, so a UC-bound student is told
+  before they subscribe. See `docs/CREDIT-SOURCES.md`.
 - **Out-of-state coursework.** A student who studied in one state and is heading
   to another is currently told to retake requirements they may already hold. The
   app can now show them both states and still cannot connect them — which got
@@ -210,7 +223,9 @@ if the Galaxy release lands before you submit.)*
 ## Try it out
 
 - **Source (MIT):** https://github.com/feedddosever/whatsgoingon
-- **Live web build:** https://whatsgoingon-hazel.vercel.app
+- **Start here:** https://whatsgoingon-hazel.vercel.app/start
+- **The planner itself:** https://whatsgoingon-hazel.vercel.app
+- **Privacy / Terms:** `/privacy` and `/terms` on the same host
 - **Store listing:** *(add once the Galaxy Store release is live — leave the line
   out entirely rather than writing "coming soon")*
 
@@ -256,6 +271,8 @@ One app can enter several. Enter these, in this order of expected return:
 - [ ] The five screenshots from `docs/store/screenshots/` attached
 - [ ] Vercel link opened and confirmed current
 - [ ] Every figure in this file re-checked against `npm run demo`
-- [ ] `PRIVACY.md` and `TERMS.md` hosted at public URLs with a real support
-      address — **required for the store release, and the Peace Prize needs the
+- [x] `PRIVACY.md` and `TERMS.md` now render to public URLs at `/privacy` and
+      `/terms`, generated from the Markdown at build time — ✅ done
+- [ ] A real support address in both, and in `EXPO_PUBLIC_SUPPORT_EMAIL` —
+      **still required for the store release, and the Peace Prize needs the
       store release**

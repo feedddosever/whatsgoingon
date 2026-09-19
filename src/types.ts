@@ -119,6 +119,20 @@ export interface Institution {
   max_transfer_units: number | null;
   /** Whether this campus accepts CLEP at all. */
   accepts_clep: boolean;
+  /**
+   * Whether this campus will look at credit posted to a third-party transcript
+   * — Sophia, Study.com, StraighterLine, Saylor and the rest.
+   *
+   * `false` means a published refusal we can point at, not an absence of
+   * evidence. UC states plainly that it awards no credit for these; that is a
+   * fact worth several hundred dollars to a student about to buy a Sophia
+   * subscription, and it is the same shape of fact as `accepts_clep`.
+   *
+   * `true` means only "no published refusal on file" — never "they accept it".
+   * Whether a specific course counts is an acceptance rule, and where we hold
+   * none the app says it has no record rather than guessing.
+   */
+  accepts_third_party_transcript: boolean;
 
   /**
    * Provenance is per claim, not per row.
@@ -167,7 +181,17 @@ export interface GeArea {
   provenance: Provenance;
 }
 
-export type CreditKind = 'clep' | 'ap' | 'cc_course';
+export type CreditKind = 'clep' | 'ap' | 'cc_course' | 'alt_provider';
+
+/**
+ * Who has reviewed a third-party course and said what it is worth.
+ *
+ * Neither body is an accreditor and neither can make a college award anything.
+ * ACE and NCCRS *recommend* credit; the receiving institution decides, and a
+ * great many decide no. A student who reads "ACE recommended" as "counts
+ * everywhere" is making the most expensive mistake in this whole category.
+ */
+export type CreditRecognition = 'ace' | 'nccrs' | 'ace_and_nccrs';
 
 export interface CreditSource {
   id: string;
@@ -175,6 +199,22 @@ export interface CreditSource {
   name: string;
   /** What it costs the student to obtain, in USD. */
   cost_usd: number;
+  /**
+   * Who recommends it, for `alt_provider` rows. Absent on AP, CLEP and
+   * community-college courses, which do not work this way: an AP score and a
+   * college course are evaluated directly, not via a recommending body.
+   */
+  recognition?: CreditRecognition;
+  /**
+   * The transcript the credit actually arrives on, for `alt_provider` rows.
+   *
+   * This is the field that decides whether the credit is worth anything. Credit
+   * from Sophia or Study.com is posted to *that provider's* transcript, and a
+   * receiving institution is deciding whether to accept a third party's
+   * paperwork — which is a different question, with a different answer, from
+   * whether to accept a college's.
+   */
+  transcript_provider?: string;
   provenance: Provenance;
 }
 

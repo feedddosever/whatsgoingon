@@ -108,6 +108,7 @@ const uc = (id: string, name: string, tag: boolean): Institution => ({
   residency_min_units: 24,
   max_transfer_units: 70,
   accepts_clep: false,
+  accepts_third_party_transcript: false,
   exam_policy_provenance: {
     ...UC_EXAM_POLICY,
     note: UC_EXAM_POLICY.note + ' ' + (tag ? TAG : NO_TAG(name)),
@@ -125,6 +126,7 @@ const csu = (id: string, name: string): Institution => ({
   residency_min_units: 30,
   max_transfer_units: 70,
   accepts_clep: true,
+  accepts_third_party_transcript: true,
   exam_policy_provenance: CSU_EXAM_POLICY,
   residency_provenance: CSU_RESIDENCY,
   transfer_cap_provenance: CSU_TRANSFER_CAP,
