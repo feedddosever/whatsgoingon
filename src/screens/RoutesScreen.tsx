@@ -43,7 +43,7 @@ const KIND_BLURB: Record<RouteKind, string> = {
   // Said plainly, not apologetically: refusing to bet on an unchecked row is the
   // feature being sold, so the smaller number is the honest one.
   lowest_risk:
-    'Only credit backed by California statute or a published campus policy. It usually saves less — that is the point.',
+    'Only credit backed by statute or a published campus policy. It usually saves less — that is the point.',
 };
 
 const RANK: Record<Confidence, number> = {
@@ -58,7 +58,7 @@ const RANK: Record<Confidence, number> = {
  *
  * A card has room for one warning, so this decides which one the student actually
  * sees: stranded credit first, because it is money already spent that this campus
- * will never honour. Credit the campus does award but that clears no Cal-GETC
+ * will never honour. Credit the campus does award but that clears no general-education
  * requirement sits directly behind it — the student has not lost the money, but
  * they have satisfied nothing, and nothing on the plan looks wrong.
  */
@@ -92,7 +92,7 @@ const WARNING_TITLE: Record<WarningKind, string> = {
  * vocabularies for one warning is the app disagreeing with itself.
  *
  *   severe   — stranded credit: money already spent that this campus will not honour.
- *   elevated — credit the campus DOES award that clears no Cal-GETC requirement.
+ *   elevated — credit the campus DOES award that clears no general-education requirement.
  *              Nothing looks wrong to the student: the credit is accepted, the plan
  *              reads normally, and they have satisfied no requirement. A warning
  *              nobody would go looking for cannot be drawn as an aside, so it is
@@ -163,20 +163,23 @@ function weakestItem(route: Route): PlanItem | null {
 const plural = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 /**
- * A bare Cal-GETC code is advisor shorthand; the student knows the requirement by
+ * A bare general-education code is advisor shorthand; the student knows the requirement by
  * its name. RouteDetailScreen already prints "CAL-GETC 3B · Humanities", and one
  * student meeting two vocabularies for one requirement is the app disagreeing
  * with itself, so this screen says it the same way. A code we hold no row for
  * prints as itself — never as "undefined", never with a dangling separator.
  */
-const areaLabel = (code: string, name: string | null): string =>
-  name === null ? `CAL-GETC ${code}` : `CAL-GETC ${code} · ${name}`;
+const areaLabel = (code: string | null, name: string | null): string =>
+  name === null ? (code ?? '') : code === null ? name : `${code} · ${name}`;
 
 const areaNamer =
   (areas: GeArea[]) =>
   (id: string): string => {
-    const name = areas.find(a => a.id === id)?.name.trim() ?? '';
-    return areaLabel(id, name === '' ? null : name);
+    const area = areas.find(a => a.id === id);
+    const name = area?.name.trim() ?? '';
+    // No area and no name leaves only the id, which is at least something the
+    // student can quote back at us.
+    return areaLabel(area?.code ?? (area === undefined ? id : null), name === '' ? null : name);
   };
 
 /** "A", "A and B", "A, B and C" — a list a student reads rather than parses. */
@@ -196,8 +199,8 @@ const openSource = (url: string): void => {
  * those three is published: the other two are unconfirmed and carry their own
  * provenance, so they are printed separately and never under that badge.
  */
-const examPolicyLine = (inst: Institution): string =>
-  `${inst.system} · ${inst.accepts_clep ? 'accepts CLEP' : 'does not accept CLEP'}`;
+const examPolicyLine = (inst: Institution, systemLabel: string): string =>
+  `${systemLabel} · ${inst.accepts_clep ? 'accepts CLEP' : 'does not accept CLEP'}`;
 
 const capLine = (inst: Institution): string =>
   inst.max_transfer_units === null
@@ -575,7 +578,9 @@ function RouteCard(props: RouteCardProps) {
 }
 
 export function RoutesScreen(props: RoutesScreenProps) {
-  const { institution, routes, areas, baselineCostUsd, onSelectRoute, onBack } = props;
+  const {
+    institution, framework, system, routes, areas, baselineCostUsd, onSelectRoute, onBack,
+  } = props;
   const { width } = useWindowDimensions();
   const wide = width >= 700;
 
@@ -684,7 +689,7 @@ export function RoutesScreen(props: RoutesScreenProps) {
         <Text style={styles.instName}>{institution.name}</Text>
         {/* One badge, one claim. This source was read and covers the exam policy —
             nothing else in the campus record. */}
-        <Text style={styles.instMeta}>{examPolicyLine(institution)}</Text>
+        <Text style={styles.instMeta}>{examPolicyLine(institution, system.short_name)}</Text>
         <ProvenanceBadge provenance={institution.exam_policy_provenance} label="Exam policy" />
         {/* The transfer cap and the residency minimum are NOT covered by that
             source. They used to sit in the same sentence, under the same
@@ -726,17 +731,17 @@ export function RoutesScreen(props: RoutesScreenProps) {
         >
           {money(heroSaving)}
         </Text>
-        {/* Says exactly what the baseline is: the Cal-GETC areas still unmet, at
+        {/* Says exactly what the baseline is: the general-education areas still unmet, at
             this campus's estimated per-unit rate. Calling it the cost of a degree would be
             the kind of overclaim this screen exists to refuse — and it names the one
             thing that makes the three cards comparable, which is that a route's
             unmet areas are charged back to it at that same rate. */}
         <Text style={styles.heroSub}>
-          against {money(baselineCostUsd)} — the Cal-GETC areas you have not cleared yet, priced at
-          an estimated per-unit rate for {institution.name} — neither UC nor CSU actually charges
-          per unit, so this is derived from published annual figures. Whatever a route leaves unmet is priced back
-          in at that same rate, so a plan that clears fewer areas cannot look cheaper than it is.
-          That is the comparison, not the cost of a whole degree.
+          against {money(baselineCostUsd)} — the {framework.name} areas you have not cleared yet,
+          priced at an estimated per-unit rate for {institution.name}. How that rate was derived,
+          and how far it can be trusted, is on the campus card above. Whatever a route leaves
+          unmet is priced back in at that same rate, so a plan that clears fewer areas cannot
+          look cheaper than it is. That is the comparison, not the cost of a whole degree.
         </Text>
         {caveats.map(c => (
           <Text key={c} style={styles.heroCaveat}>
@@ -1031,7 +1036,7 @@ const styles = StyleSheet.create({
   alertItemOpportunity: { borderColor: theme.color.accent, backgroundColor: theme.color.accentDim },
   alertTitleOpportunity: { color: theme.color.accent },
   alertTextOpportunity: { color: theme.color.text },
-  // Credit the campus does award, clearing no Cal-GETC requirement: filled and
+  // Credit the campus does award, clearing no general-education requirement: filled and
   // thick-ruled, because this is the warning a student would never think to look
   // for. Not the red of money already lost, and not the default either.
   cardWarnElevated: {

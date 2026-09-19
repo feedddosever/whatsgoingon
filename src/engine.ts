@@ -1,13 +1,47 @@
 import type {
-  AcceptanceRule, AreaChoice, CreditKind, GeArea, Institution, CreditSource,
-  PlanItem, Route, RouteKind, RouteWarning, StudentInput, StudentProfile,
+  AcceptanceRule, AreaChoice, CreditKind, GeArea, GeFramework, Institution,
+  CreditSource, Jurisdiction, PlanItem, Route, RouteKind, RouteWarning,
+  StudentInput, StudentProfile, System,
 } from './types.ts';
 
 export interface Dataset {
+  /** One row per state, including the states we have not mapped. */
+  jurisdictions: Jurisdiction[];
+  frameworks: GeFramework[];
+  systems: System[];
   institutions: Institution[];
   areas: GeArea[];
   creditSources: CreditSource[];
   rules: AcceptanceRule[];
+}
+
+/**
+ * Institution -> system -> framework -> state. Three lookups the engine used to
+ * not need, because there was only one of each.
+ *
+ * Each throws rather than returning a default. A campus whose system is missing
+ * from the dataset is a broken dataset, and the failure a student must never
+ * see is the quiet one: a plan built against the wrong state's requirements,
+ * priced in the wrong state's dollars, that looks entirely normal on screen.
+ */
+export function systemFor(ds: Dataset, inst: Institution): System {
+  const sys = ds.systems.find(s => s.id === inst.system);
+  if (sys === undefined) throw new Error(`institution ${inst.id}: unknown system ${inst.system}`);
+  return sys;
+}
+
+export function frameworkFor(ds: Dataset, inst: Institution): GeFramework {
+  const sys = systemFor(ds, inst);
+  const fw = ds.frameworks.find(f => f.id === sys.framework_id);
+  if (fw === undefined) throw new Error(`system ${sys.id}: unknown framework ${sys.framework_id}`);
+  return fw;
+}
+
+export function jurisdictionFor(ds: Dataset, inst: Institution): Jurisdiction {
+  const sys = systemFor(ds, inst);
+  const jur = ds.jurisdictions.find(j => j.code === sys.state);
+  if (jur === undefined) throw new Error(`system ${sys.id}: unknown state ${sys.state}`);
+  return jur;
 }
 
 /** Confidence levels the lowest-risk route is willing to stake a student's money on. */
@@ -17,32 +51,48 @@ const byId = <T extends { id: string }>(xs: T[], id: string): T | undefined =>
   xs.find(x => x.id === id);
 
 /** A CLEP exam is instant; a community college course costs you a term. */
-const termsFor = (kind: CreditSource['kind']): number => (kind === 'ccc_course' ? 1 : 0);
+const termsFor = (kind: CreditKind): number => (kind === 'cc_course' ? 1 : 0);
 
 /**
- * What this credit actually costs THIS student.
+ * What this credit actually costs THIS student, in THIS state.
  *
- * Two California waivers routinely take a sticker price to zero:
- *   - the California College Promise Grant waives the CCC $46/unit fee;
- *   - Modern States "Freshman Year for Free" covers the CLEP exam fee.
+ * Two kinds of waiver take a sticker price to zero, and they do not travel the
+ * same way:
+ *   - Modern States "Freshman Year for Free" covers the CLEP exam fee, and it is
+ *     national, so it applies wherever the student is;
+ *   - a community-college fee waiver is a creature of state law. California has
+ *     the College Promise Grant; Texas and Florida have no statewide equivalent,
+ *     so a waiver-eligible student there still pays tuition.
  *
- * A student who has one and is shown the sticker price is being told to budget
- * for money they will not spend — and the ordering of the routes can change.
- * "Unsure" deliberately pays full price here; we quote what they will actually
- * be charged if the waiver does not come through, and flag it as worth checking.
+ * Zeroing a course fee in a state that has no waiver would under-price every
+ * route in that state and reorder the results in the student's face. The
+ * jurisdiction decides, not the credit kind.
+ *
+ * "Unsure" deliberately pays full price: we quote what they will be charged if
+ * the waiver does not come through, and flag it as worth checking.
  */
-export function effectiveCost(src: CreditSource, profile: StudentProfile): number {
+export function effectiveCost(
+  src: CreditSource,
+  profile: StudentProfile,
+  jur: Jurisdiction,
+): number {
   if (profile.waiver !== 'eligible') return src.cost_usd;
-  if (src.kind === 'ccc_course') return 0; // CCPG waives the enrolment fee
-  if (src.kind === 'clep') return 0;       // Modern States covers the exam fee
-  return src.cost_usd;                      // AP has no equivalent blanket waiver
+  if (src.kind === 'clep') return 0; // Modern States, nationwide
+  if (src.kind === 'cc_course' && jur.fee_waiver !== null) return 0;
+  return src.cost_usd; // AP has no equivalent blanket waiver anywhere
 }
 
-function toPlanItem(rule: AcceptanceRule, src: CreditSource, profile: StudentProfile): PlanItem {
+function toPlanItem(
+  rule: AcceptanceRule,
+  src: CreditSource,
+  profile: StudentProfile,
+  jur: Jurisdiction,
+): PlanItem {
   return {
     credit_source_id: src.id,
+    kind: src.kind,
     label: src.name,
-    cost_usd: effectiveCost(src, profile),
+    cost_usd: effectiveCost(src, profile, jur),
     units: rule.units_granted,
     satisfies_areas: rule.satisfies_areas,
     // The rule's provenance governs: what matters is what THIS school accepts,
@@ -59,13 +109,14 @@ function toPlanItem(rule: AcceptanceRule, src: CreditSource, profile: StudentPro
  * course-level articulation data will tell them that.
  */
 function candidatesFor(ds: Dataset, inst: Institution, profile: StudentProfile): PlanItem[] {
+  const jur = jurisdictionFor(ds, inst);
   const items: PlanItem[] = [];
   for (const rule of ds.rules) {
     if (rule.institution_id !== inst.id) continue;
     const src = byId(ds.creditSources, rule.credit_source_id);
     if (!src) continue;
     if (src.kind === 'clep' && !inst.accepts_clep) continue;
-    items.push(toPlanItem(rule, src, profile));
+    items.push(toPlanItem(rule, src, profile, jur));
   }
   return items;
 }
@@ -77,6 +128,8 @@ function candidatesFor(ds: Dataset, inst: Institution, profile: StudentProfile):
 function profileWarnings(
   profile: StudentProfile,
   inst: Institution,
+  jur: Jurisdiction,
+  framework: GeFramework,
   routeCost: number,
 ): RouteWarning[] {
   const out: RouteWarning[] = [];
@@ -91,15 +144,38 @@ function profileWarnings(
     });
   }
 
-  // Still in high school: dual enrolment is tuition-free college credit, and it
-  // is the largest saving available to anyone who can still reach it.
-  if (profile.year === 'grade_9' || profile.year === 'grade_10' || profile.year === 'grade_11') {
+  // The statewide guarantee, where the state has one. It is usually worth more
+  // than every exam on the plan put together, and no campus page will tell a
+  // student about it because it is not any one campus's to give.
+  if (jur.transfer_guarantee !== null) {
+    out.push({
+      kind: 'opportunity',
+      message: `${jur.name}: ${jur.transfer_guarantee}`,
+      provenance: jur.transfer_provenance,
+    });
+  }
+
+  // Still in high school: dual enrolment is the cheapest college credit there
+  // is, and the programme — and whether it is free — is set by the state.
+  const inSchool =
+    profile.year === 'grade_9' || profile.year === 'grade_10' || profile.year === 'grade_11';
+  if (inSchool && jur.dual_enrollment !== null) {
     out.push({
       kind: 'opportunity',
       message:
-        'You are still in high school, so dual enrolment (CCAP) can earn you college ' +
-        'units for free — no enrolment fee, up to 15 units a term. Ask your counsellor ' +
-        'before you pay for any of the credit below.',
+        `You are still in high school, so ${jur.dual_enrollment.name} is open to you. ` +
+        `${jur.dual_enrollment.note} Ask your counsellor before you pay for any of the ` +
+        'credit below.',
+      provenance: jur.dual_enrollment.provenance,
+    });
+  } else if (inSchool) {
+    out.push({
+      kind: 'opportunity',
+      message:
+        'You are still in high school, so dual enrolment is almost certainly the cheapest ' +
+        `credit available to you. We have not mapped ${jur.name}'s programme, so ask your ` +
+        'counsellor what it is called and what it costs before paying for anything below.',
+      provenance: jur.transfer_provenance,
     });
   }
 
@@ -107,9 +183,15 @@ function profileWarnings(
     out.push({
       kind: 'opportunity',
       message:
-        'Prices below assume you pay in full. If you qualify for the California College ' +
-        'Promise Grant it waives community-college fees entirely, and Modern States can ' +
-        'cover CLEP exam fees. Both are worth ten minutes to check.',
+        'Prices below assume you pay in full. ' +
+        (jur.fee_waiver !== null
+          ? `If you qualify for the ${jur.fee_waiver.name} it waives community-college ` +
+            'fees entirely, and Modern States can cover CLEP exam fees. Both are worth ' +
+            'ten minutes to check.'
+          : `We know of no statewide community-college fee waiver in ${jur.name}, so the ` +
+            'course prices below stand. Modern States can still cover CLEP exam fees, ' +
+            'and your college may have its own aid — both are worth ten minutes to check.'),
+      provenance: jur.fee_waiver?.provenance,
     });
   }
 
@@ -120,14 +202,21 @@ function profileWarnings(
         `${profile.field === 'health' ? 'Health' : 'STEM'} majors run on locked course ` +
         'sequences that general-education planning cannot compress, and they often want ' +
         'higher exam scores than the general-education minimum. This plan covers ' +
-        'Cal-GETC only — it says nothing about your major requirements.',
+        `${framework.name} only — it says nothing about your major requirements.`,
     });
   }
 
   return out;
 }
 
-/** The Cal-GETC areas this institution actually requires. */
+/**
+ * The framework areas this institution actually requires.
+ *
+ * This one line is what scopes a national dataset to one campus. Areas name the
+ * systems that require them, so a Texas campus reaches only Texas Core areas
+ * even though every state's areas share the array — no state filter, no
+ * per-state dataset, and no way for the two to leak into each other.
+ */
 function areasRequiredBy(ds: Dataset, inst: Institution): GeArea[] {
   return ds.areas.filter(a => a.applies_to.includes(inst.system));
 }
@@ -151,16 +240,17 @@ function unmetAreas(ds: Dataset, inst: Institution, held: string[]): string[] {
  *
  * Two distinct failures, and the second one is the easier to miss:
  *   - the school awards no credit for it at all;
- *   - the school awards credit, but it clears no Cal-GETC requirement.
+ *   - the school awards credit, but it clears no general-education requirement.
  *
  * CLEP at a CSU is the second case. The campus "accepts" it — it counts toward
- * the degree, capped at 30 units — yet it cannot satisfy Cal-GETC, so a student
+ * the degree, capped at 30 units — yet it cannot satisfy Cal-GETC, so a Californian student
  * planning their transfer around it clears nothing. Saying nothing here would
  * leave them believing a requirement was handled.
  */
 function heldCreditWarnings(
   ds: Dataset,
   inst: Institution,
+  framework: GeFramework,
   held: string[],
 ): RouteWarning[] {
   const out: RouteWarning[] = [];
@@ -203,7 +293,8 @@ function heldCreditWarnings(
         kind: 'credit_not_toward_ge',
         message:
           `${inst.name} counts ${src.name} toward your degree, but it does not clear any ` +
-          `Cal-GETC requirement. You still have to satisfy that requirement another way.`,
+          `${framework.name} requirement. You still have to satisfy that requirement ` +
+          `another way.`,
         provenance: rules[0].provenance,
       });
     }
@@ -281,19 +372,12 @@ function pickPerArea(
 const RANKERS: Record<RouteKind, (a: PlanItem, b: PlanItem) => number> = {
   cheapest: (a, b) => a.cost_usd - b.cost_usd,
   fastest: (a, b) => {
-    const ta = termsFor(inferKind(a)), tb = termsFor(inferKind(b));
+    const ta = termsFor(a.kind), tb = termsFor(b.kind);
     return ta !== tb ? ta - tb : a.cost_usd - b.cost_usd;
   },
   // Cost is the tiebreak, never the driver: this route exists to be trustworthy.
   lowest_risk: (a, b) => a.cost_usd - b.cost_usd,
 };
-
-/** Credit kind is recoverable from the id prefix the dataset uses. */
-function inferKind(item: PlanItem): CreditSource['kind'] {
-  if (item.credit_source_id.startsWith('clep-')) return 'clep';
-  if (item.credit_source_id.startsWith('ap-')) return 'ap';
-  return 'ccc_course';
-}
 
 export function planRoute(ds: Dataset, input: StudentInput, kind: RouteKind): Route {
   const inst = byId(ds.institutions, input.target_institution_id);
@@ -317,9 +401,11 @@ export function planRoute(ds: Dataset, input: StudentInput, kind: RouteKind): Ro
 
   const warnings: RouteWarning[] = [];
 
-  warnings.push(...heldCreditWarnings(ds, inst, input.held_credit_ids));
+  const framework = frameworkFor(ds, inst);
+  warnings.push(...heldCreditWarnings(ds, inst, framework, input.held_credit_ids));
   warnings.push(...profileWarnings(
-    input.profile, inst, items.reduce((n, i) => n + i.cost_usd, 0),
+    input.profile, inst, jurisdictionFor(ds, inst), framework,
+    items.reduce((n, i) => n + i.cost_usd, 0),
   ));
 
   if (inst.max_transfer_units !== null && totalUnits > inst.max_transfer_units) {
@@ -435,7 +521,7 @@ export function pathwayCosts(ds: Dataset, input: StudentInput): PathwayCost[] {
 
   const required = unmetAreas(ds, inst, input.held_credit_ids);
   const candidates = candidatesFor(ds, inst, input.profile);
-  const kinds: CreditKind[] = ['ap', 'ccc_course', 'clep'];
+  const kinds: CreditKind[] = ['ap', 'cc_course', 'clep'];
 
   return kinds.map(kind => {
     let covered = 0;
@@ -445,7 +531,7 @@ export function pathwayCosts(ds: Dataset, input: StudentInput): PathwayCost[] {
     for (const area of required) {
       if (seen.has(area)) continue; // cleared by an earlier multi-area pick
       const forArea = candidates
-        .filter(c => c.satisfies_areas.includes(area) && inferKind(c) === kind
+        .filter(c => c.satisfies_areas.includes(area) && c.kind === kind
           && !spentHere.has(c.credit_source_id))
         .sort((a, b) => a.cost_usd - b.cost_usd);
       const best = forArea[0];

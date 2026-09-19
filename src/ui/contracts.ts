@@ -4,8 +4,8 @@
  * all state and is the only place the engine is called.
  */
 import type {
-  Institution, Route, StudentInput, CreditSource, GeArea, StudentProfile,
-  AreaChoice, PlanItem,
+  Institution, Route, StudentInput, CreditSource, GeArea, GeFramework,
+  Jurisdiction, StateCode, StudentProfile, System, AreaChoice, PlanItem,
 } from '../types.ts';
 import type { PathwayCost } from '../engine.ts';
 
@@ -18,6 +18,24 @@ export interface ProfileScreenProps {
 export interface InputScreenProps {
   /** Back to the onboarding answers, which change how this plan is priced. */
   onBack: () => void;
+  /**
+   * The states we hold campuses for, each with its statewide guarantee.
+   *
+   * State comes before campus because in most of the country it is the more
+   * valuable answer: "finish the Texas core anywhere and it transfers whole" is
+   * worth more than any single campus's exam table, and it is true before the
+   * student has chosen a university at all.
+   */
+  states: Jurisdiction[];
+  selectedState: StateCode;
+  onSelectState: (code: StateCode) => void;
+  /**
+   * So a campus row can be chipped "UC" or "Texas public" rather than with the
+   * raw system id. System ids are dataset keys and were never meant to be read
+   * by a student; `FL-SUS` on a card is a leak, not a label.
+   */
+  systems: System[];
+  /** Already narrowed to `selectedState` by the caller. */
   institutions: Institution[];
   creditSources: CreditSource[];
   value: StudentInput;
@@ -27,6 +45,10 @@ export interface InputScreenProps {
 
 export interface RoutesScreenProps {
   institution: Institution;
+  /** The state framework this campus runs on, so the copy can name it. */
+  framework: GeFramework;
+  /** The campus's system, for its human-readable short name. */
+  system: System;
   routes: Route[];
   /** So this screen names requirements the same way RouteDetailScreen does. */
   areas: GeArea[];
@@ -38,6 +60,10 @@ export interface RoutesScreenProps {
 
 export interface PlanMapScreenProps {
   institution: Institution;
+  /** The state framework this campus runs on, so the copy can name it. */
+  framework: GeFramework;
+  /** The campus's system, for its human-readable short name. */
+  system: System;
   route: Route;
   areas: GeArea[];
   profile: StudentProfile;
@@ -59,6 +85,10 @@ export interface PlanMapScreenProps {
 
 export interface RouteDetailScreenProps {
   institution: Institution;
+  /** The state framework this campus runs on, so the copy can name it. */
+  framework: GeFramework;
+  /** The campus's system, for its human-readable short name. */
+  system: System;
   route: Route;
   /** So the screen can print "Humanities" rather than the bare code "3B". */
   areas: GeArea[];

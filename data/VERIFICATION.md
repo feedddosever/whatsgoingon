@@ -39,6 +39,36 @@ guessed here is exactly the claim that costs a student a semester.
 Community colleges appear as credit sources rather than destinations: the app
 plans a route *to* a four-year degree, and the CCC enrolment fee is statewide.
 
+### Beyond California (added 2026-09-19)
+
+| State | Campuses | Framework | Strongest claim | Confidence of the *mapping* |
+|---|---|---|---|---|
+| California | 32 (9 UC, 23 CSU) | Cal-GETC, 34 units | Cal-GETC transfers whole to UC and CSU | `published` — read off the Cal-GETC Standards external-exam table |
+| Texas | 35 public universities | Texas Core, 42 SCH | TEC 61.822: a completed core transfers as a block the receiving university **must** substitute | `needs_check` — Texas sets a statutory floor on the *score* but publishes no statewide exam-to-area table |
+| Florida | 12 (the whole SUS) | Florida GE Core, 15 SH within a 36 SH AA | 1007.23: an AA guarantees admission to *a* state university with junior standing | `needs_check` — the statewide table exists and is binding, but this environment cannot reach the PDF |
+
+The three states are not equally well served, and the dataset says so rather
+than levelling them up. **In Texas and Florida the lowest-risk route is empty**,
+and the app tells the student in plain words that there is nothing there it
+would stake their money on. That is the designed behaviour, not a bug: the
+structural claims in both states are statute, the per-exam mappings are not, and
+the two must not be shown at the same confidence.
+
+The remaining 48 jurisdictions are in the dataset with `framework_id: null`.
+They carry no campuses and no invented requirements — what they carry is an
+honest statement that we have not mapped them, the ECS finding that at least 31
+states have a transferable lower-division core, and a pointer to go and ask.
+
+### What generalising cost
+
+Almost nothing in code. Exactly two lines bound the engine to California:
+`areasRequiredBy` in `src/engine.ts` and the branch filter in
+`PlanMapScreen.tsx`, both of which asked whether an area's `applies_to` includes
+the campus's system. Both still do. The work was in the data and in the copy —
+a dozen screens said "Cal-GETC" where they meant "the framework", and
+`effectiveCost` waived a community-college fee in states that have no waiver to
+give, which would have under-priced every Texas route in the student's favour.
+
 ## Priority order
 
 ### P0 — RESOLVED 2026-09-18
@@ -170,7 +200,38 @@ institutions, California's are ACCJC/WSCUC, and Cal-GETC is set by ICAS under
 AB 928. Nothing in `data/ca/` derives from an accreditor standard, and a change
 to one is not a reason to touch these rows.
 
+### P2c — the out-of-California rows worth reading a document for
+
+Two documents would move a whole state from `needs_check` to `published`, and
+neither is a research project:
+
+1. **Florida's credit-by-exam equivalencies list** (rule 6A-10.024, the August
+   2026 edition at `fldoe.org`). It is *one* table, it is binding on every
+   public institution in the state, and reading it would confirm every AP and
+   CLEP row in `data/fl/acceptance-rules.ts` at once. `fldoe.org` is blocked by
+   this environment's egress proxy; it is not blocked from a laptop.
+2. **The THECB Texas Core Curriculum WebCenter** (`board.thecb.state.tx.us`),
+   which publishes each campus's approved core list. Texas has no statewide
+   exam-to-area table, so this only confirms the *course* rows — the exam rows
+   stay per-campus, and the honest ceiling for Texas exam credit is
+   `needs_check` until someone reads 35 registrar pages.
+
+Also unconfirmed out of state: the per-unit prices. Texas genuinely charges per
+semester credit hour, but designated tuition is set campus by campus ($213/SCH
+at Texas Tech, $230.11/SCH at UNT for 2025-26) and the dataset uses one
+statewide middle of $300. Florida's $167/credit is built by addition from UF's
+published components and deliberately **excludes** local activity, athletic and
+health fees, so it understates the baseline and therefore the saving.
+
 ### P3 — known gaps, deliberately not seeded
+
+**AP United States History and AP US Government have no California rule.** Both
+are now in the national exam list because Texas and Florida need them. The
+Cal-GETC Standards table very probably maps at least one of them to Area 4 — but
+"very probably" is how this dataset gets a student wrong, so a Californian
+student who holds either is told we have no record of how their campus treats
+it. Confirm against the table, then add the rows.
+
 
 - **ADT / AA-T / AS-T** (SB 1440): guarantees CSU junior standing. This is a
   `statute`-grade row and probably the strongest thing that could be added.

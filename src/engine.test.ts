@@ -2,11 +2,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   planRoute, planAllRoutes, baselineCost, routeSaving, optionsForArea, pathwayCosts,
+  effectiveCost, frameworkFor, jurisdictionFor, systemFor,
 } from './engine.ts';
-import { california } from './dataset.ts';
+import { california, unitedStates } from './dataset.ts';
 import type { StudentProfile } from './types.ts';
 
 const ds = california;
+const us = unitedStates;
 
 /** A neutral profile: nothing waived, no budget, nothing field-specific. */
 const PLAIN: StudentProfile = {
@@ -124,6 +126,19 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
   // This is the real-world case once a fee waiver (California College Promise
   // Grant) or a Modern States voucher shifts the cost ordering.
   const synthetic = {
+    jurisdictions: [{
+      code: 'CA' as const, name: 'Test', framework_id: 'f', transfer_guarantee: null,
+      transfer_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
+      fee_waiver: null, dual_enrollment: null,
+    }],
+    frameworks: [{
+      id: 'f', name: 'F', full_name: 'Framework', state: 'CA' as const, total_units: 3,
+      provenance: { source_url: '', as_of: '', confidence: 'published' as const },
+    }],
+    systems: [{
+      id: 'CSU', name: 'Test system', short_name: 'CSU', state: 'CA' as const,
+      framework_id: 'f',
+    }],
     institutions: [{
       id: 'x', name: 'X', system: 'CSU' as const, residency_min_units: 0,
       cost_per_unit_usd: 400, max_transfer_units: null, accepts_clep: true,
@@ -132,12 +147,13 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
       residency_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
       transfer_cap_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
     }],
-    areas: [{ id: '2', name: 'Math', required_units: 3, applies_to: ['CSU' as const],
+    areas: [{ id: '2', name: 'Math', required_units: 3, framework_id: 'f',
+      applies_to: ['CSU' as const],
       provenance: { source_url: '', as_of: '', confidence: 'published' as const } }],
     creditSources: [
       { id: 'clep-fast', kind: 'clep' as const, name: 'Exam', cost_usd: 95,
         provenance: { source_url: '', as_of: '', confidence: 'published' as const } },
-      { id: 'ccc-cheap', kind: 'ccc_course' as const, name: 'Course', cost_usd: 0,
+      { id: 'ccc-cheap', kind: 'cc_course' as const, name: 'Course', cost_usd: 0,
         provenance: { source_url: '', as_of: '', confidence: 'published' as const } },
     ],
     rules: [
@@ -648,7 +664,7 @@ test('pathway costs price a student\'s own requirements, per kind of credit', ()
   // nothing. If this ever reports coverage, the CLEP rules have regressed.
   assert.equal(byKind.get('clep')?.areas_covered, 0);
 
-  const ccc = byKind.get('ccc_course');
+  const ccc = byKind.get('cc_course');
   assert.ok(ccc && ccc.areas_covered > 0, 'community college should cover requirements');
   assert.equal(ccc.total_cost_usd, 0, 'and cost nothing for a fee-waiver student');
 
@@ -777,5 +793,169 @@ test('every AP mapping is backed by a published source, not an inference', () =>
     );
     assert.match(r.provenance.source_url, /^https?:\/\//);
     assert.notEqual(r.provenance.as_of.trim(), '');
+  }
+});
+
+// ---------------------------------------------------------------------------
+// National dataset: the invariants that stop one state's rules reaching another
+// ---------------------------------------------------------------------------
+
+test('every institution resolves to a system, a framework and a jurisdiction', () => {
+  for (const inst of us.institutions) {
+    const sys = systemFor(us, inst);
+    const fw = frameworkFor(us, inst);
+    const jur = jurisdictionFor(us, inst);
+    assert.equal(fw.state, sys.state, `${inst.id}: framework and system disagree on state`);
+    assert.equal(jur.code, sys.state, `${inst.id}: jurisdiction and system disagree on state`);
+    assert.equal(jur.framework_id, fw.id, `${inst.id}: jurisdiction points at another framework`);
+  }
+});
+
+test('no campus can be handed another state\'s requirements', () => {
+  // The whole safety argument for one shared dataset. If this fails, a student
+  // is being priced against a framework their campus has never heard of.
+  for (const inst of us.institutions) {
+    const fw = frameworkFor(us, inst);
+    const required = us.areas.filter(a => a.applies_to.includes(inst.system));
+    assert.ok(required.length > 0, `${inst.id} requires nothing at all`);
+    for (const a of required) {
+      assert.equal(
+        a.framework_id, fw.id,
+        `${inst.id} (${fw.id}) was handed ${a.id} from ${a.framework_id}`,
+      );
+    }
+  }
+});
+
+test('ids are unique across the whole country', () => {
+  for (const [label, ids] of [
+    ['institution', us.institutions.map(i => i.id)],
+    ['area', us.areas.map(a => a.id)],
+    ['credit source', us.creditSources.map(c => c.id)],
+    ['system', us.systems.map(s => s.id)],
+    ['framework', us.frameworks.map(f => f.id)],
+    ['state', us.jurisdictions.map(j => j.code)],
+  ] as ReadonlyArray<readonly [string, string[]]>) {
+    assert.equal(new Set(ids).size, ids.length, `duplicate ${label} id`);
+  }
+  assert.equal(us.jurisdictions.length, 51, 'all 50 states and DC, mapped or not');
+});
+
+test('every rule points at rows that exist, in the right framework', () => {
+  const areaById = new Map(us.areas.map(a => [a.id, a] as const));
+  for (const r of us.rules) {
+    const inst = us.institutions.find(i => i.id === r.institution_id);
+    assert.ok(inst, `rule references unknown institution ${r.institution_id}`);
+    assert.ok(
+      us.creditSources.some(c => c.id === r.credit_source_id),
+      `rule references unknown credit source ${r.credit_source_id}`,
+    );
+    const fw = frameworkFor(us, inst);
+    for (const areaId of r.satisfies_areas) {
+      const area = areaById.get(areaId);
+      assert.ok(area, `rule at ${inst.id} clears unknown area ${areaId}`);
+      assert.equal(
+        area.framework_id, fw.id,
+        `rule at ${inst.id} (${fw.id}) clears ${areaId} from ${area.framework_id}`,
+      );
+    }
+  }
+});
+
+test('a fee waiver only zeroes a course where the state actually has one', () => {
+  // The bug this exists to prevent is silent: waive a fee in a state with no
+  // waiver and every route there is under-priced, in the student's favour, on
+  // a screen that looks entirely normal.
+  const eligible = withProfile({ waiver: 'eligible' });
+  const course = { id: 'c', kind: 'cc_course' as const, name: 'Course', cost_usd: 300,
+    provenance: { source_url: '', as_of: '', confidence: 'published' as const } };
+  const exam = { id: 'e', kind: 'clep' as const, name: 'Exam', cost_usd: 95,
+    provenance: { source_url: '', as_of: '', confidence: 'published' as const } };
+
+  const ca = us.jurisdictions.find(j => j.code === 'CA');
+  const tx = us.jurisdictions.find(j => j.code === 'TX');
+  assert.ok(ca && tx);
+  assert.ok(ca.fee_waiver !== null, 'California has the College Promise Grant');
+  assert.equal(tx.fee_waiver, null, 'Texas has no statewide equivalent');
+
+  assert.equal(effectiveCost(course, eligible, ca), 0);
+  assert.equal(effectiveCost(course, eligible, tx), 300, 'Texas has no fee to waive');
+  // Modern States is national, so the exam is free in both.
+  assert.equal(effectiveCost(exam, eligible, ca), 0);
+  assert.equal(effectiveCost(exam, eligible, tx), 0);
+});
+
+test('the same CLEP exam is worth nothing in California and clears an area in Florida', () => {
+  // The single fact that justifies leaving California. If this stops being
+  // true, either the data regressed or the claim was never ours to make.
+  const clep = 'clep-college-composition';
+
+  const uc = us.institutions.find(i => i.id === 'uc-berkeley');
+  assert.ok(uc && !uc.accepts_clep, 'UC awards no CLEP credit at all');
+
+  const caCleared = us.rules
+    .filter(r => r.credit_source_id === clep && r.institution_id.startsWith('csu-'))
+    .flatMap(r => r.satisfies_areas);
+  assert.deepEqual(caCleared, [], 'CLEP cannot satisfy Cal-GETC anywhere');
+
+  const flCleared = us.rules
+    .filter(r => r.credit_source_id === clep && r.institution_id === 'u-florida')
+    .flatMap(r => r.satisfies_areas);
+  assert.ok(flCleared.length > 0, 'Florida awards general-education credit for CLEP');
+  assert.ok(flCleared.every(a => a.startsWith('fl-')));
+});
+
+test('a Texas plan is priced in Texas and built from Texas requirements', () => {
+  const input = {
+    profile: PLAIN, target_institution_id: 'ut-austin',
+    held_credit_ids: [], units_in_residence: 0,
+  };
+  const route = planRoute(us, input, 'cheapest');
+  assert.ok(route.areas_cleared.length > 0);
+  for (const a of [...route.areas_cleared, ...route.areas_unmet]) {
+    assert.ok(a.startsWith('tx-'), `${a} is not a Texas component area`);
+  }
+  // 42 SCH at $300 is the whole core priced at UT Austin's own rate.
+  assert.equal(baselineCost(us, input), 42 * 300);
+  assert.ok(routeSaving(us, input, route) > 0);
+});
+
+test('every campus in the country plans without blowing up or inventing money', () => {
+  const profiles = [
+    PLAIN,
+    withProfile({ waiver: 'eligible', year: 'grade_10' }),
+    withProfile({ field: 'stem', budget_usd: 100 }),
+  ];
+  for (const inst of us.institutions) {
+    for (const profile of profiles) {
+      const input = {
+        profile, target_institution_id: inst.id,
+        held_credit_ids: [], units_in_residence: 0,
+      };
+      const base = baselineCost(us, input);
+      assert.ok(Number.isFinite(base) && base >= 0, `${inst.id}: bad baseline`);
+      for (const route of planAllRoutes(us, input)) {
+        assert.ok(Number.isFinite(route.total_cost_usd) && route.total_cost_usd >= 0,
+          `${inst.id}/${route.kind}: bad cost`);
+        assert.equal(
+          route.total_cost_usd,
+          route.items.reduce((n, i) => n + i.cost_usd, 0),
+          `${inst.id}/${route.kind}: total does not match its items`,
+        );
+        assert.equal(new Set(route.areas_cleared).size, route.areas_cleared.length);
+        assert.equal(
+          new Set(route.items.map(i => i.credit_source_id)).size, route.items.length,
+          `${inst.id}/${route.kind}: a credit was spent twice`,
+        );
+        assert.ok(routeSaving(us, input, route) >= 0, `${inst.id}/${route.kind}: negative saving`);
+        // The lowest-risk route stakes nothing on an unconfirmed row.
+        if (route.kind === 'lowest_risk') {
+          for (const item of route.items) {
+            assert.ok(['statute', 'published'].includes(item.provenance.confidence),
+              `${inst.id}: lowest-risk recommended a ${item.provenance.confidence} row`);
+          }
+        }
+      }
+    }
   }
 });

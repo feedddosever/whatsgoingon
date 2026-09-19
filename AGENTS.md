@@ -23,9 +23,43 @@ authoritative and they are local. Do not recall an API from memory when
 - TypeScript is strict. No `any`.
 - Screens are presentational: they take props and callbacks. `App.tsx` owns all state
   and is the only caller of the engine.
-- The dataset lives in `data/ca/` as **typed TS modules, not JSON** — Metro and Node
+- The dataset lives in `data/` as **typed TS modules, not JSON** — Metro and Node
   disagree about JSON import syntax, and typed modules turn a malformed row into a
-  compile error.
+  compile error. `data/us/` is the national layer (states, systems, frameworks and
+  the AP/CLEP exams, which are the same exam everywhere); `data/ca/`, `data/tx/`
+  and `data/fl/` hold what is genuinely state-specific.
+
+## Adding a state
+
+One dataset covers the country. Scoping is a data invariant, not a filter:
+`GeArea.applies_to` names *systems*, so a Texas campus reaches only Texas areas
+even though every state's areas share one array. `engine.test.ts` asserts this
+rather than trusting it — if you break it, a student gets priced against a
+framework their campus has never heard of, on a screen that looks entirely
+normal.
+
+To add a state you write four files and touch three shared ones:
+
+1. `data/<st>/core.ts` — the framework's areas, each with `framework_id` and
+   `applies_to`. Give an area a `code` **only** if the state has advisor
+   shorthand worth printing; "Cal-GETC 1A" is what a Californian catalogue
+   says, while `tx-comm` is our key and printing a key at a student is worse
+   than printing nothing.
+2. `data/<st>/institutions.ts`, `courses.ts`, `acceptance-rules.ts`.
+3. Add the framework to `data/us/frameworks.ts`, the system(s) to
+   `data/us/systems.ts`, and the state's real entry to `MAPPED` in
+   `data/us/states.ts` (it already has a row; every state does).
+4. Register the modules in `src/dataset.ts`.
+
+Never reuse an area id, credit-source id or institution id across states — a
+test enforces it. Reuse the *exam* ids from `data/us/exams.ts`; an exam is
+national and what differs is the acceptance rule, which is the whole point.
+
+The trap worth naming: `effectiveCost` zeroes a community-college fee only
+where `Jurisdiction.fee_waiver` is non-null. California has the College Promise
+Grant; Texas and Florida have no statewide equivalent. Waiving a fee in a state
+that has none under-prices every route there **in the student's favour**, which
+is the direction a wrong number never gets caught.
 
 ## The one rule that matters
 

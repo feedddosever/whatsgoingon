@@ -65,7 +65,23 @@ student sees:
       a tier model.
 - [ ] **Fee waivers are modelled as a blanket "eligible → $0"** for CCPG and
       Modern States. Neither has its eligibility rules encoded, so the app
-      cannot tell a student whether they actually qualify.
+      cannot tell a student whether they actually qualify. The *state* half is
+      now right — a waiver-eligible Texan is no longer given a Californian
+      discount — but the *student* half is still a yes/no question.
+- [ ] **Florida's credit-by-exam list has not been read.** Rule 6A-10.024 is one
+      table, binding on all 12 SUS institutions, and reading it would confirm
+      every AP and CLEP row in `data/fl/` in a single pass. `fldoe.org` is
+      blocked by this environment's egress proxy — it is not blocked from a
+      laptop. **Highest value-per-minute item on this list.**
+- [ ] **Texas per-campus core lists and designated tuition.** The 42-hour block
+      transfer is statute and solid; which exam clears which component area is
+      set campus by campus, and designated tuition ranges from $213/SCH (Texas
+      Tech) to $230.11/SCH (UNT) against the $300 statewide middle the dataset
+      uses.
+- [ ] **AP US History / AP US Government have no California rule.** Added to the
+      national exam list for Texas and Florida; a Californian student holding
+      either is correctly told we have no record, which is very likely wrong.
+      Confirm against the Cal-GETC Standards table and add the rows.
 
 ## 3. Coverage gaps found by audit
 
@@ -82,8 +98,18 @@ student sees:
       says so), so the lowest-risk route stops at 8 of 10 until the CCC rows
       behind them are confirmed. Same fix as 2.1.
 - [ ] **Out-of-state coursework cannot be entered** (`VERIFICATION.md` P2b). A
-      student who studied outside California is told to retake requirements they
-      may already hold.
+      student who studied in one state and is heading to another is told to
+      retake requirements they may already hold. This got *more* pressing with
+      three states in the dataset, not less: the app can now show a student both
+      states and still cannot connect them.
+- [ ] **No community colleges as destinations, in any state.** They are credit
+      sources only. In Florida that is a real gap, because the Associate in Arts
+      — not the university — is the thing the statutory guarantee attaches to.
+- [ ] **47 states and DC have no campuses.** They are in the dataset, and they
+      say honestly that we have not mapped them. Next most valuable by
+      enrolment: New York (SUNY/CUNY transfer policy), Illinois (IAI, a genuine
+      statewide articulation initiative), Georgia (USG core, Areas A-F),
+      North Carolina (CAA), Ohio (OTM, transfer-module guarantee).
 
 ## 4. Untested on real hardware
 

@@ -3,11 +3,12 @@ import { ActivityIndicator, Alert, BackHandler, Platform, StyleSheet, View } fro
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import type { AreaChoice, Route, RouteKind, StudentInput } from './src/types.ts';
+import type { AreaChoice, Route, RouteKind, StateCode, StudentInput } from './src/types.ts';
 import {
-  baselineCost, optionsForArea, pathwayCosts, planAllRoutes, routeSaving,
+  baselineCost, frameworkFor, optionsForArea, pathwayCosts, planAllRoutes, routeSaving,
+  systemFor,
 } from './src/engine.ts';
-import { california } from './src/dataset.ts';
+import { forState, unitedStates } from './src/dataset.ts';
 import { theme } from './src/ui/theme.ts';
 import { ProfileScreen } from './src/screens/ProfileScreen.tsx';
 import { InputScreen } from './src/screens/InputScreen.tsx';
@@ -33,6 +34,17 @@ import {
 const RC_KEY = Platform.OS === 'web' ? WEB_API_KEY : NATIVE_API_KEY;
 
 type Screen = 'profile' | 'input' | 'routes' | 'map' | 'detail';
+
+/**
+ * Only the states we actually hold campuses for. Every state has a row in the
+ * dataset — including the ones we have not mapped — but offering a student a
+ * state with no campuses behind it would be a picker that leads nowhere.
+ */
+const STATES_WITH_CAMPUSES = unitedStates.jurisdictions.filter(j =>
+  unitedStates.systems.some(sys =>
+    sys.state === j.code && unitedStates.institutions.some(i => i.system === sys.id)));
+
+const DEFAULT_STATE: StateCode = 'CA';
 
 const EMPTY_INPUT: StudentInput = {
   profile: {
@@ -61,6 +73,13 @@ const EMPTY_INPUT: StudentInput = {
 export default function App() {
   const [screen, setScreen] = useState<Screen>('profile');
   const [input, setInput] = useState<StudentInput>(EMPTY_INPUT);
+  /**
+   * Which state's campuses the picker is showing. Derived from the chosen
+   * campus when there is one, so a restored plan reopens on its own state
+   * rather than snapping back to California and hiding the campus the student
+   * picked last week.
+   */
+  const [browseState, setBrowseState] = useState<StateCode>(DEFAULT_STATE);
   /**
    * The chosen route is held as its KIND, not as a Route object. Editing the
    * plan re-runs the engine, and a stored Route would be a snapshot of the plan
@@ -156,17 +175,46 @@ export default function App() {
   }, [screen]);
 
   const institution = useMemo(
-    () => california.institutions.find(i => i.id === input.target_institution_id) ?? null,
+    () => unitedStates.institutions.find(i => i.id === input.target_institution_id) ?? null,
     [input.target_institution_id],
   );
 
+  /**
+   * The framework and the campus list follow the campus, not the picker. A
+   * student who chose UT Austin and then tapped "California" to look around
+   * must still see a Texas plan until they choose a Texas — sorry, a Californian
+   * — campus: the plan is about the campus in it, and nothing else.
+   */
+  const framework = useMemo(
+    () => (institution ? frameworkFor(unitedStates, institution) : null),
+    [institution],
+  );
+  const system = useMemo(
+    () => (institution ? systemFor(unitedStates, institution) : null),
+    [institution],
+  );
+
+  const stateOfChosenCampus = system?.state ?? null;
+
+  // Keep the picker on the state the plan is actually in.
+  useEffect(() => {
+    if (stateOfChosenCampus !== null && stateOfChosenCampus !== browseState) {
+      setBrowseState(stateOfChosenCampus);
+    }
+    // Intentionally not depending on browseState: this corrects the picker to
+    // follow the plan, and depending on it would fight the student's own taps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateOfChosenCampus]);
+
+  const visible = useMemo(() => forState(unitedStates, browseState), [browseState]);
+
   // Recomputed only when the student's answers change — the engine is pure.
   const routes = useMemo(
-    () => (institution ? planAllRoutes(california, input) : []),
+    () => (institution ? planAllRoutes(unitedStates, input) : []),
     [institution, input],
   );
   const baseline = useMemo(
-    () => (institution ? baselineCost(california, input) : 0),
+    () => (institution ? baselineCost(unitedStates, input) : 0),
     [institution, input],
   );
 
@@ -188,10 +236,13 @@ export default function App() {
     // exportAdvisorPacket rejects if rendering or sharing fails. The screen's
     // callback is synchronous, so the rejection has to be caught here or the tap
     // silently does nothing.
+    if (framework === null || system === null) return;
     exportAdvisorPacket({
       institution,
+      framework,
+      system,
       route: selected,
-      areas: california.areas,
+      areas: unitedStates.areas,
       studentName: input.student_name,
       audience,
     }).catch((e: unknown) => {
@@ -200,7 +251,7 @@ export default function App() {
         e instanceof Error ? e.message : 'Something went wrong building the PDF.',
       );
     });
-  }, [institution, selected, input.student_name]);
+  }, [institution, framework, system, selected, input.student_name]);
 
   const handleExport = useCallback(() => sharePacket('advisor'), [sharePacket]);
   const handleShareGuardian = useCallback(() => sharePacket('guardian'), [sharePacket]);
@@ -267,7 +318,7 @@ export default function App() {
     body = (
       <PaywallScreen
         schoolAge={isSchoolAge(input.profile.year)}
-        savingUsd={selected === null ? 0 : routeSaving(california, input, selected)}
+        savingUsd={selected === null ? 0 : routeSaving(unitedStates, input, selected)}
         priceLabel={priceLabel}
         alreadyOwned={unlocked}
         busy={busy}
@@ -277,15 +328,17 @@ export default function App() {
         onDismiss={() => { setPaywallOpen(false); setPurchaseError(null); }}
       />
     );
-  } else if (screen === 'map' && institution && selected) {
+  } else if (screen === 'map' && institution && framework && system && selected) {
     body = (
       <PlanMapScreen
         institution={institution}
+        framework={framework}
+        system={system}
         route={selected}
-        areas={california.areas}
+        areas={unitedStates.areas}
         profile={input.profile}
-        optionsFor={(areaId) => optionsForArea(california, input, areaId)}
-        pathways={pathwayCosts(california, input)}
+        optionsFor={(areaId) => optionsForArea(unitedStates, input, areaId)}
+        pathways={pathwayCosts(unitedStates, input)}
         choiceFor={(areaId) => input.plan_overrides?.[areaId]}
         onChoose={setOverride}
         onOpenDetail={() => setScreen('detail')}
@@ -294,12 +347,14 @@ export default function App() {
         onBack={() => setScreen('routes')}
       />
     );
-  } else if (screen === 'detail' && institution && selected) {
+  } else if (screen === 'detail' && institution && framework && system && selected) {
     body = (
       <RouteDetailScreen
         institution={institution}
+        framework={framework}
+        system={system}
         route={selected}
-        areas={california.areas}
+        areas={unitedStates.areas}
         unlocked={unlocked}
         onManageSubscription={
           unlocked && CUSTOMER_CENTER_AVAILABLE && RC_KEY !== '' ? handleManage : null
@@ -310,12 +365,14 @@ export default function App() {
         onBack={() => setScreen('map')}
       />
     );
-  } else if (screen === 'routes' && institution) {
+  } else if (screen === 'routes' && institution && framework && system) {
     body = (
       <RoutesScreen
         institution={institution}
+        framework={framework}
+        system={system}
         routes={routes}
-        areas={california.areas}
+        areas={unitedStates.areas}
         baselineCostUsd={baseline}
         onSelectRoute={(r) => { setSelectedKind(r.kind); setScreen('map'); }}
         onBack={() => setScreen('input')}
@@ -325,8 +382,12 @@ export default function App() {
     body = (
       <InputScreen
         onBack={() => setScreen('profile')}
-        institutions={california.institutions}
-        creditSources={california.creditSources}
+        states={STATES_WITH_CAMPUSES}
+        selectedState={browseState}
+        onSelectState={setBrowseState}
+        systems={unitedStates.systems}
+        institutions={visible.institutions}
+        creditSources={visible.creditSources}
         value={input}
         onChange={setInput}
         onSubmit={() => { if (institution) setScreen('routes'); }}

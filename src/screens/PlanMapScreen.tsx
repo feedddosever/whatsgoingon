@@ -52,18 +52,23 @@ const STATUS_LABEL: Record<Status, string> = {
  * requirements for $0" is something you can act on.
  */
 const PATH_COPY: Record<string, readonly [string, string]> = {
-  ccc_course: [
-    'Community college — free while you are in high school',
-    'Dual enrolment (CCAP) waives the enrolment fee entirely for high-school ' +
-    'students, up to 15 units a term. The same courses transfer later.',
+  cc_course: [
+    'Community college — often free while you are in high school',
+    'The only pathway that can clear every requirement, and the only one that ' +
+    'costs you a term. Dual enrolment can take it to $0 while you are still at ' +
+    'school; what the programme is called, and whether it is free, is set by ' +
+    'your state.',
   ],
   ap: [
     'AP exams',
-    'The only exam credit both UC and CSU accept toward Cal-GETC.',
+    'One exam, one requirement, no term lost. Accepted in some form almost ' +
+    'everywhere — including at campuses that refuse CLEP outright.',
   ],
   clep: [
     'CLEP exams',
-    'Cannot satisfy Cal-GETC anywhere, and UC awards no CLEP credit at all.',
+    'The cheapest and fastest credit there is, and the one whose value swings ' +
+    'hardest by state: general-education credit by rule in Florida, no ' +
+    'Cal-GETC credit at all in California, and nothing whatsoever at a UC.',
   ],
 };
 
@@ -105,7 +110,7 @@ function Option({
 
 export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
   const {
-    institution, route, areas, profile,
+    institution, framework, system, route, areas, profile,
     optionsFor, pathways, choiceFor, onChoose,
     onOpenDetail, onShareWithGuardian, onStartOver, onBack,
   } = props;
@@ -114,8 +119,13 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
 
   const areaById = new Map(areas.map(a => [a.id, a] as const));
   const nameFor = (id: string): string => {
-    const n = areaById.get(id)?.name.trim();
-    return n === undefined || n === '' ? `CAL-GETC ${id}` : `CAL-GETC ${id} · ${n}`;
+    const area = areaById.get(id);
+    const n = area?.name.trim();
+    // "Cal-GETC 1A · English Composition" where a shorthand exists; plain
+    // "Communication" where it does not, rather than "Texas Core tx-comm".
+    const code = area?.code === undefined ? null : `${framework.name} ${area.code}`;
+    if (n === undefined || n === '') return code ?? `${framework.name} ${id}`;
+    return code === null ? n : `${code} · ${n}`;
   };
 
   /**
@@ -220,7 +230,7 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
           <View style={styles.rootNode}>
             <Text style={styles.rootName} numberOfLines={2}>{institution.name}</Text>
             <Text style={styles.rootMeta}>
-              {institution.system} · {branches.length} requirement{branches.length === 1 ? '' : 's'}
+              {system.short_name} · {branches.length} requirement{branches.length === 1 ? '' : 's'}
               {editedCount > 0 ? ` · ${editedCount} changed by you` : ''}
             </Text>
             <Text style={styles.rootCost}>

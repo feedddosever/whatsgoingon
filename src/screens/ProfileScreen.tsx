@@ -133,10 +133,17 @@ export function ProfileScreen(props: ProfileScreenProps): ReactElement {
         </View>
 
         <Text style={styles.q}>Do you qualify for a fee waiver?</Text>
+        {/* Asked before the student has picked a state, so it cannot name their
+            waiver yet. Modern States is national and can be promised here;
+            community-college fee waivers are state law, and the plan names the
+            one that applies — or says plainly that their state has none — once
+            a campus is chosen. */}
         <Text style={styles.qHint}>
-          The California College Promise Grant waives community-college enrolment
-          fees, and Modern States covers CLEP exam fees. Either can take a whole
-          route to $0 — this is the question that moves the number most.
+          Modern States covers CLEP exam fees anywhere in the country, and many
+          states waive community-college enrolment fees on top of that. Either can
+          take a whole route to $0 — this is the question that moves the number
+          most. We will name the waiver your state actually has once you pick a
+          campus.
         </Text>
         <View style={styles.grid} accessibilityRole="radiogroup">
           {WAIVERS.map(([id, label, hint]) => (

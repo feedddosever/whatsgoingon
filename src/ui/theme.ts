@@ -41,7 +41,7 @@ export const confidenceColor = (c: Confidence): string =>
   : theme.color.unverified;
 
 export const confidenceLabel = (c: Confidence): string =>
-  c === 'statute' ? 'Guaranteed by CA law'
+  c === 'statute' ? 'Guaranteed by state law'
   : c === 'published' ? 'Published policy'
   : c === 'needs_check' ? 'Needs confirming'
   : 'Unverified';

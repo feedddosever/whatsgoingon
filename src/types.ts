@@ -1,6 +1,6 @@
 /** Confidence in a data row. Drives the "lowest-risk" route and the UI badge. */
 export type Confidence =
-  | 'statute'      // guaranteed by CA law (e.g. SB 1440 ADT junior standing)
+  | 'statute'      // guaranteed by state law (e.g. Texas Education Code 61.822)
   | 'published'    // institution's own published policy page
   | 'needs_check'  // plausible but unconfirmed — NEVER shown as a promise
   | 'unverified';  // seeded from model knowledge, not yet checked against source
@@ -13,7 +13,90 @@ export interface Provenance {
   note?: string;        // what could bite the student
 }
 
-export type SystemId = 'UC' | 'CSU' | 'CCC';
+/**
+ * Two-letter postal code. The unit of jurisdiction: transfer law, fee waivers
+ * and general-education frameworks are all set at the state level in the US,
+ * and almost nothing about them is federal.
+ */
+export type StateCode =
+  | 'AL' | 'AK' | 'AZ' | 'AR' | 'CA' | 'CO' | 'CT' | 'DE' | 'DC' | 'FL' | 'GA'
+  | 'HI' | 'ID' | 'IL' | 'IN' | 'IA' | 'KS' | 'KY' | 'LA' | 'ME' | 'MD' | 'MA'
+  | 'MI' | 'MN' | 'MS' | 'MO' | 'MT' | 'NE' | 'NV' | 'NH' | 'NJ' | 'NM' | 'NY'
+  | 'NC' | 'ND' | 'OH' | 'OK' | 'OR' | 'PA' | 'RI' | 'SC' | 'SD' | 'TN' | 'TX'
+  | 'UT' | 'VT' | 'VA' | 'WA' | 'WV' | 'WI' | 'WY';
+
+/**
+ * A public higher-education system, e.g. `UC`, `CSU`, `TX-PUBLIC`, `FL-SUS`.
+ *
+ * Deliberately an open string rather than a closed union. It was `'UC' | 'CSU'`
+ * while the dataset was California-only, which meant every new state was a
+ * change to this file — a type that has to be edited to add data is a type that
+ * makes adding data expensive. Systems are now declared in the dataset, and the
+ * engine resolves them there.
+ */
+export type SystemId = string;
+
+export interface System {
+  id: SystemId;
+  /** As a student would say it: "University of California". */
+  name: string;
+  /** As a chip: "UC". */
+  short_name: string;
+  state: StateCode;
+  /** The general-education framework this system's campuses run on. */
+  framework_id: string;
+}
+
+/**
+ * A statewide general-education framework — Cal-GETC in California, the Texas
+ * Core Curriculum, Florida's general education core.
+ *
+ * These exist because states legislate them, and they are the reason this app
+ * can say anything useful at all: without a statewide pattern there is no
+ * requirement list to plan against, only 4,000 separate catalogues.
+ */
+export interface GeFramework {
+  id: string;
+  /** Printed to the student and to their advisor. */
+  name: string;
+  /** Expanded once, the first time it appears on a screen. */
+  full_name: string;
+  state: StateCode;
+  /** What the whole pattern totals, in semester units. */
+  total_units: number;
+  provenance: Provenance;
+}
+
+/** A programme that can take a price to zero. Modelled per state. */
+export interface AidProgram {
+  name: string;
+  /** Student-facing. Rendered verbatim. */
+  note: string;
+  provenance: Provenance;
+}
+
+/**
+ * One state's rules, as opposed to one campus's.
+ *
+ * The single most valuable sentence this app has for a student is usually a
+ * statewide guarantee — "finish the Texas core anywhere and it transfers whole",
+ * "a Florida AA admits you to a state university as a junior". Those are
+ * statute, they apply to every campus in the state at once, and they are what a
+ * campus-by-campus dataset can never express.
+ */
+export interface Jurisdiction {
+  code: StateCode;
+  name: string;
+  /** The statewide framework, or null where the state has none we model. */
+  framework_id: string | null;
+  /** The guarantee, in one sentence a student can act on. Null when there is none. */
+  transfer_guarantee: string | null;
+  transfer_provenance: Provenance;
+  /** Programme that can waive community-college tuition here. */
+  fee_waiver: AidProgram | null;
+  /** Programme giving high-school students free or cheap college credit here. */
+  dual_enrollment: AidProgram | null;
+}
 
 export interface Institution {
   id: string;
@@ -52,22 +135,39 @@ export interface Institution {
   transfer_cap_provenance: Provenance;
 }
 
-/** A Cal-GETC area (the GE pattern that replaced IGETC / CSU GE Breadth). */
+/** One requirement in a statewide general-education framework. */
 export interface GeArea {
   id: string;
   name: string;
-  required_units: number;
   /**
-   * Which systems actually require this area. Not every Cal-GETC area applies
-   * everywhere — 1C (Oral Communication) is a CSU requirement and not a UC one —
-   * so a UC-bound student must not be told to solve it, and its units must not
-   * inflate their baseline.
+   * Advisor shorthand, where the framework has one worth printing.
+   *
+   * "Cal-GETC 1A" is how a Californian advisor and a Californian catalogue both
+   * refer to English Composition, so dropping it would cost the student the one
+   * token that makes the packet searchable. Texas and Florida have no such
+   * shorthand — their areas are called "Communication" — and the ids we give
+   * them (`tx-comm`) are our own keys. Printing a key at a student is worse
+   * than printing nothing, so this is optional and absent means "just the name".
+   */
+  code?: string;
+  required_units: number;
+  /** The framework this area belongs to. Area ids are unique across frameworks. */
+  framework_id: string;
+  /**
+   * Which systems actually require this area. Not every area in a framework
+   * applies everywhere — Cal-GETC 1C (Oral Communication) is a CSU requirement
+   * and not a UC one — so a UC-bound student must not be told to solve it, and
+   * its units must not inflate their baseline.
+   *
+   * This is also what scopes a national dataset: a Texas campus's system id
+   * appears in no Cal-GETC area, so Californian requirements simply never reach
+   * a Texas plan.
    */
   applies_to: SystemId[];
   provenance: Provenance;
 }
 
-export type CreditKind = 'clep' | 'ap' | 'ccc_course';
+export type CreditKind = 'clep' | 'ap' | 'cc_course';
 
 export interface CreditSource {
   id: string;
@@ -86,7 +186,7 @@ export interface AcceptanceRule {
   min_score: number | null;
   units_granted: number;
   /**
-   * The Cal-GETC areas this rule clears TOGETHER. Empty means the credit counts
+   * The framework areas this rule clears TOGETHER. Empty means the credit counts
    * toward the degree but clears no requirement (CLEP at a CSU).
    *
    * A list because the standard has both cases and they are not the same thing:
@@ -113,9 +213,13 @@ export type FieldOfStudy =
 /**
  * Fee-waiver status, asked without asking about income.
  *
- * This is the highest-leverage question in the app: the California College
- * Promise Grant waives the CCC $46/unit fee outright, and Modern States covers
- * the CLEP exam fee. Either can take a route to $0 and reorder the results.
+ * This is the highest-leverage question in the app: a state fee waiver (the
+ * California College Promise Grant, for one) can waive community-college fees
+ * outright, and Modern States covers the CLEP exam fee nationally. Either can
+ * take a route to $0 and reorder the results.
+ *
+ * Which waiver applies is a property of the STATE, not of the student, so the
+ * dataset holds the programme and this holds only whether they qualify.
  */
 export type WaiverStatus = 'eligible' | 'unsure' | 'not_eligible';
 
@@ -134,7 +238,7 @@ export interface StudentInput {
   /** Answered in onboarding. Personalises pricing and which advice applies. */
   profile: StudentProfile;
   /**
-   * The student's own edits to the plan, keyed by Cal-GETC area id.
+   * The student's own edits to the plan, keyed by framework area id.
    *
    * A generated plan is a starting point, not a verdict — they know things we do
    * not (a course already scheduled, an exam they will not sit). Absent means
@@ -153,6 +257,14 @@ export interface StudentInput {
 
 export interface PlanItem {
   credit_source_id: string;
+  /**
+   * Carried, not inferred. This used to be recovered from the id prefix
+   * (`clep-`, `ap-`, else community college), which was a California-only
+   * convention hiding in the engine: the first out-of-state course id that did
+   * not start with `ccc-` would still have been classified a course by luck
+   * rather than by data. Ids are dataset trivia; the kind is a fact.
+   */
+  kind: CreditKind;
   label: string;
   cost_usd: number;
   units: number;
@@ -173,7 +285,7 @@ export type RouteKind = 'cheapest' | 'fastest' | 'lowest_risk';
 export type WarningKind =
   /** Credit the student holds that will not do the job here. */
   | 'stranded_credit'
-  /** Credit that counts toward the degree but clears no Cal-GETC requirement. */
+  /** Credit that counts toward the degree but clears no general-education requirement. */
   | 'credit_not_toward_ge'
   /** Route exceeds the institution's transfer-unit ceiling. */
   | 'transfer_cap'

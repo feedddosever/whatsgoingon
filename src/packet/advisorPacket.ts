@@ -15,7 +15,8 @@ import { Platform } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import type {
-  GeArea, Institution, PlanItem, Provenance, Route, RouteKind, RouteWarning, WarningKind,
+  GeArea, GeFramework, Institution, PlanItem, Provenance, Route, RouteKind, RouteWarning,
+  System, WarningKind,
 } from '../types.ts';
 import { checkedOn, isBacked, linkable, noteText } from '../ui/provenance.ts';
 import { confidenceLabel, money } from '../ui/theme.ts';
@@ -23,9 +24,13 @@ import { DISCLAIMER_LONG } from '../disclaimer.ts';
 
 export interface AdvisorPacketInput {
   institution: Institution;
+  /** Named throughout rather than assumed: this page is read in three states now. */
+  framework: GeFramework;
+  /** For the campus's system name in the footer, without printing a raw id. */
+  system: System;
   route: Route;
   /**
-   * The Cal-GETC rows, so an area can print under its name and not only its
+   * The framework's rows, so an area can print under its name and not only its
    * code. An advisor reads "3B" natively; the student holding the printout does
    * not, and this is the document they read together.
    */
@@ -119,14 +124,14 @@ const WARNING_STYLE: Record<WarningKind, WarningStyle> = {
   },
   /**
    * The quiet one. The campus DOES award this credit, so the units arrive and
-   * nothing on the student's side looks wrong — and the Cal-GETC requirement is
+   * nothing on the student's side looks wrong — and the general-education requirement is
    * still open. CLEP at a CSU is exactly this. It ranks under stranded credit,
    * which is money already spent, and over every kind below it, which report a
    * constraint rather than a requirement the student believes is handled; and it
    * is given its own weight rather than printing in the mildest one on the page.
    */
   credit_not_toward_ge: {
-    kicker: 'Credit accepted · clears no Cal-GETC area',
+    kicker: 'Credit accepted · clears no general-education area',
     rank: 1,
     weight: 'marked',
   },
@@ -184,16 +189,22 @@ function todayLocal(): string {
 type AreaNamer = (id: string) => string;
 
 function areaNamerFor(areas: GeArea[]): AreaNamer {
-  const names = new Map(areas.map((a): [string, string] => [a.id, a.name.trim()]));
+  const byId = new Map(areas.map((a): [string, GeArea] => [a.id, a]));
   return (id: string): string => {
-    const name = names.get(id) ?? '';
-    return name === '' ? id : `${id} (${name})`;
+    const area = byId.get(id);
+    const name = area?.name.trim() ?? '';
+    // The advisor's shorthand leads where the framework has one, because that
+    // is the token they will look up. Where it does not, our internal id is
+    // noise on a page an advisor has to act on, so only the name prints.
+    const code = area?.code ?? (area === undefined ? id : null);
+    if (name === '') return code ?? id;
+    return code === null ? name : `${code} (${name})`;
   };
 }
 
 /** What a row claims to clear, as a phrase. Returns text — the caller escapes it. */
 const areaLabel = (area: string | null, named: AreaNamer): string =>
-  area === null ? 'Elective credit — clears no area' : `Cal-GETC area ${named(area)}`;
+  area === null ? 'Elective credit — clears no area' : `General-education area ${named(area)}`;
 
 /** Spelled out in full: this page is going to be printed. */
 function sourceHtml(p: Provenance): string {
@@ -446,9 +457,9 @@ function warningsHtml(warnings: RouteWarning[], instName: string): string {
       : stranded > 1
         ? `Read this first — ${stranded} credits already held that will not count here`
         : clearsNothing === 1
-          ? 'Read this first — credit that counts here but clears no Cal-GETC requirement'
+          ? 'Read this first — credit that counts here but clears no general-education requirement'
           : clearsNothing > 1
-            ? `Read this first — ${clearsNothing} credits that count here but clear no Cal-GETC requirement`
+            ? `Read this first — ${clearsNothing} credits that count here but clear no general-education requirement`
             : 'Read this first — constraints on this plan';
 
   return `
@@ -497,7 +508,7 @@ function confirmHtml(input: AdvisorPacketInput, named: AreaNamer): string {
   const entries: string[] = flagged.map(({ item, n }) => {
     const claim =
       item.satisfies_areas.length === 0
-        ? `we expect ${units(item.units)} of elective credit, clearing no Cal-GETC area`
+        ? `we expect ${units(item.units)} of elective credit, clearing no general-education area`
         : `we expect it to clear ${esc(item.satisfies_areas.map(a => areaLabel(a, named)).join(' and '))} for ${units(item.units)}`;
 
     return `
@@ -531,7 +542,7 @@ function confirmHtml(input: AdvisorPacketInput, named: AreaNamer): string {
   }
 
   /*
-   * Credit the campus DOES award that clears no Cal-GETC requirement is the one
+   * Credit the campus DOES award that clears no general-education requirement is the one
    * question on this page a registrar can settle in a line, and the one the
    * student cannot see going wrong: the units arrive, the transcript looks
    * healthy, the requirement is still open. So it is asked here even when the
@@ -551,8 +562,8 @@ function confirmHtml(input: AdvisorPacketInput, named: AreaNamer): string {
         <li>
           <span class="n">${nextN++}.</span>
           <div>
-            <b>Credit accepted that clears no Cal-GETC area</b> — ${esc(w.message)}
-            Is that right, and is there any part of the Cal-GETC pattern it does clear?
+            <b>Credit accepted that clears no general-education area</b> — ${esc(w.message)}
+            Is that right, and is there any part of the general-education pattern it does clear?
             ${p === undefined ? '' : basisLineHtml(p)}
           </div>
         </li>`);
@@ -581,14 +592,14 @@ function confirmHtml(input: AdvisorPacketInput, named: AreaNamer): string {
   const lead =
     unconfirmed === 0
       ? `Nothing in this plan rests on a source we could not check. What is listed below is
-         credit ${esc(institution.name)} does award that appears to clear no Cal-GETC
+         credit ${esc(institution.name)} does award that appears to clear no general-education
          requirement — a question for your office rather than a gap in our sources.`
       : registrarQuestions.length === 0
         ? `These are the items we could <b>not</b> confirm against statute or a published
            policy page.`
         : `These are the items we could <b>not</b> confirm against statute or a published
            policy page, together with credit ${esc(institution.name)} does award that appears
-           to clear no Cal-GETC requirement — those last are questions for your office rather
+           to clear no general-education requirement — those last are questions for your office rather
            than gaps in our sources.`;
 
   const body =
@@ -626,8 +637,8 @@ function summaryHtml(route: Route, named: AreaNamer): string {
 
   const cleared =
     route.areas_cleared.length === 0
-      ? 'No Cal-GETC area is cleared by this plan.'
-      : `Clears ${route.areas_cleared.length} Cal-GETC area${route.areas_cleared.length === 1 ? '' : 's'}: ${esc(route.areas_cleared.map(a => named(a)).join(', '))}.`;
+      ? 'No general-education area is cleared by this plan.'
+      : `Clears ${route.areas_cleared.length} general-education area${route.areas_cleared.length === 1 ? '' : 's'}: ${esc(route.areas_cleared.map(a => named(a)).join(', '))}.`;
 
   // The requirements this plan does not solve reach the packet as data now, not
   // as a warning sentence as well — printing both had the advisor read the same
@@ -637,7 +648,7 @@ function summaryHtml(route: Route, named: AreaNamer): string {
   const unmet =
     route.areas_unmet.length === 0
       ? 'Every area in our data is accounted for.'
-      : `<span class="unmet">Still unsolved after this plan — ${route.areas_unmet.length} Cal-GETC area${route.areas_unmet.length === 1 ? '' : 's'}: ${esc(route.areas_unmet.map(a => named(a)).join(', '))}.</span>`;
+      : `<span class="unmet">Still unsolved after this plan — ${route.areas_unmet.length} general-education area${route.areas_unmet.length === 1 ? '' : 's'}: ${esc(route.areas_unmet.map(a => named(a)).join(', '))}.</span>`;
 
   return `
     <section class="summary">
@@ -727,7 +738,7 @@ const STYLES = `
        an unconfirmed row gets in the plan table — in the warning block and in
        the reply form, which now lists confirmed and unconfirmed rows together.
        Greyscale-safe, and it stops 'Unverified' from setting identically to
-       'Guaranteed by CA law'. */
+       'Guaranteed by state law'. */
     .basis .unconfirmed {
       display: inline-block; border: 1px solid #000; padding: 0 3px;
       font-size: 7.5px; font-weight: 700; text-transform: uppercase;
@@ -832,7 +843,7 @@ export function buildAdvisorPacketHtml(input: AdvisorPacketInput): string {
     : 'Transfer credit plan — a request for confirmation'}</h1>
   <div class="meta">
     <span>Student: ${who}</span><span class="sep">|</span>
-    <span>Target: ${esc(institution.name)} (${esc(institution.system)})</span><span class="sep">|</span>
+    <span>Target: ${esc(institution.name)} (${esc(input.system.short_name)}) · ${esc(input.framework.full_name)}</span><span class="sep">|</span>
     <span>Plan: ${esc(ROUTE_LABEL[route.kind])}</span><span class="sep">|</span>
     <span>Prepared ${esc(preparedOn)}</span>
   </div>

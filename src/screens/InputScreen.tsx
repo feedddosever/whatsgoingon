@@ -33,7 +33,9 @@ import type {
   CreditKind,
   CreditSource,
   Institution,
+  Jurisdiction,
   Provenance,
+  StateCode,
   StudentInput,
 } from '../types.ts';
 import type { InputScreenProps } from '../ui/contracts.ts';
@@ -46,7 +48,7 @@ import { confidenceColor, confidenceLabel, money, theme } from '../ui/theme.ts';
 const CREDIT_GROUPS: ReadonlyArray<{ kind: CreditKind; title: string; blurb: string }> = [
   { kind: 'clep', title: 'CLEP exams', blurb: 'Credit by exam — not every campus takes it' },
   { kind: 'ap', title: 'AP exams', blurb: 'Scores you already hold from high school' },
-  { kind: 'ccc_course', title: 'Community college courses', blurb: 'Courses you have already passed' },
+  { kind: 'cc_course', title: 'Community college courses', blurb: 'Courses you have already passed' },
 ];
 
 /** A dead or unopenable source URL must never take the screen down with it. */
@@ -136,7 +138,13 @@ function SourceBadge({ p, compact }: { p: Provenance; compact?: boolean }): Reac
 }
 
 function InstitutionCard(
-  { inst, selected, onPress }: { inst: Institution; selected: boolean; onPress: () => void },
+  { inst, systemLabel, selected, onPress }: {
+    inst: Institution;
+    /** The system's short name. Never `inst.system`, which is a dataset key. */
+    systemLabel: string;
+    selected: boolean;
+    onPress: () => void;
+  },
 ): ReactElement {
   return (
     <Pressable
@@ -144,7 +152,7 @@ function InstitutionCard(
       accessibilityRole="radio"
       // Screen readers report a radio through `checked`; `selected` alone is silent.
       accessibilityState={{ checked: selected, selected }}
-      accessibilityLabel={`${inst.name}, ${inst.system}`}
+      accessibilityLabel={`${inst.name}, ${systemLabel}`}
       style={({ pressed }) => [
         styles.instCard,
         selected && styles.instCardOn,
@@ -158,7 +166,7 @@ function InstitutionCard(
         {/* Neutral chip on purpose — the palette's colours mean confidence, and
             confidence colours never double as decoration. */}
         <View style={styles.chip}>
-          <Text style={styles.chipText}>{inst.system}</Text>
+          <Text style={styles.chipText}>{systemLabel}</Text>
         </View>
       </View>
       <View style={styles.rowBottom}>
@@ -211,7 +219,7 @@ function CreditRow(
  * The quiet failure, and the reason it gets a block of its own.
  *
  * This campus DOES award credit for the CLEP the student holds — it counts toward
- * the degree — and it still clears no Cal-GETC requirement. Nothing looks wrong:
+ * the degree — and it still clears no general-education requirement. Nothing looks wrong:
  * the exams are accepted, the rows above read normally, and the student has
  * satisfied nothing. Stranded credit is money already spent, so this sits a step
  * below it: amber rather than danger red, no headline figure, no bar that follows
@@ -235,11 +243,11 @@ function NotTowardGeNotice(
       <Text style={styles.noGeKicker}>⚠  CREDIT YOU HOLD · CLEARS NO REQUIREMENT</Text>
       <Text style={styles.noGeHead}>
         {inst.name} counts {one ? 'this exam' : `these ${exams.length} exams`} toward your degree,
-        but {one ? 'it does' : 'they do'} not clear any Cal-GETC requirement.
+        but {one ? 'it does' : 'they do'} not clear any general-education requirement.
       </Text>
       {exams.map(s => (
         <Text key={s.id} style={styles.noGeItem} numberOfLines={3}>
-          ·  {s.name} — no Cal-GETC area
+          ·  {s.name} — no general-education area
         </Text>
       ))}
       <Text style={styles.noGeBody}>
@@ -257,8 +265,61 @@ function NotTowardGeNotice(
   );
 }
 
+/**
+ * The state row.
+ *
+ * It sits above the campus picker and not inside it because the state is the
+ * more valuable answer in most of the country: a statewide guarantee is worth
+ * more than any one campus's exam table, and it is true before the student has
+ * chosen a university. A state we hold no guarantee for says so in the same
+ * place, rather than printing nothing and leaving the silence to be read as
+ * "there is nothing to know".
+ */
+function StateRow(
+  { states, selected, onSelect }: {
+    states: Jurisdiction[];
+    selected: StateCode;
+    onSelect: (code: StateCode) => void;
+  },
+): ReactElement {
+  const chosen = states.find(j => j.code === selected);
+  return (
+    <View>
+      <View style={styles.stateRow}>
+        {states.map(j => {
+          const on = j.code === selected;
+          return (
+            <Pressable
+              key={j.code}
+              onPress={() => onSelect(j.code)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: on }}
+              accessibilityLabel={j.name}
+              style={[styles.stateChip, on && styles.stateChipOn]}
+            >
+              <Text style={[styles.stateChipText, on && styles.stateChipTextOn]}>
+                {j.name}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      {chosen?.transfer_guarantee !== undefined && chosen?.transfer_guarantee !== null && (
+        <View style={styles.guarantee}>
+          <Text style={styles.guaranteeKicker}>THE STATEWIDE RULE</Text>
+          <Text style={styles.guaranteeText}>{chosen.transfer_guarantee}</Text>
+          <SourceBadge p={chosen.transfer_provenance} />
+        </View>
+      )}
+    </View>
+  );
+}
+
 export function InputScreen(
-  { institutions, creditSources, value, onChange, onSubmit, onBack }: InputScreenProps,
+  {
+    states, selectedState, onSelectState, systems,
+    institutions, creditSources, value, onChange, onSubmit, onBack,
+  }: InputScreenProps,
 ): ReactElement {
   // Local text state so the field can sit empty mid-edit instead of snapping to 0.
   const [unitsText, setUnitsText] = useState<string>(
@@ -276,6 +337,10 @@ export function InputScreen(
 
   const target = institutions.find(i => i.id === value.target_institution_id);
 
+  // System ids are dataset keys — `FL-SUS` is not something to show a student.
+  const systemLabel = (inst: Institution): string =>
+    systems.find(sy => sy.id === inst.system)?.short_name ?? inst.system;
+
   // 32 campuses is more than anyone wants to scroll past to reach the one they
   // already have in mind. The chosen campus always stays visible, so a search
   // typed after choosing cannot make the selection look lost.
@@ -286,7 +351,7 @@ export function InputScreen(
     : institutions.filter(i =>
         i.id === value.target_institution_id ||
         i.name.toLowerCase().includes(q) ||
-        i.system.toLowerCase().includes(q));
+        systemLabel(i).toLowerCase().includes(q));
 
   const patch = (next: Partial<StudentInput>): void => onChange({ ...value, ...next });
 
@@ -323,7 +388,7 @@ export function InputScreen(
 
   // The other half of the same policy, and the half nothing on screen betrays:
   // this campus DOES award credit for the CLEP the student holds, and that credit
-  // still clears no Cal-GETC requirement — the engine's `credit_not_toward_ge`.
+  // still clears no general-education requirement — the engine's `credit_not_toward_ge`.
   // Exactly one of these two lists can be non-empty: stranded needs `accepts_clep`
   // false, this needs it true.
   const notTowardGe: CreditSource[] =
@@ -461,8 +526,10 @@ export function InputScreen(
         {/* 1 — target */}
         <Text style={styles.qNum}>1</Text>
         <Text style={styles.qText}>Where are you trying to graduate from?</Text>
+        <StateRow states={states} selected={selectedState} onSelect={onSelectState} />
         <Text style={styles.qHintText}>
-          All 9 UC and 23 CSU campuses. Type to narrow the list.
+          {institutions.length} public campus{institutions.length === 1 ? '' : 'es'}. Type to
+          narrow the list.
         </Text>
         <TextInput
           style={styles.search}
@@ -491,6 +558,7 @@ export function InputScreen(
               <InstitutionCard
                 key={inst.id}
                 inst={inst}
+                systemLabel={systemLabel(inst)}
                 selected={inst.id === value.target_institution_id}
                 onPress={() => patch({ target_institution_id: inst.id })}
               />
@@ -789,6 +857,37 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   chipText: { ...theme.font.mono, color: theme.color.textMuted, letterSpacing: 1 },
+
+  stateRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.space.xs,
+    marginTop: theme.space.sm,
+  },
+  stateChip: {
+    backgroundColor: theme.color.surfaceAlt,
+    borderWidth: 1,
+    borderColor: theme.color.border,
+    borderRadius: theme.radius.sm,
+    paddingHorizontal: theme.space.md,
+    paddingVertical: theme.space.xs,
+  },
+  stateChipOn: { borderColor: theme.color.accent, backgroundColor: theme.color.accentDim },
+  stateChipText: { ...theme.font.body, color: theme.color.textMuted },
+  stateChipTextOn: { color: theme.color.accent },
+  guarantee: {
+    marginTop: theme.space.sm,
+    padding: theme.space.md,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.color.surface,
+    borderLeftWidth: 3,
+    borderLeftColor: theme.color.accent,
+  },
+  guaranteeKicker: {
+    ...theme.font.small, color: theme.color.textMuted, letterSpacing: 2,
+    marginBottom: theme.space.xs,
+  },
+  guaranteeText: { ...theme.font.body, color: theme.color.text, marginBottom: theme.space.sm },
 
   badge: {
     borderWidth: 1,

@@ -1,239 +1,20 @@
 import type { CreditSource } from '../../src/types.ts';
 
 /**
- * Costs are the sticker price. Two waivers routinely take them to zero and are
- * modelled as notes until the engine supports eligibility:
- *   - California College Promise Grant (CCPG) waives the CCC $46/unit fee.
- *   - Modern States "Freshman Year for Free" covers the CLEP exam fee.
+ * California community-college courses. The AP and CLEP rows that used to sit
+ * above these moved to `data/us/exams.ts`: they are national, and keeping a
+ * national exam in a state folder meant every new state duplicated it — along
+ * with a note explaining what it is worth in California, which is exactly the
+ * kind of claim that must not travel.
+ *
+ * $46/unit is the statutory California community-college enrolment fee, so a
+ * 3-unit course is $138. The California College Promise Grant waives it.
  */
-export const creditSources: CreditSource[] = [
-  // ---- AP: the only exam credit that works everywhere, including at UC ----
-  {
-    id: 'ap-english-lang',
-    kind: 'ap',
-    name: 'AP English Language & Composition (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-      note:
-        'Exam fee not covered by the 2026-27 research brief. Fee reductions exist for ' +
-        'low-income students and many CA high schools subsidise the exam outright.',
-    },
-  },
-  {
-    id: 'ap-calculus-ab',
-    kind: 'ap',
-    name: 'AP Calculus AB (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-psychology',
-    kind: 'ap',
-    name: 'AP Psychology (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-
-  {
-    id: 'ap-english-lit',
-    kind: 'ap',
-    name: 'AP English Literature & Composition (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-art-history',
-    kind: 'ap',
-    name: 'AP Art History (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-biology',
-    kind: 'ap',
-    name: 'AP Biology (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-chemistry',
-    kind: 'ap',
-    name: 'AP Chemistry (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-
-  {
-    id: 'ap-calculus-bc',
-    kind: 'ap',
-    name: 'AP Calculus BC (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-spanish',
-    kind: 'ap',
-    name: 'AP Spanish Language & Culture (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-european-history',
-    kind: 'ap',
-    name: 'AP European History (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-macroeconomics',
-    kind: 'ap',
-    name: 'AP Macroeconomics (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-microeconomics',
-    kind: 'ap',
-    name: 'AP Microeconomics (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-human-geography',
-    kind: 'ap',
-    name: 'AP Human Geography (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-comparative-government',
-    kind: 'ap',
-    name: 'AP Comparative Government & Politics (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-physics-1',
-    kind: 'ap',
-    name: 'AP Physics 1: Algebra-Based (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  {
-    id: 'ap-environmental-science',
-    kind: 'ap',
-    name: 'AP Environmental Science (score 3+)',
-    cost_usd: 99,
-    provenance: {
-      source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-      as_of: '',
-      confidence: 'needs_check',
-    },
-  },
-  // ---- CLEP: cannot satisfy Cal-GETC anywhere, and UC rejects it entirely ----
-  {
-    id: 'clep-college-composition',
-    kind: 'clep',
-    name: 'CLEP College Composition',
-    cost_usd: 95,
-    provenance: {
-      source_url: 'https://clep.collegeboard.org/clep-exam-policy',
-      as_of: '2026-09-18',
-      confidence: 'published',
-      note:
-        'Modern States "Freshman Year for Free" supplies a voucher covering the exam fee, ' +
-        'which can take this to $0. Worth taking only if the destination is a CSU or a ' +
-        'private — it cannot satisfy Cal-GETC, and UC awards no CLEP credit at all.',
-    },
-  },
-  {
-    id: 'clep-college-algebra',
-    kind: 'clep',
-    name: 'CLEP College Algebra',
-    cost_usd: 95,
-    provenance: {
-      source_url: 'https://clep.collegeboard.org/clep-exam-policy',
-      as_of: '2026-09-18',
-      confidence: 'published',
-      note: 'Modern States voucher can cover the exam fee.',
-    },
-  },
-  {
-    id: 'clep-intro-psychology',
-    kind: 'clep',
-    name: 'CLEP Introductory Psychology',
-    cost_usd: 95,
-    provenance: {
-      source_url: 'https://clep.collegeboard.org/clep-exam-policy',
-      as_of: '2026-09-18',
-      confidence: 'published',
-      note: 'Modern States voucher can cover the exam fee.',
-    },
-  },
-
+export const cccCourses: CreditSource[] = [
   // ---- Community college courses: the workhorse of every cheap CA pathway ----
   {
     id: 'ccc-engl-1a',
-    kind: 'ccc_course',
+    kind: 'cc_course',
     name: 'Community college English 1A (3 units)',
     cost_usd: 138,
     provenance: {
@@ -249,7 +30,7 @@ export const creditSources: CreditSource[] = [
   },
   {
     id: 'ccc-math-1',
-    kind: 'ccc_course',
+    kind: 'cc_course',
     name: 'Community college Math 1, Quantitative Reasoning (3 units)',
     cost_usd: 138,
     provenance: {
@@ -262,7 +43,7 @@ export const creditSources: CreditSource[] = [
   },
   {
     id: 'ccc-comm-1',
-    kind: 'ccc_course',
+    kind: 'cc_course',
     name: 'Community college Communication Studies 1 (3 units)',
     cost_usd: 138,
     provenance: {
@@ -275,7 +56,7 @@ export const creditSources: CreditSource[] = [
   },
   {
     id: 'ccc-soc-1',
-    kind: 'ccc_course',
+    kind: 'cc_course',
     name: 'Community college Sociology 1 (3 units)',
     cost_usd: 138,
     provenance: {
@@ -291,7 +72,7 @@ export const creditSources: CreditSource[] = [
   },
   {
     id: 'ccc-ethnic-studies-1',
-    kind: 'ccc_course',
+    kind: 'cc_course',
     name: 'Community college Ethnic Studies 1 (3 units)',
     cost_usd: 138,
     provenance: {
@@ -304,7 +85,7 @@ export const creditSources: CreditSource[] = [
   },
   {
     id: 'ccc-engl-1b',
-    kind: 'ccc_course',
+    kind: 'cc_course',
     name: 'Community college English 1B, Critical Thinking (3 units)',
     cost_usd: 138,
     provenance: {
@@ -317,7 +98,7 @@ export const creditSources: CreditSource[] = [
   },
   {
     id: 'ccc-hum-1',
-    kind: 'ccc_course',
+    kind: 'cc_course',
     name: 'Community college Humanities 1 (3 units)',
     cost_usd: 138,
     provenance: {
@@ -330,7 +111,7 @@ export const creditSources: CreditSource[] = [
   },
   {
     id: 'ccc-art-1',
-    kind: 'ccc_course',
+    kind: 'cc_course',
     name: 'Community college Art History 1 (3 units)',
     cost_usd: 138,
     provenance: {
@@ -343,7 +124,7 @@ export const creditSources: CreditSource[] = [
   },
   {
     id: 'ccc-physics-1',
-    kind: 'ccc_course',
+    kind: 'cc_course',
     name: 'Community college Physical Science 1 (3 units)',
     cost_usd: 138,
     provenance: {
@@ -356,7 +137,7 @@ export const creditSources: CreditSource[] = [
   },
   {
     id: 'ccc-biology-1',
-    kind: 'ccc_course',
+    kind: 'cc_course',
     name: 'Community college Biology 1 (3 units)',
     cost_usd: 138,
     provenance: {

@@ -33,7 +33,7 @@ const ROUTE_LABEL: Record<RouteKind, string> = {
  *   severe    'stranded_credit' — money the student has already spent, gone.
  *             It alone is drawn in danger red.
  *   elevated  'credit_not_toward_ge' — the campus DOES award this credit, so
- *             nothing on the screen looks wrong, and yet it clears no Cal-GETC
+ *             nothing on the screen looks wrong, and yet it clears no general-education
  *             requirement: the student has satisfied nothing and has no way to
  *             tell. Nobody is out of pocket, so it is not red; it is the amber
  *             of the constraint kinds carrying visible extra weight, so it
@@ -98,7 +98,7 @@ const openSource = (url: string): void => {
 };
 
 /**
- * A bare Cal-GETC code is advisor shorthand; the student knows the requirement
+ * A bare general-education code is advisor shorthand; the student knows the requirement
  * by its name. A code we hold no row for still prints as itself — never as
  * "undefined", and never with a dangling separator behind it.
  */
@@ -286,11 +286,11 @@ function ItemCard(
 
 export function RouteDetailScreen(
   {
-    institution, route, areas, unlocked,
+    institution, framework, system, route, areas, unlocked,
     onUnlock, onExportPacket, onShareWithGuardian, onManageSubscription, onBack,
   }: RouteDetailScreenProps,
 ): ReactElement {
-  // The only place a Cal-GETC code has a human name. A handful of rows, looked
+  // The only place a general-education code has a human name. A handful of rows, looked
   // up by hand: a code with no row falls back to the bare code.
   const areaName = (id: string): string | null => {
     const name = areas.find(a => a.id === id)?.name.trim() ?? '';
@@ -366,7 +366,7 @@ export function RouteDetailScreen(
               {severeCount > 0
                 ? `✗  ${severeCount === 1 ? 'Credit you hold is' : `${severeCount} credits you hold are`} worthless at ${institution.name} — read below`
                 : elevatedCount > 0
-                  ? `⚠  ${elevatedCount === 1 ? 'Credit you hold clears' : `${elevatedCount} credits you hold clear`} no Cal-GETC requirement at ${institution.name} — read below`
+                  ? `⚠  ${elevatedCount === 1 ? 'Credit you hold clears' : `${elevatedCount} credits you hold clear`} no ${framework.name} requirement at ${institution.name} — read below`
                   : `⚠  ${route.warnings.length} ${route.warnings.length === 1 ? 'constraint binds' : 'constraints bind'} this route — read below`}
             </Text>
           </View>
@@ -400,7 +400,7 @@ export function RouteDetailScreen(
         <Text style={styles.heroSub}>
           {/* $0 with nothing behind it is not a bargain, and must not read as one. */}
           {priced
-            ? `${route.items.length} ${route.items.length === 1 ? 'step' : 'steps'} · ${route.total_units} units · clears ${route.areas_cleared.length} Cal-GETC ${route.areas_cleared.length === 1 ? 'area' : 'areas'}`
+            ? `${route.items.length} ${route.items.length === 1 ? 'step' : 'steps'} · ${route.total_units} units · clears ${route.areas_cleared.length} general-education ${route.areas_cleared.length === 1 ? 'area' : 'areas'}`
             : 'Nothing to price — this route recommends no steps. See below.'}
         </Text>
         {priced && !heroBacked && (
@@ -430,8 +430,8 @@ export function RouteDetailScreen(
             </Text>
             <Text style={styles.unmetLead}>
               {unmetOne
-                ? 'One Cal-GETC requirement is'
-                : `${unmetCount} Cal-GETC requirements are`}{' '}
+                ? `One ${framework.name} requirement is`
+                : `${unmetCount} ${framework.name} requirements are`}{' '}
               still open after this route. You have to clear {unmetOne ? 'it' : 'them'} at{' '}
               {institution.name} some other way, and the total above does not price that.
             </Text>
@@ -490,7 +490,7 @@ export function RouteDetailScreen(
             covered by a "Published policy" stamp that was never about them. */}
         <View style={styles.instRow}>
           <InstFact
-            text={`${institution.name} · ${institution.system} · ${
+            text={`${institution.name} · ${system.short_name} · ${
               institution.accepts_clep ? 'accepts CLEP' : 'awards no CLEP credit'
             }`}
             p={institution.exam_policy_provenance}
