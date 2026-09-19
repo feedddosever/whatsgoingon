@@ -43,6 +43,7 @@ import type { InputScreenProps } from '../ui/contracts.ts';
 // screen and in the packet, or one of them quietly disagrees with the rest.
 import { checkedOn, isBacked, linkable, noteText } from '../ui/provenance.ts';
 import { confidenceColor, confidenceLabel, money, theme } from '../ui/theme.ts';
+import { hasContact, waitlistMailto } from '../contact.ts';
 
 /** Section order is pedagogical: exams first, because they are the cheap surprise. */
 const CREDIT_GROUPS: ReadonlyArray<{ kind: CreditKind; title: string; blurb: string }> = [
@@ -275,40 +276,106 @@ function NotTowardGeNotice(
  * place, rather than printing nothing and leaving the silence to be read as
  * "there is nothing to know".
  */
+function StateChip(
+  { label, on, onPress, wide }: {
+    label: string; on: boolean; onPress: () => void; wide?: boolean;
+  },
+): ReactElement {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: on }}
+      accessibilityLabel={label}
+      style={[styles.stateChip, wide === true && styles.stateChipNarrow, on && styles.stateChipOn]}
+    >
+      <Text style={[styles.stateChipText, on && styles.stateChipTextOn]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 function StateRow(
-  { states, selected, onSelect }: {
+  { states, unmapped, selected, onSelect }: {
     states: Jurisdiction[];
+    unmapped: Jurisdiction[];
     selected: StateCode;
     onSelect: (code: StateCode) => void;
   },
 ): ReactElement {
-  const chosen = states.find(j => j.code === selected);
+  const all = [...states, ...unmapped];
+  const chosen = all.find(j => j.code === selected);
+  const chosenIsUnmapped = unmapped.some(j => j.code === selected);
+  // Opens itself when the student is already standing in an unmapped state, so
+  // a restored plan does not hide the row that explains what they are looking at.
+  const [showAll, setShowAll] = useState<boolean>(chosenIsUnmapped);
+
   return (
     <View>
       <View style={styles.stateRow}>
-        {states.map(j => {
-          const on = j.code === selected;
-          return (
-            <Pressable
-              key={j.code}
-              onPress={() => onSelect(j.code)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: on }}
-              accessibilityLabel={j.name}
-              style={[styles.stateChip, on && styles.stateChipOn]}
-            >
-              <Text style={[styles.stateChipText, on && styles.stateChipTextOn]}>
-                {j.name}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {states.map(j => (
+          <StateChip
+            key={j.code}
+            label={j.name}
+            on={j.code === selected}
+            onPress={() => onSelect(j.code)}
+          />
+        ))}
+        <StateChip
+          label={showAll ? 'Fewer states' : 'Another state'}
+          on={chosenIsUnmapped}
+          onPress={() => setShowAll(v => !v)}
+        />
       </View>
-      {chosen?.transfer_guarantee !== undefined && chosen?.transfer_guarantee !== null && (
+
+      {showAll && (
+        <View style={styles.stateGrid}>
+          {unmapped.map(j => (
+            <StateChip
+              key={j.code}
+              label={j.code}
+              wide
+              on={j.code === selected}
+              onPress={() => onSelect(j.code)}
+            />
+          ))}
+        </View>
+      )}
+
+      {chosen !== undefined && chosen.transfer_guarantee !== null && (
         <View style={styles.guarantee}>
           <Text style={styles.guaranteeKicker}>THE STATEWIDE RULE</Text>
           <Text style={styles.guaranteeText}>{chosen.transfer_guarantee}</Text>
           <SourceBadge p={chosen.transfer_provenance} />
+        </View>
+      )}
+
+      {/* An unmapped state is not an error state. The student gets the true
+          answer — we have not done this one — plus the two things that are
+          national anyway, and the offer to be told when it changes. */}
+      {chosen !== undefined && chosenIsUnmapped && (
+        <View style={styles.notMapped}>
+          <Text style={styles.notMappedKicker}>WE HAVE NOT MAPPED {chosen.name.toUpperCase()}</Text>
+          <Text style={styles.notMappedText}>
+            We hold no campuses or requirements for {chosen.name}, so there is nothing here we
+            could price for you without making it up.
+          </Text>
+          <Text style={styles.notMappedText}>
+            Two things are true anyway, wherever you are: AP and CLEP exams are national, and
+            Modern States can cover a CLEP exam fee outright. Your state very likely has a
+            transferable general-education core as well — we have not confirmed which, so we
+            will not describe it.
+          </Text>
+          <SourceBadge p={chosen.transfer_provenance} />
+          {hasContact() && (
+            <Pressable
+              onPress={() => openSource(waitlistMailto(chosen))}
+              accessibilityRole="button"
+              accessibilityLabel={`Ask us to map ${chosen.name}`}
+              style={({ pressed }) => [styles.waitlist, pressed && styles.pressed]}
+            >
+              <Text style={styles.waitlistText}>Tell me when {chosen.name} is ready  ›</Text>
+            </Pressable>
+          )}
         </View>
       )}
     </View>
@@ -317,7 +384,7 @@ function StateRow(
 
 export function InputScreen(
   {
-    states, selectedState, onSelectState, systems,
+    states, unmappedStates, selectedState, onSelectState, systems,
     institutions, creditSources, value, onChange, onSubmit, onBack,
   }: InputScreenProps,
 ): ReactElement {
@@ -526,26 +593,35 @@ export function InputScreen(
         {/* 1 — target */}
         <Text style={styles.qNum}>1</Text>
         <Text style={styles.qText}>Where are you trying to graduate from?</Text>
-        <StateRow states={states} selected={selectedState} onSelect={onSelectState} />
-        <Text style={styles.qHintText}>
-          {institutions.length} public campus{institutions.length === 1 ? '' : 'es'}. Type to
-          narrow the list.
-        </Text>
-        <TextInput
-          style={styles.search}
-          value={campusQuery}
-          onChangeText={setCampusQuery}
-          placeholder="Search campuses"
-          placeholderTextColor={theme.color.textMuted}
-          accessibilityLabel="Search campuses by name"
-          autoCorrect={false}
-          clearButtonMode="while-editing"
+        <StateRow
+          states={states}
+          unmapped={unmappedStates}
+          selected={selectedState}
+          onSelect={onSelectState}
         />
-        {institutions.length === 0 ? (
-          <Text style={styles.empty}>
-            No campuses are loaded, so nothing can be priced. This is a problem with the app, not
-            with your record.
+        {institutions.length > 0 && (
+          <Text style={styles.qHintText}>
+            {institutions.length} public campus{institutions.length === 1 ? '' : 'es'}. Type to
+            narrow the list.
           </Text>
+        )}
+        {institutions.length > 0 && (
+          <TextInput
+            style={styles.search}
+            value={campusQuery}
+            onChangeText={setCampusQuery}
+            placeholder="Search campuses"
+            placeholderTextColor={theme.color.textMuted}
+            accessibilityLabel="Search campuses by name"
+            autoCorrect={false}
+            clearButtonMode="while-editing"
+          />
+        )}
+        {institutions.length === 0 ? (
+          // Silent when the state is simply unmapped — StateRow has already
+          // said so, far better than a second paragraph could. This line is
+          // for the case it was written for: the dataset failed to load.
+          null
         ) : (
           <View style={styles.instGrid} accessibilityRole="radiogroup">
             {visibleInstitutions.length === 0 && (
@@ -600,6 +676,13 @@ export function InputScreen(
           </View>
         )}
 
+        {/* Questions 2 and 3 exist to be answered ABOUT a campus, so in a state
+            we have not mapped there is nothing to ask. Rendering them anyway
+            produced "No credit sources are loaded, so there is nothing to tick
+            here yet" — an apology for a bug, printed to a student whose only
+            mistake was living in Ohio. */}
+        {institutions.length > 0 && (
+        <>
         {/* 2 — what they hold */}
         <Text style={styles.qNum}>2</Text>
         <Text style={styles.qText}>What credit do you already have?</Text>
@@ -679,6 +762,8 @@ export function InputScreen(
             <SourceBadge p={target.residency_provenance} />
           </View>
         )}
+        </>
+        )}
 
         {/* Deliberately not a fourth question: it changes nothing the app works
             out, and a name box that looks required is a name box that stops
@@ -753,7 +838,14 @@ export function InputScreen(
           ]}
         >
           <Text style={[styles.ctaText, target === undefined && styles.ctaTextOff]} numberOfLines={2}>
-            {target === undefined ? 'Pick a school to start' : `Price my route to ${target.name}`}
+            {/* "Pick a school to start" is unanswerable in a state with no
+                schools in it, and reads as the student's fault. Name the actual
+                next move instead. */}
+            {target !== undefined
+              ? `Price my route to ${target.name}`
+              : institutions.length === 0
+                ? 'Pick a state we have mapped'
+                : 'Pick a school to start'}
           </Text>
         </Pressable>
       </View>
@@ -872,7 +964,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.space.md,
     paddingVertical: theme.space.xs,
   },
+  // Two-letter codes in a 48-item grid: narrower, fixed width so the grid reads
+  // as a grid rather than as ragged prose.
+  stateChipNarrow: { paddingHorizontal: theme.space.sm, minWidth: 58, alignItems: 'center' },
   stateChipOn: { borderColor: theme.color.accent, backgroundColor: theme.color.accentDim },
+  stateGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.space.xs,
+    marginTop: theme.space.xs,
+  },
+  notMapped: {
+    marginTop: theme.space.sm,
+    padding: theme.space.md,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.color.surface,
+    borderLeftWidth: 3,
+    // Muted, not amber: we are not warning them about a risk, we are telling
+    // them the truth about our own coverage.
+    borderLeftColor: theme.color.textMuted,
+  },
+  notMappedKicker: {
+    ...theme.font.small, color: theme.color.textMuted, letterSpacing: 2,
+    marginBottom: theme.space.xs,
+  },
+  notMappedText: {
+    ...theme.font.body, color: theme.color.text, marginBottom: theme.space.sm,
+  },
+  waitlist: {
+    marginTop: theme.space.sm,
+    paddingVertical: theme.space.sm,
+    paddingHorizontal: theme.space.md,
+    borderRadius: theme.radius.sm,
+    borderWidth: 1,
+    borderColor: theme.color.accent,
+    alignSelf: 'flex-start',
+  },
+  waitlistText: { ...theme.font.body, color: theme.color.accent },
   stateChipText: { ...theme.font.body, color: theme.color.textMuted },
   stateChipTextOn: { color: theme.color.accent },
   guarantee: {

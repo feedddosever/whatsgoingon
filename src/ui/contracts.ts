@@ -27,6 +27,15 @@ export interface InputScreenProps {
    * student has chosen a university at all.
    */
   states: Jurisdiction[];
+  /**
+   * The states we have NOT mapped — every one of them, not a curated few.
+   *
+   * They used to be hidden, which meant a student in Ohio saw three states and
+   * silently concluded the app was not for them. Showing all 51 turns the
+   * largest gap in the dataset into the most useful question the app can ask:
+   * which state should exist next, asked of the person who wants it.
+   */
+  unmappedStates: Jurisdiction[];
   selectedState: StateCode;
   onSelectState: (code: StateCode) => void;
   /**

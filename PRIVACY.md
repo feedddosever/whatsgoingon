@@ -23,6 +23,16 @@ We do not collect names, email addresses, phone numbers, contacts, location,
 photos, device identifiers for advertising, or analytics about how you use the
 app. There is no advertising and no third-party tracking.
 
+**Including when you ask us to cover your state.** If your state is one we have
+not mapped, the app offers to open **your own email app** with a message ready
+to send. Nothing is transmitted when you tap it — your mail app opens, and you
+decide whether to send, what to add, and which address to send from. If you do
+send it, we receive that email exactly as we would any other, and we use it only
+to tell you when your state is covered. We do not add you to a mailing list, and
+you can ask us to delete it at any time.
+
+If you are under 18, ask a parent or guardian before emailing us.
+
 If you type a name into the optional name field, it is used only to print your
 name on a page you export. It never leaves your device unless you send that page
 somewhere yourself.

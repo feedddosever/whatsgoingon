@@ -40,9 +40,19 @@ type Screen = 'profile' | 'input' | 'routes' | 'map' | 'detail';
  * dataset — including the ones we have not mapped — but offering a student a
  * state with no campuses behind it would be a picker that leads nowhere.
  */
-const STATES_WITH_CAMPUSES = unitedStates.jurisdictions.filter(j =>
+const hasCampuses = (code: StateCode): boolean =>
   unitedStates.systems.some(sys =>
-    sys.state === j.code && unitedStates.institutions.some(i => i.system === sys.id)));
+    sys.state === code && unitedStates.institutions.some(i => i.system === sys.id));
+
+const STATES_WITH_CAMPUSES = unitedStates.jurisdictions.filter(j => hasCampuses(j.code));
+
+/**
+ * Everywhere else. Offered rather than hidden: a student in Ohio who is shown
+ * three states concludes the app is not for them, when the true answer — we
+ * have not built Ohio yet, here is what is national anyway, tell us if you
+ * want it — is both more useful and the only one we can stand behind.
+ */
+const STATES_WITHOUT_CAMPUSES = unitedStates.jurisdictions.filter(j => !hasCampuses(j.code));
 
 const DEFAULT_STATE: StateCode = 'CA';
 
@@ -383,6 +393,7 @@ export default function App() {
       <InputScreen
         onBack={() => setScreen('profile')}
         states={STATES_WITH_CAMPUSES}
+        unmappedStates={STATES_WITHOUT_CAMPUSES}
         selectedState={browseState}
         onSelectState={setBrowseState}
         systems={unitedStates.systems}
