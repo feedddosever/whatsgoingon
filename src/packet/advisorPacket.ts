@@ -19,6 +19,7 @@ import type {
 } from '../types.ts';
 import { checkedOn, isBacked, linkable, noteText } from '../ui/provenance.ts';
 import { confidenceLabel, money } from '../ui/theme.ts';
+import { DISCLAIMER_LONG } from '../disclaimer.ts';
 
 export interface AdvisorPacketInput {
   institution: Institution;
@@ -31,6 +32,16 @@ export interface AdvisorPacketInput {
   areas: GeArea[];
   /** Optional: absent, the document prints a rule for the student to sign by hand. */
   studentName?: string;
+  /**
+   * Who is being handed this page.
+   *
+   * An advisor is being asked to rule on specific rows; a parent or guardian is
+   * being asked to understand a decision and its cost. Same evidence either way
+   * — a guardian packet that softened the unconfirmed rows would be the exact
+   * dishonesty this document exists to prevent — but the ask, and what leads,
+   * are different.
+   */
+  audience?: 'advisor' | 'guardian';
 }
 
 /**
@@ -786,6 +797,13 @@ const STYLES = `
  * product, and a PDF is a poor place to discover an escaping bug.
  */
 export function buildAdvisorPacketHtml(input: AdvisorPacketInput): string {
+  const guardian = input.audience === 'guardian';
+  // A guardian needs the comparison the student is actually asking them to
+  // approve, so the cost of doing none of this is stated rather than implied.
+  const baselineForDisplay =
+    input.route.total_cost_usd + input.route.items.reduce((n, i) => n + i.cost_usd, 0) === 0
+      ? 0
+      : input.route.total_cost_usd;
   const { institution, route, areas, studentName } = input;
   const named = areaNamerFor(areas);
 
@@ -809,7 +827,9 @@ export function buildAdvisorPacketHtml(input: AdvisorPacketInput): string {
 <style>${STYLES}</style>
 </head>
 <body>
-  <h1>Transfer credit plan — a request for confirmation</h1>
+  <h1>${guardian
+    ? 'Transfer credit plan — what it costs and what is not yet certain'
+    : 'Transfer credit plan — a request for confirmation'}</h1>
   <div class="meta">
     <span>Student: ${who}</span><span class="sep">|</span>
     <span>Target: ${esc(institution.name)} (${esc(institution.system)})</span><span class="sep">|</span>
@@ -817,11 +837,18 @@ export function buildAdvisorPacketHtml(input: AdvisorPacketInput): string {
     <span>Prepared ${esc(preparedOn)}</span>
   </div>
 
-  <p class="ask">I am planning to earn the credit listed below before I transfer to
-  ${esc(institution.name)}, and I would rather find out now than after I have paid for it.
-  Some of these rows I could confirm against a published policy; some I could not. Could you
-  confirm the numbered items at the foot of this page, and tell me which of them will not
-  count here?</p>
+  <p class="ask">${guardian
+    ? `This is my plan for clearing general-education requirements before I transfer to
+       ${esc(institution.name)}. It costs ${esc(money(route.total_cost_usd))}, against
+       ${esc(money(baselineForDisplay))} to take the same requirements at the campus itself.
+       Some rows below are backed by a published policy and some are not, and the ones that
+       are not are marked. Before we pay for anything, the numbered items at the foot of this
+       page need confirming with the campus — I have not been able to confirm them myself.`
+    : `I am planning to earn the credit listed below before I transfer to
+       ${esc(institution.name)}, and I would rather find out now than after I have paid for it.
+       Some of these rows I could confirm against a published policy; some I could not. Could you
+       confirm the numbered items at the foot of this page, and tell me which of them will not
+       count here?`}</p>
 
   ${warningsHtml(route.warnings, institution.name)}
 
@@ -834,10 +861,9 @@ export function buildAdvisorPacketHtml(input: AdvisorPacketInput): string {
 
   <footer>
     <b>${vintage}</b>
-    Transfer and credit-by-exam policies change between catalogue years, and a policy page
-    that was accurate when it was read may not be accurate today. This document reports what
-    we found and how far we trust it; it is a request for confirmation, not an authority, and
-    nothing in it should be relied on until ${esc(institution.name)} confirms it.
+    ${esc(DISCLAIMER_LONG)} This document reports what we found and how far we trust it; it is
+    a request for confirmation, not an authority, and nothing in it should be relied on until
+    ${esc(institution.name)} confirms it.
   </footer>
 </body>
 </html>`;
@@ -921,7 +947,9 @@ export async function exportAdvisorPacket(input: AdvisorPacketInput): Promise<vo
       UTI: 'com.adobe.pdf',
       // A dialog title is plain text, not markup — it is the one string here that
       // must NOT be escaped, or the advisor sees "Cal Poly &amp; Co".
-      dialogTitle: `Advisor packet — ${input.institution.name}`,
+      dialogTitle: input.audience === 'guardian'
+        ? `Plan for ${input.institution.name} — for a parent or guardian`
+        : `Advisor packet — ${input.institution.name}`,
     });
   } catch {
     // isAvailableAsync can say yes to a module that still cannot open a sheet.

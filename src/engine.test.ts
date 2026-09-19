@@ -662,21 +662,40 @@ test('pathway costs price a student\'s own requirements, per kind of credit', ()
   }
 });
 
-test('no single pathway is claimed to clear everything', () => {
-  // The honest shape of the advice is that routes stack. If one ever covered
-  // every requirement, the high-school card would be telling students they can
-  // stop looking — so this asserts the premise the copy rests on.
+test('no exam-only pathway clears everything', () => {
+  // Community college can now cover every requirement — adding a Cal-GETC area 4
+  // course closed the last gap, which is why a fee-waiver student reaches $0.
+  // The substantive claim is narrower and still holds: exams alone cannot finish
+  // the job, because no AP exam satisfies 1B or area 6 and CLEP satisfies
+  // nothing. A student told otherwise would stop looking too early.
   for (const id of ['uc-davis', 'csu-long-beach']) {
     const paths = pathwayCosts(ds, {
       profile: PLAIN, target_institution_id: id,
       held_credit_ids: [], units_in_residence: 0,
     });
     assert.ok(paths.length > 0);
-    assert.ok(
-      paths.every(p => p.areas_covered < p.areas_required),
-      `a single pathway claims full coverage at ${id}`,
-    );
+    for (const p of paths.filter(x => x.kind === 'ap' || x.kind === 'clep')) {
+      assert.ok(
+        p.areas_covered < p.areas_required,
+        `${p.kind} claims full coverage at ${id}, but 1B and area 6 have no exam route`,
+      );
+    }
   }
+});
+
+test('a fee waiver can take a complete plan to zero', () => {
+  // The point of asking about the waiver at all. Before area 4 had a
+  // community-college route, an eligible student cleared everything else free
+  // and was still charged for one AP exam.
+  const base = {
+    target_institution_id: 'uc-davis', held_credit_ids: [], units_in_residence: 30,
+  };
+  const waived = planRoute(ds, { ...base, profile: withProfile({ waiver: 'eligible' }) }, 'cheapest');
+  assert.equal(waived.total_cost_usd, 0, 'every requirement should have a free route');
+  assert.equal(waived.areas_unmet.length, 0, 'and the plan should still be complete');
+
+  const paying = planRoute(ds, { ...base, profile: PLAIN }, 'cheapest');
+  assert.ok(paying.total_cost_usd > 0, 'while a student without the waiver still pays');
 });
 
 test('a science exam clears its area AND the laboratory, and is charged once', () => {

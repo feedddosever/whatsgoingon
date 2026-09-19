@@ -16,6 +16,7 @@ import { RouteDetailScreen } from './src/screens/RouteDetailScreen.tsx';
 import { PlanMapScreen } from './src/screens/PlanMapScreen.tsx';
 import { exportAdvisorPacket } from './src/packet/advisorPacket.ts';
 import { clearPlan, loadPlan, savePlan } from './src/storage.ts';
+import { isSchoolAge } from './src/disclaimer.ts';
 import { PaywallScreen } from './src/screens/PaywallScreen.tsx';
 import { NATIVE_API_KEY, WEB_API_KEY } from './src/purchases/config.ts';
 import {
@@ -182,7 +183,7 @@ export default function App() {
   }, []);
 
 
-  const handleExport = useCallback(() => {
+  const sharePacket = useCallback((audience: 'advisor' | 'guardian') => {
     if (!institution || !selected) return;
     // exportAdvisorPacket rejects if rendering or sharing fails. The screen's
     // callback is synchronous, so the rejection has to be caught here or the tap
@@ -192,6 +193,7 @@ export default function App() {
       route: selected,
       areas: california.areas,
       studentName: input.student_name,
+      audience,
     }).catch((e: unknown) => {
       Alert.alert(
         'Could not create the packet',
@@ -199,6 +201,9 @@ export default function App() {
       );
     });
   }, [institution, selected, input.student_name]);
+
+  const handleExport = useCallback(() => sharePacket('advisor'), [sharePacket]);
+  const handleShareGuardian = useCallback(() => sharePacket('guardian'), [sharePacket]);
 
   const handlePurchase = useCallback(async () => {
     setBusy(true);
@@ -261,6 +266,7 @@ export default function App() {
   } else if (paywallOpen) {
     body = (
       <PaywallScreen
+        schoolAge={isSchoolAge(input.profile.year)}
         savingUsd={selected === null ? 0 : routeSaving(california, input, selected)}
         priceLabel={priceLabel}
         alreadyOwned={unlocked}
@@ -283,6 +289,7 @@ export default function App() {
         choiceFor={(areaId) => input.plan_overrides?.[areaId]}
         onChoose={setOverride}
         onOpenDetail={() => setScreen('detail')}
+        onShareWithGuardian={handleShareGuardian}
         onStartOver={startOver}
         onBack={() => setScreen('routes')}
       />
@@ -299,6 +306,7 @@ export default function App() {
         }
         onUnlock={() => { setPurchaseError(null); setPaywallOpen(true); }}
         onExportPacket={handleExport}
+        onShareWithGuardian={handleShareGuardian}
         onBack={() => setScreen('map')}
       />
     );

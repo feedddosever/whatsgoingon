@@ -50,6 +50,8 @@ export interface PlanMapScreenProps {
   /** null resets the requirement back to our recommendation. */
   onChoose: (areaId: string, choice: AreaChoice | null) => void;
   onOpenDetail: () => void;
+  /** Sends the plan to a parent or guardian, framed for them rather than an advisor. */
+  onShareWithGuardian: () => void;
   /** Clears the saved plan and returns to the first question. */
   onStartOver: () => void;
   onBack: () => void;
@@ -70,10 +72,19 @@ export interface RouteDetailScreenProps {
   onManageSubscription: (() => void) | null;
   onUnlock: () => void;
   onExportPacket: () => void;
+  /** Same evidence, framed for a parent or guardian rather than an advisor. */
+  onShareWithGuardian: () => void;
   onBack: () => void;
 }
 
 export interface PaywallScreenProps {
+  /**
+   * True when the student told us they are still in school, so they may be a
+   * minor. Not a gate — the store's age rating is a separate decision — but
+   * someone who may be 14 should not be asked for money without being told to
+   * involve a parent first.
+   */
+  schoolAge: boolean;
   /** Headline saving to anchor the price against. */
   savingUsd: number;
   /** The store's own localised price, once known. Null until the store answers. */

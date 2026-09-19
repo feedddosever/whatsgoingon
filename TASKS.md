@@ -12,6 +12,9 @@ The onboarding offers **9th grade** as an option, so the intended audience
 includes 13–14 year olds, and the paywall can charge them. This needs a
 deliberate decision before any store listing:
 
+- [x] ~~A purchase notice for school-age students.~~ Anyone who said they are in
+      school now sees, above the price, that they should ask a parent or guardian
+      and use their payment method. Wording lives in `src/disclaimer.ts`.
 - [ ] Answer the store's child-directed / age-rating questionnaire honestly.
       Galaxy Store, Play and App Store all ask, and the answer changes what is
       allowed.
@@ -23,22 +26,25 @@ deliberate decision before any store listing:
 This is not a formality. Everything else on this list is about correctness;
 this one is about who is on the other side of the screen.
 
-### 1.2 No disclaimer anywhere in the app
-The app tells students how to spend money on credit that may not transfer. The
-codebase is built around that risk — provenance on every claim, an advisor
-packet, confidence badges — but **there is no stated disclaimer**.
+### 1.2 ~~No disclaimer anywhere in the app~~ DONE
 
-- [ ] Add a short, permanent line: this is planning help, not academic advice,
-      and every item needs confirming with the campus before paying.
-- [ ] It belongs on the plan map and in the advisor packet, not buried in a
-      settings screen nobody opens.
+One wording in `src/disclaimer.ts`, used by every surface that states it, so it
+cannot drift between screens:
 
-### 1.3 Privacy policy and terms do not exist
-- [ ] Write a privacy policy. It is genuinely short: plans are stored locally on
-      the device, nothing is uploaded, there are no accounts. Say exactly that.
-- [ ] Note what RevenueCat receives when a purchase happens.
-- [ ] Both need public URLs before a store listing will accept them.
-- [ ] Support contact address for the listing.
+- [x] Permanent on the plan map — not a modal that gets dismissed once.
+- [x] In the footer of both printed packets.
+- [x] A separate notice on the paywall for school-age students.
+
+### 1.3 Privacy policy and terms — drafted, not yet published
+- [x] `PRIVACY.md` — plans stay on the device, no accounts, no analytics, no
+      advertising; what RevenueCat receives; the web-only warning that clearing
+      site data destroys the only record of a purchase.
+- [x] `TERMS.md` — not academic or financial advice, not affiliated with any
+      institution, confirm in writing before paying, refunds handled by whoever
+      took the payment.
+- [ ] **Both still need a real support email address** — each has a TODO where it
+      belongs. Every store requires one.
+- [ ] Host both at public URLs and link them from the store listing.
 
 ---
 
@@ -63,10 +69,15 @@ student sees:
 
 ## 3. Coverage gaps found by audit
 
-- [ ] **Area 4 (Social & Behavioural Sciences) has no community-college option** —
-      only AP. A fee-waiver student gets every other requirement free and is
-      still charged $99 here, purely because we hold no CCC row for it. Adding
-      one is the single cheapest improvement to the headline number.
+- [x] ~~No way to send the plan to a parent or guardian.~~ The advisor packet now
+      takes an audience: a guardian gets the cost comparison up front and a
+      plain-language ask, with **the same evidence and the same unconfirmed rows
+      still marked**. Softening those for a parent would be the dishonesty the
+      document exists to prevent.
+
+- [x] ~~**Area 4 has no community-college option.**~~ Added. A fee-waiver student
+      now reaches **$0** for a complete plan at a UC, where they were previously
+      charged $99 for one AP exam purely because we held no CCC row for area 4.
 - [ ] **Area 1B and Area 6 have no AP route at all** (correctly — the standard
       says so), so the lowest-risk route stops at 8 of 10 until the CCC rows
       behind them are confirmed. Same fix as 2.1.

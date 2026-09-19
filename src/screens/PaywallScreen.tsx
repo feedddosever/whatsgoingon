@@ -27,6 +27,7 @@ import {
 } from 'react-native';
 import type { PaywallScreenProps } from '../ui/contracts.ts';
 import { money, theme } from '../ui/theme.ts';
+import { MINOR_PURCHASE_NOTICE } from '../disclaimer.ts';
 
 interface Benefit {
   title: string;
@@ -75,8 +76,10 @@ function BenefitRow(props: { index: number; benefit: Benefit }) {
 }
 
 export function PaywallScreen(props: PaywallScreenProps) {
-  const { savingUsd, priceLabel, alreadyOwned, busy, error, onPurchase, onRestore, onDismiss } =
-    props;
+  const {
+    schoolAge, savingUsd, priceLabel, alreadyOwned, busy, error,
+    onPurchase, onRestore, onDismiss,
+  } = props;
   const { width } = useWindowDimensions();
   const wide = width >= 700;
 
@@ -117,6 +120,14 @@ export function PaywallScreen(props: PaywallScreenProps) {
 
   return (
     <View style={styles.root}>
+      {/* This app is built for people who may be 14. Asking one of them for
+          money without saying this first is not something to leave to a store's
+          age rating. It sits above everything, including the price. */}
+      {schoolAge && !alreadyOwned && (
+        <View style={styles.minorNotice}>
+          <Text style={styles.minorNoticeText}>{MINOR_PURCHASE_NOTICE}</Text>
+        </View>
+      )}
       <View style={styles.header}>
         {/* Dismiss stays live even mid-purchase: a request that hangs must never
             leave a student trapped on the screen that wants their money. */}
@@ -284,6 +295,13 @@ export function PaywallScreen(props: PaywallScreenProps) {
 const COLUMN = 640;
 
 const styles = StyleSheet.create({
+  minorNotice: {
+    marginHorizontal: theme.space.md, marginTop: theme.space.md,
+    padding: theme.space.md, borderRadius: theme.radius.md,
+    borderWidth: 1, borderColor: theme.color.warn,
+    backgroundColor: theme.color.surface,
+  },
+  minorNoticeText: { ...theme.font.body, color: theme.color.warn, lineHeight: 20 },
   root: { flex: 1, backgroundColor: theme.color.bg },
 
   header: {

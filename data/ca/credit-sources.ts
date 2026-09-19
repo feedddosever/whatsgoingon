@@ -274,6 +274,22 @@ export const creditSources: CreditSource[] = [
     },
   },
   {
+    id: 'ccc-soc-1',
+    kind: 'ccc_course',
+    name: 'Community college Sociology 1 (3 units)',
+    cost_usd: 138,
+    provenance: {
+      source_url:
+        'https://lao.ca.gov/Publications/Report/2026-27-budget-california-community-colleges',
+      as_of: '2026-09-18',
+      confidence: 'published',
+      note:
+        'Cal-GETC area 4. Without a community-college route to area 4, a student with a ' +
+        'fee waiver cleared every other requirement free and was still charged for an AP ' +
+        'exam here. CCPG waives the $46/unit enrolment fee.',
+    },
+  },
+  {
     id: 'ccc-ethnic-studies-1',
     kind: 'ccc_course',
     name: 'Community college Ethnic Studies 1 (3 units)',

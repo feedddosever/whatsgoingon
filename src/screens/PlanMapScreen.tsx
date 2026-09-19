@@ -6,6 +6,7 @@ import type { AreaChoice, GeArea, PlanItem, Provenance, StudentProfile } from '.
 import type { PlanMapScreenProps } from '../ui/contracts.ts';
 import { confidenceColor, confidenceLabel, money, theme } from '../ui/theme.ts';
 import { checkedOn, isBacked, noteText } from '../ui/provenance.ts';
+import { DISCLAIMER_SHORT } from '../disclaimer.ts';
 
 /**
  * The plan as something you can explore and change, rather than a verdict.
@@ -105,7 +106,8 @@ function Option({
 export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
   const {
     institution, route, areas, profile,
-    optionsFor, pathways, choiceFor, onChoose, onOpenDetail, onStartOver, onBack,
+    optionsFor, pathways, choiceFor, onChoose,
+    onOpenDetail, onShareWithGuardian, onStartOver, onBack,
   } = props;
 
   const [open, setOpen] = useState<string | null>(null);
@@ -177,6 +179,13 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
             Tap any branch to see what else this campus accepts, or to say you are
             handling it yourself. This is your plan — change it.
           </Text>
+
+          {/* Permanent, not a one-time modal. The app tells students how to spend
+              money on credit that might not transfer; the limit of what it knows
+              belongs on the same screen as the advice, every time. */}
+          <View style={styles.disclaimer}>
+            <Text style={styles.disclaimerText}>{DISCLAIMER_SHORT}</Text>
+          </View>
 
           {showHsPaths && (
             <View style={styles.pathsCard}>
@@ -347,6 +356,14 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
         <Pressable onPress={onOpenDetail} accessibilityRole="button" style={styles.cta}>
           <Text style={styles.ctaText}>See the full breakdown</Text>
         </Pressable>
+        <Pressable
+          onPress={onShareWithGuardian}
+          accessibilityRole="button"
+          accessibilityLabel="Send this plan to a parent or guardian"
+          style={styles.secondaryCta}
+        >
+          <Text style={styles.secondaryCtaText}>Send to a parent or guardian</Text>
+        </Pressable>
         <Text style={styles.savedNote}>
           Saved on this device. Come back and change it any time.
         </Text>
@@ -461,6 +478,18 @@ const styles = StyleSheet.create({
     paddingVertical: theme.space.md, alignItems: 'center',
   },
   ctaText: { ...theme.font.heading, color: theme.color.bg },
+  disclaimer: {
+    marginTop: theme.space.md, padding: theme.space.sm,
+    borderRadius: theme.radius.sm, borderLeftWidth: 3,
+    borderLeftColor: theme.color.warn, backgroundColor: theme.color.surface,
+  },
+  disclaimerText: { ...theme.font.small, color: theme.color.text, lineHeight: 18 },
+  secondaryCta: {
+    marginTop: theme.space.sm, paddingVertical: theme.space.sm,
+    borderRadius: theme.radius.md, borderWidth: 1,
+    borderColor: theme.color.border, alignItems: 'center',
+  },
+  secondaryCtaText: { ...theme.font.body, color: theme.color.text, fontWeight: '600' },
   savedNote: {
     ...theme.font.small, color: theme.color.textMuted,
     textAlign: 'center', marginTop: theme.space.sm,

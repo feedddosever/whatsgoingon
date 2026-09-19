@@ -287,7 +287,7 @@ function ItemCard(
 export function RouteDetailScreen(
   {
     institution, route, areas, unlocked,
-    onUnlock, onExportPacket, onManageSubscription, onBack,
+    onUnlock, onExportPacket, onShareWithGuardian, onManageSubscription, onBack,
   }: RouteDetailScreenProps,
 ): ReactElement {
   // The only place a Cal-GETC code has a human name. A handful of rows, looked
@@ -502,14 +502,27 @@ export function RouteDetailScreen(
 
       <View style={styles.footer}>
         {unlocked ? (
-          <Pressable
-            onPress={onExportPacket}
-            accessibilityRole="button"
-            accessibilityLabel="Export advisor packet"
-            style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
-          >
-            <Text style={styles.ctaText}>Export advisor packet</Text>
-          </Pressable>
+          <>
+            <Pressable
+              onPress={onExportPacket}
+              accessibilityRole="button"
+              accessibilityLabel="Export advisor packet"
+              style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
+            >
+              <Text style={styles.ctaText}>Export advisor packet</Text>
+            </Pressable>
+            {/* Same evidence, addressed to whoever is actually going to help
+                pay for it. A student asking a parent to approve a cost needs a
+                page written to a parent, not a form for a registrar. */}
+            <Pressable
+              onPress={onShareWithGuardian}
+              accessibilityRole="button"
+              accessibilityLabel="Send this plan to a parent or guardian"
+              style={styles.manageRow}
+            >
+              <Text style={styles.manageText}>Send to a parent or guardian</Text>
+            </Pressable>
+          </>
         ) : (
           <Pressable
             onPress={onUnlock}

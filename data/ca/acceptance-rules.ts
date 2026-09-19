@@ -93,6 +93,7 @@ const CCC_RULES: ReadonlyArray<readonly [string, string[], string]> = [
   ['ccc-math-1', ['2'], 'Math articulation frequently depends on the major. Confirm on ASSIST.'],
   ['ccc-art-1', ['3A'], 'Confirm on ASSIST.'],
   ['ccc-hum-1', ['3B'], 'Confirm on ASSIST.'],
+  ['ccc-soc-1', ['4'], 'Cal-GETC area 4. Confirm the specific course on ASSIST.'],
   ['ccc-physics-1', ['5A', '5C'], 'A lecture-plus-lab section clears the laboratory too. Confirm on ASSIST.'],
   ['ccc-biology-1', ['5B', '5C'], 'A lecture-plus-lab section clears the laboratory too. Confirm on ASSIST.'],
   ['ccc-ethnic-studies-1', ['6'], 'Cal-GETC area 6. No exam satisfies it. Confirm the course on ASSIST.'],
