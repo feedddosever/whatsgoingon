@@ -137,6 +137,39 @@ scrutinised number in the demo.
 
 **9. CLEP sitting fees.** Test centres charge on top of the exam fee.
 
+### P2b — out-of-state coursework is not representable at all
+
+Every credit source in the dataset is Californian: CCC courses, AP, CLEP. A
+student who completed coursework at a regionally accredited institution in
+another state — and then moved to California — has **no way to enter it**, so the
+plan tells them to retake requirements they may already have cleared.
+
+This is a real gap, not a rounding error. ICAS's approved-accreditor list for
+Cal-GETC certification includes **NECHE** (New England), **HLC**, **MSCHE**,
+**NWCCU** and **SACSCOC** alongside California's own **ACCJC** and **WSCUC**, so
+coursework from those institutions *is* eligible for consideration toward
+Cal-GETC.
+
+**Why it is not seeded:** acceptance is decided course-by-course by the receiving
+campus's articulation officer. There is no statewide table for it the way ASSIST
+serves CCC-to-UC/CSU. Inventing rows here would be the same failure that had the
+app sending students to sit a laboratory they had already satisfied.
+
+**What would close it honestly:** a credit source kind for "coursework from
+another accredited institution" that clears nothing by itself, carries
+`needs_check`, and routes the student to the advisor packet with the course named
+— useful precisely because it is the case an advisor must rule on.
+
+### Not a factor: accreditor general-education rules
+
+Accreditor standards govern what an institution must require of *its own*
+graduates; they do not set the transfer pattern. NECHE's 2026 Standards
+(effective 1 July 2026) raise general education to a 40-credit minimum for a
+bachelor's and 20 for an associate's — but NECHE accredits New England
+institutions, California's are ACCJC/WSCUC, and Cal-GETC is set by ICAS under
+AB 928. Nothing in `data/ca/` derives from an accreditor standard, and a change
+to one is not a reason to touch these rows.
+
 ### P3 — known gaps, deliberately not seeded
 
 - **ADT / AA-T / AS-T** (SB 1440): guarantees CSU junior standing. This is a
