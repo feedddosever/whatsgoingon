@@ -1,0 +1,28 @@
+import { chromium } from 'playwright-core';
+const CHROME = process.env.E2E_CHROME ?? '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const OUT = '/home/user/whatsgoingon/docs/store/screenshots';
+const b = await chromium.launch({ executablePath: CHROME });
+const ctx = await b.newContext({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 2.62 });
+const page = await ctx.newPage();
+const errs = [];
+page.on('pageerror', e => errs.push(String(e.message)));
+await page.goto('http://127.0.0.1:8080', { waitUntil: 'networkidle' });
+await page.waitForTimeout(2600);
+const tap = async (t) => { await page.getByText(t, { exact: true }).first().click(); await page.waitForTimeout(400); };
+const btn = async (re) => { await page.locator('[role="button"]').filter({ hasText: re }).first().click(); await page.waitForTimeout(500); };
+const shot = async (n) => { await page.screenshot({ path: `${OUT}/${n}.png` }); console.log('shot', n); };
+
+await shot('01-questions');
+await btn(/^Continue$/);
+await tap('Texas');
+await shot('02-state-guarantee');
+await tap('UT Austin');
+await btn(/^Price my route to/);
+await shot('03-routes');
+await page.getByText('See the plan, row by row →').first().click();
+await page.waitForTimeout(600);
+await shot('04-plan-map');
+await tap('See the full breakdown');
+await shot('05-breakdown');
+await b.close();
+console.log('ERRORS:', errs.join('; ') || 'none');
