@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit",
     "demo": "node --experimental-strip-types src/demo.ts",
     "build:web": "expo export --platform web --output-dir dist --clear && node scripts/build-landing.mjs",
-    "serve:web": "python3 -m http.server 8080 --directory dist"
+    "serve:web": "python3 -m http.server 8080 --directory dist",
+    "gaps": "node --experimental-strip-types scripts/gaps.ts",
+    "gaps:write": "node --experimental-strip-types scripts/gaps.ts --markdown > data/GAPS.md"
   },
   "dependencies": {
     "@expo/metro-runtime": "^57.0.16",

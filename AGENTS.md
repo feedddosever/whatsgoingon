@@ -117,6 +117,12 @@ through several rebuilds until the cache was cleared.
     npm test        # engine + validation tests
     npm run typecheck
     npm run demo    # prints the CLEP-at-UC scenario
+    npm run gaps    # what the dataset does not know, per state
+
+`data/GAPS.md` is GENERATED (`npm run gaps:write`). Do not edit it by hand and
+do not answer "what is missing?" from memory — re-run it. A gap list that can
+drift from the data is the same failure this app exists to prevent. Re-run it
+after any change under `data/`.
 
 For anything touching a screen, build and drive it — typecheck passing is not
 the same as working, and most of the real bugs in this project were found this
