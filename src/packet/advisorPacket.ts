@@ -21,6 +21,7 @@ import type {
 import { checkedOn, isBacked, linkable, noteText } from '../ui/provenance.ts';
 import { confidenceLabel, money } from '../ui/theme.ts';
 import { DISCLAIMER_LONG } from '../disclaimer.ts';
+import { APP_URL } from '../contact.ts';
 
 export interface AdvisorPacketInput {
   institution: Institution;
@@ -801,6 +802,7 @@ const STYLES = `
 
     footer { margin-top: 16px; padding-top: 9px; border-top: 1px solid #000; font-size: 8.5px; color: #222; }
     footer b { font-size: 9px; }
+    footer .from { display: block; margin-top: 6px; color: #444; }
 `;
 
 /**
@@ -875,6 +877,12 @@ export function buildAdvisorPacketHtml(input: AdvisorPacketInput): string {
     ${esc(DISCLAIMER_LONG)} This document reports what we found and how far we trust it; it is
     a request for confirmation, not an authority, and nothing in it should be relied on until
     ${esc(institution.name)} confirms it.
+    <!-- One line, deliberately plain and last. An advisor or a parent reading
+         this has to be able to find where it came from — a sourced document
+         with no provenance of its own would be a poor joke — but this page's
+         credibility rests on reading as evidence rather than as marketing, so
+         it gets a sentence at the bottom and nothing more. -->
+    <span class="from">Prepared with Degree Route, ${esc(APP_URL)} — free for students.</span>
   </footer>
 </body>
 </html>`;

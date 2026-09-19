@@ -18,6 +18,16 @@ export const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? '';
 export const hasContact = (): boolean => SUPPORT_EMAIL.trim() !== '';
 
 /**
+ * Where the app lives, for the one line of attribution on a printed packet.
+ *
+ * Overridable because the current host is a Vercel subdomain rather than a
+ * domain we own, and a URL printed onto a document a counsellor keeps in a
+ * folder outlives whatever we host it on today.
+ */
+export const APP_URL =
+  process.env.EXPO_PUBLIC_APP_URL ?? 'https://whatsgoingon-hazel.vercel.app';
+
+/**
  * "Tell me when my state is ready."
  *
  * The 48 states we have not mapped are the app's largest gap and its most
