@@ -85,6 +85,33 @@ The remaining 26 carry an honest "we have not confirmed one", which is a fact
 about us and not about them — ECS counts at least 31 states with a transferable
 core, so most of those 26 have one we simply have not checked.
 
+### IB and DSST (added 2026-09-19)
+
+Two families the app previously could not represent at all, while quoting a UC
+policy row that named one of them:
+
+- **IB** — Higher Level only, score 5 or better. Cal-GETC certification is
+  written for HL at 5, and an acceptable IB score counts as **3 semester units**
+  toward certification. UC *separately* awards 8 quarter units per HL exam
+  toward the degree, and 6 more for the diploma at 30+. Those are degree units,
+  not general-education clearance; conflating them is how a student comes to
+  believe one exam cleared two requirements. Standard Level is deliberately
+  absent — an SL row would promise something nobody said.
+- **DSST** — $100 plus a test-centre fee of roughly $25–$50, and **free for
+  eligible serving members** at a DANTES-funded site, first attempt only. Worth
+  degree credit at a CSU, worth nothing at all at a UC.
+
+Per-subject area mappings are `needs_check` everywhere. The IB sciences are
+mapped to their science area **only, with no laboratory** — AP Biology carries
+its own 5C lab and IB may well too, but "may well" is how this dataset gets a
+student wrong, and the cost of being wrong is a lab they still have to sit.
+
+`Institution.accepts_clep` and `accepts_third_party_transcript` are gone,
+replaced by `refuses: CreditKind[]`. DSST would have made a third boolean
+meaning the same thing. UC refuses `['clep', 'dsst', 'alt_provider']` and
+accepts AP and IB — one fact about one campus, in one field. A test asserts no
+campus holds an acceptance rule for a family it refuses.
+
 ### Third-party credit providers (added 2026-09-19)
 
 Sophia, Study.com, StraighterLine, Saylor, TEEX and Modern States are in

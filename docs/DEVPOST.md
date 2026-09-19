@@ -95,7 +95,9 @@ are priced back in so a plan that clears less can never *look* cheaper than it i
 
 The dataset is typed TypeScript modules rather than JSON, so a malformed row is a
 compile error. It currently holds **79 public campuses across three states**, 25 requirement
-areas, 77 credit sources and **3,150 acceptance rules**.
+areas, 97 credit sources across six credit families (AP, IB, CLEP, DSST,
+community-college courses and third-party providers) and **4,666 acceptance
+rules**.
 
 Coverage is deliberately two-tiered and the app never blurs them. Campus-level
 planning — the part that produces a number — is California, Texas and Florida.

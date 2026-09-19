@@ -99,6 +99,67 @@ const CCC_RULES: ReadonlyArray<readonly [string, string[], string]> = [
   ['ccc-ethnic-studies-1', ['6'], 'Cal-GETC area 6. No exam satisfies it. Confirm the course on ASSIST.'],
 ];
 
+/**
+ * IB against Cal-GETC.
+ *
+ * The MECHANISM is published and worth stating exactly: a Higher Level score of
+ * 5 or better is what Cal-GETC certification requires, and an acceptable IB
+ * score is worth 3 semester units for certification. UC separately awards 8
+ * quarter units per HL exam toward the degree, which is a different number
+ * answering a different question, and conflating the two is how a student ends
+ * up believing one exam cleared two requirements.
+ *
+ * The per-subject MAPPING below has NOT been read off the Cal-GETC external-exam
+ * table — that document is not reachable from this build environment — so every
+ * row is `needs_check` and the conservative route will not touch them.
+ *
+ * Deliberately under-claimed: the IB sciences are mapped to their science area
+ * ONLY, with no laboratory. AP Biology carries its own 5C lab and IB may well
+ * too, but "may well" is how this dataset gets a student wrong, and the cost of
+ * being wrong here is a lab they still have to take.
+ */
+const CAL_GETC_IB: Provenance = {
+  source_url: 'https://admission.universityofcalifornia.edu/admission-requirements/ap-exam-credits/ib-credits.html',
+  as_of: '2026-09-19',
+  confidence: 'needs_check',
+  note:
+    'Cal-GETC certification requires a Higher Level score of 5 or better, and an acceptable ' +
+    'IB score counts as 3 semester units toward certification. Which AREA a given subject ' +
+    'clears has not been checked against the Cal-GETC external-exam table \u2014 confirm your ' +
+    'subject before you rely on it. Separately, UC awards 8 quarter units per HL exam ' +
+    'toward the degree, and the IB diploma at 30+ adds 6 more: those are degree units, not ' +
+    'general-education clearance, and they are not the same thing.',
+};
+
+/** DSST is accepted toward a CSU degree and satisfies no Cal-GETC area. */
+const CSU_DSST: Provenance = {
+  source_url: 'https://www.calstate.edu/apply/transfer/Pages/credit-by-exam.aspx',
+  as_of: '2026-09-19',
+  confidence: 'needs_check',
+  note:
+    'CSU accepts credit by examination from testing centres including CLEP and DSST. Like ' +
+    'CLEP, DSST is not part of the Cal-GETC external-exam standard, so it is modelled here ' +
+    'as clearing nothing \u2014 confirm with the campus. The University of California awards no ' +
+    'DSST credit whatsoever, which is why no UC rows exist for it at all.',
+};
+
+/** [source, areas cleared together, semester units]. */
+const IB_RULES: ReadonlyArray<readonly [string, string[], number]> = [
+  ['ib-english-a-hl', ['1A'], 3],
+  ['ib-english-a-hl', ['3B'], 3],
+  ['ib-mathematics-aa-hl', ['2'], 3],
+  ['ib-mathematics-ai-hl', ['2'], 3],
+  ['ib-visual-arts-hl', ['3A'], 3],
+  ['ib-spanish-b-hl', ['3B'], 3],
+  ['ib-history-hl', ['4'], 3],
+  ['ib-economics-hl', ['4'], 3],
+  ['ib-psychology-hl', ['4'], 3],
+  ['ib-geography-hl', ['4'], 3],
+  ['ib-chemistry-hl', ['5A'], 3],
+  ['ib-physics-hl', ['5A'], 3],
+  ['ib-biology-hl', ['5B'], 3],
+];
+
 const rules: AcceptanceRule[] = [];
 
 for (const inst of ALL_IDS) {
@@ -107,6 +168,13 @@ for (const inst of ALL_IDS) {
       institution_id: inst, credit_source_id: src,
       min_score: 3, units_granted: units, satisfies_areas: [...areas],
       provenance: CAL_GETC_AP,
+    });
+  }
+  for (const [src, areas, units] of IB_RULES) {
+    rules.push({
+      institution_id: inst, credit_source_id: src,
+      min_score: 5, units_granted: units, satisfies_areas: [...areas],
+      provenance: CAL_GETC_IB,
     });
   }
   for (const [src, areas, note] of CCC_RULES) {
@@ -128,6 +196,26 @@ for (const inst of CSU_IDS) {
       institution_id: inst, credit_source_id: src,
       min_score: 50, units_granted: 3, satisfies_areas: [],
       provenance: CLEP_POLICY,
+    });
+  }
+}
+
+/**
+ * DSST at a CSU: credit toward the degree, and no Cal-GETC area cleared. The
+ * same quiet failure as CLEP, and it needs saying for the same reason — the
+ * credit posts, the transcript looks right, and nothing has been satisfied.
+ */
+for (const inst of CSU_IDS) {
+  for (const src of [
+    'dsst-principles-public-speaking', 'dsst-college-algebra',
+    'dsst-introduction-to-world-religions', 'dsst-general-anthropology',
+    'dsst-substance-abuse', 'dsst-environment-humanity',
+    'dsst-history-of-the-vietnam-war', 'dsst-principles-of-supervision',
+  ]) {
+    rules.push({
+      institution_id: inst, credit_source_id: src,
+      min_score: 400, units_granted: 3, satisfies_areas: [],
+      provenance: CSU_DSST,
     });
   }
 }

@@ -200,7 +200,7 @@ const openSource = (url: string): void => {
  * provenance, so they are printed separately and never under that badge.
  */
 const examPolicyLine = (inst: Institution, systemLabel: string): string =>
-  `${systemLabel} · ${inst.accepts_clep ? 'accepts CLEP' : 'does not accept CLEP'}`;
+  `${systemLabel} · ${inst.refuses.includes('clep') ? 'does not accept CLEP' : 'accepts CLEP'}`;
 
 const capLine = (inst: Institution): string =>
   inst.max_transfer_units === null

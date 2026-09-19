@@ -166,12 +166,13 @@ const SCHEMA_GAPS: ReadonlyArray<readonly [string, string]> = [
     + 'express that, so the cheapest pathway in the app is priced at a single guess.',
   ],
   [
-    'IB, A-Level, DSST, AICE, UExcel',
-    'Zero sources for any of them. UC\u2019s own policy, quoted in our data, says it '
-    + 'accepts AP, **IB and A-Level** \u2014 and an IB student cannot enter a single score. '
-    + 'Florida\u2019s statewide table covers AP, AICE, IB, DSST, DLPT, UExcel and CLEP; we '
-    + 'model two of the seven. DSST matters most to military-connected students, who '
-    + 'are among the people this app should serve best.',
+    'A-Level, AICE, DLPT, UExcel',
+    'IB and DSST are now modelled. Still missing: A-Level, which UC explicitly accepts '
+    + 'alongside AP and IB, and AICE, DLPT and UExcel, which Florida\u2019s binding statewide '
+    + 'table covers. We model four of Florida\u2019s seven families. Also missing on the IB '
+    + 'side: **Standard Level** exams, left out on purpose because UC credit and the '
+    + 'Cal-GETC standard are both written for Higher Level, and an SL row would promise '
+    + 'something nobody said.',
   ],
   [
     'Major-specific pathways',

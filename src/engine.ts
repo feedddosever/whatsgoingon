@@ -104,7 +104,7 @@ function toPlanItem(
 /**
  * Credits the target institution will actually honour.
  *
- * The `accepts_clep` gate is the whole point of the product: a student can hold a
+ * The refusal gate is the whole point of the product: a student can hold a
  * pile of CLEP credit that a UC campus will not look at, and no amount of
  * course-level articulation data will tell them that.
  */
@@ -124,16 +124,15 @@ function candidatesFor(ds: Dataset, inst: Institution, profile: StudentProfile):
 /**
  * Whether this campus will even look at credit of this kind.
  *
- * Two published refusals, and they are the most valuable rows in the dataset
- * because they are the ones a student discovers too late: UC awards nothing for
- * CLEP, and UC awards nothing for credit posted to a third-party transcript.
- * Both are policy we can point at, so both are enforced here rather than left
- * to an acceptance rule that happens not to exist.
+ * These are the most valuable rows in the dataset, because they are the ones a
+ * student discovers too late: UC awards nothing for CLEP, nothing for DSST, and
+ * nothing for credit posted to a third-party transcript. All of it is policy we
+ * can point at, so it is enforced here rather than left to an acceptance rule
+ * that happens not to exist — an absent rule means "we have no record", which
+ * is a different sentence and a much weaker one.
  */
 function willLookAt(inst: Institution, src: CreditSource): boolean {
-  if (src.kind === 'clep' && !inst.accepts_clep) return false;
-  if (src.kind === 'alt_provider' && !inst.accepts_third_party_transcript) return false;
-  return true;
+  return !inst.refuses.includes(src.kind);
 }
 
 /**
@@ -539,7 +538,7 @@ export function pathwayCosts(ds: Dataset, input: StudentInput): PathwayCost[] {
 
   const required = unmetAreas(ds, inst, input.held_credit_ids);
   const candidates = candidatesFor(ds, inst, input.profile);
-  const kinds: CreditKind[] = ['ap', 'cc_course', 'clep', 'alt_provider'];
+  const kinds: CreditKind[] = ['ap', 'ib', 'cc_course', 'clep', 'dsst', 'alt_provider'];
 
   return kinds.map(kind => {
     let covered = 0;

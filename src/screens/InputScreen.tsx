@@ -49,7 +49,9 @@ import { hasContact, waitlistMailto } from '../contact.ts';
 /** Section order is pedagogical: exams first, because they are the cheap surprise. */
 const CREDIT_GROUPS: ReadonlyArray<{ kind: CreditKind; title: string; blurb: string }> = [
   { kind: 'clep', title: 'CLEP exams', blurb: 'Credit by exam — not every campus takes it' },
+  { kind: 'dsst', title: 'DSST exams', blurb: 'Free for serving members at a DANTES site — and refused outright by some campuses' },
   { kind: 'ap', title: 'AP exams', blurb: 'Scores you already hold from high school' },
+  { kind: 'ib', title: 'IB exams', blurb: 'Higher Level only, score 5 or better — Standard Level is not modelled' },
   { kind: 'cc_course', title: 'Community college courses', blurb: 'Courses you have already passed' },
   {
     kind: 'alt_provider',
@@ -178,8 +180,8 @@ function InstitutionCard(
         </View>
       </View>
       <View style={styles.rowBottom}>
-        <Text style={[styles.instFact, !inst.accepts_clep && styles.instFactCold]}>
-          {inst.accepts_clep ? 'Accepts CLEP' : 'No CLEP credit'}
+        <Text style={[styles.instFact, inst.refuses.includes('clep') && styles.instFactCold]}>
+          {inst.refuses.includes('clep') ? 'No CLEP credit' : 'Accepts CLEP'}
         </Text>
         {/* The fact beside it is this campus's exam policy, so the badge is the
             exam-policy row — not the campus's other, unconfirmed figures. */}
@@ -451,7 +453,7 @@ function ThirdPartyNotice({ inst }: { inst: Institution | null }): ReactElement 
         different questions with different answers.
       </Text>
       <Text style={styles.thirdPartyText}>
-        {inst !== null && !inst.accepts_third_party_transcript
+        {inst !== null && inst.refuses.includes('alt_provider')
           ? `${inst.name} answers no, in writing. Nothing in this section will count there.`
           : inst !== null
             ? `We have no published policy on file for ${inst.name} either way. Ask the ` +
@@ -535,7 +537,7 @@ export function InputScreen(
   // The whole product in one variable: credit the student already paid for that
   // this campus will not look at.
   const stranded: CreditSource[] =
-    target !== undefined && !target.accepts_clep
+    target !== undefined && target.refuses.includes('clep')
       ? creditSources.filter(s => s.kind === 'clep' && value.held_credit_ids.includes(s.id))
       : [];
   const strandedUsd = stranded.reduce((n, s) => n + s.cost_usd, 0);
@@ -543,10 +545,10 @@ export function InputScreen(
   // The other half of the same policy, and the half nothing on screen betrays:
   // this campus DOES award credit for the CLEP the student holds, and that credit
   // still clears no general-education requirement — the engine's `credit_not_toward_ge`.
-  // Exactly one of these two lists can be non-empty: stranded needs `accepts_clep`
-  // false, this needs it true.
+  // Exactly one of these two lists can be non-empty: stranded needs a published
+  // CLEP refusal, this needs the absence of one.
   const notTowardGe: CreditSource[] =
-    target !== undefined && target.accepts_clep
+    target !== undefined && !target.refuses.includes('clep')
       ? creditSources.filter(s => s.kind === 'clep' && value.held_credit_ids.includes(s.id))
       : [];
 
@@ -789,7 +791,7 @@ export function InputScreen(
                   src={src}
                   held={value.held_credit_ids.includes(src.id)}
                   strandedAt={
-                    src.kind === 'clep' && target !== undefined && !target.accepts_clep
+                    target !== undefined && target.refuses.includes(src.kind)
                       ? target.name
                       : null
                   }

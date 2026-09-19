@@ -80,6 +80,38 @@ const CLEP_RULES: ReadonlyArray<readonly [string, string[]]> = [
   ['clep-biology', ['fl-nat']],
 ];
 
+/**
+ * IB and DSST in Florida, where both are covered by the SAME binding rule as AP
+ * and CLEP.
+ *
+ * Section 1007.27(2) names AP, AICE, IB, DSST, DLPT, UExcel and CLEP together,
+ * and 6A-10.024 sets one table for all of them that every state university and
+ * college must follow. So a DSST — worth nothing at all at a UC — is worth
+ * whatever that table says here, and the university does not get a vote.
+ *
+ * We model two of those seven families. AICE, DLPT and UExcel are real gaps.
+ */
+const IB_DSST_RULES: ReadonlyArray<readonly [string, string[], number]> = [
+  ['ib-english-a-hl', ['fl-comm'], 5],
+  ['ib-mathematics-aa-hl', ['fl-math'], 5],
+  ['ib-mathematics-ai-hl', ['fl-math'], 5],
+  ['ib-history-hl', ['fl-social'], 5],
+  ['ib-psychology-hl', ['fl-social'], 5],
+  ['ib-economics-hl', ['fl-social'], 5],
+  ['ib-geography-hl', ['fl-social'], 5],
+  ['ib-visual-arts-hl', ['fl-hum'], 5],
+  ['ib-spanish-b-hl', ['fl-hum'], 5],
+  ['ib-biology-hl', ['fl-nat'], 5],
+  ['ib-chemistry-hl', ['fl-nat'], 5],
+  ['ib-physics-hl', ['fl-nat'], 5],
+  ['dsst-principles-public-speaking', ['fl-comm'], 400],
+  ['dsst-college-algebra', ['fl-math'], 400],
+  ['dsst-general-anthropology', ['fl-social'], 400],
+  ['dsst-substance-abuse', ['fl-social'], 400],
+  ['dsst-introduction-to-world-religions', ['fl-hum'], 400],
+  ['dsst-environment-humanity', ['fl-nat'], 400],
+];
+
 const COURSE_RULES: ReadonlyArray<readonly [string, string[]]> = [
   ['fl-enc-1101', ['fl-comm']],
   ['fl-enc-1102', ['fl-comm']],
@@ -109,6 +141,12 @@ for (const inst of ALL) {
   for (const [src, areas] of CLEP_RULES) {
     rules.push({
       institution_id: inst, credit_source_id: src, min_score: 50,
+      units_granted: 3, satisfies_areas: [...areas], provenance: FL_EXAM_MAPPING,
+    });
+  }
+  for (const [src, areas, score] of IB_DSST_RULES) {
+    rules.push({
+      institution_id: inst, credit_source_id: src, min_score: score,
       units_granted: 3, satisfies_areas: [...areas], provenance: FL_EXAM_MAPPING,
     });
   }

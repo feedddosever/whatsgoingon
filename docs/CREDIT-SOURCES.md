@@ -40,6 +40,20 @@ Prices are mostly monthly subscriptions, so real cost depends on how fast the
 student works — something this app cannot know. Each row prices **one month**
 and says so.
 
+## DSST, and who it is actually for
+
+DSST costs $100 to the test-maker plus a test-centre administration fee commonly
+in the $25–$50 range. For **eligible active-duty service members at a
+DANTES-funded site both are waived** — the exam is genuinely free, for the first
+attempt at each test.
+
+That makes DSST the cheapest credit available to military-connected students,
+who are among the people this app should serve best. It also makes it the
+family with the widest spread in value: a Cal State will award it toward a
+degree, and the University of California awards nothing for it at all. Florida
+is the opposite again — DSST is named in the same binding statewide table as AP
+and CLEP, and no Florida public university gets a vote.
+
 ## Regional vs national accreditation: say this carefully
 
 Students are still told to sort schools into "regionally accredited" (good) and

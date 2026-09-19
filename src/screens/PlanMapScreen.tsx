@@ -59,6 +59,16 @@ const PATH_COPY: Record<string, readonly [string, string]> = {
     'school; what the programme is called, and whether it is free, is set by ' +
     'your state.',
   ],
+  ib: [
+    'IB exams',
+    'Higher Level at a 5 or better. Accepted where CLEP and DSST are refused \u2014 ' +
+    'including at every UC, which takes AP, IB and A-Level and nothing else.',
+  ],
+  dsst: [
+    'DSST exams',
+    'Free for eligible serving members at a DANTES-funded test centre. Worth ' +
+    'real credit at a Cal State and nothing whatsoever at a UC.',
+  ],
   ap: [
     'AP exams',
     'One exam, one requirement, no term lost. Accepted in some form almost ' +

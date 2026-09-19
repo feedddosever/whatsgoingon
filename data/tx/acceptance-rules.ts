@@ -79,6 +79,48 @@ const CLEP_RULES: ReadonlyArray<readonly [string, string[]]> = [
   ['clep-biology', ['tx-life-phys']],
 ];
 
+/**
+ * IB and DSST in Texas.
+ *
+ * TEC 51.968's score floor is written for ADVANCED PLACEMENT and nothing else,
+ * so the one statutory protection a Texas student has does not reach these
+ * families at all. Every row is campus policy, and campus policy is exactly
+ * what this dataset does not hold.
+ */
+const IB_DSST_RULES: ReadonlyArray<readonly [string, string[], number, number]> = [
+  ['ib-english-a-hl', ['tx-comm'], 3, 5],
+  ['ib-mathematics-aa-hl', ['tx-math'], 3, 5],
+  ['ib-mathematics-ai-hl', ['tx-math'], 3, 5],
+  ['ib-biology-hl', ['tx-life-phys'], 3, 5],
+  ['ib-chemistry-hl', ['tx-life-phys'], 3, 5],
+  ['ib-physics-hl', ['tx-life-phys'], 3, 5],
+  ['ib-spanish-b-hl', ['tx-lang-phil'], 3, 5],
+  ['ib-visual-arts-hl', ['tx-arts'], 3, 5],
+  ['ib-history-hl', ['tx-us-history'], 3, 5],
+  ['ib-psychology-hl', ['tx-social'], 3, 5],
+  ['ib-economics-hl', ['tx-social'], 3, 5],
+  ['ib-geography-hl', ['tx-option'], 3, 5],
+  ['dsst-principles-public-speaking', ['tx-comm'], 3, 400],
+  ['dsst-college-algebra', ['tx-math'], 3, 400],
+  ['dsst-environment-humanity', ['tx-life-phys'], 3, 400],
+  ['dsst-introduction-to-world-religions', ['tx-lang-phil'], 3, 400],
+  ['dsst-general-anthropology', ['tx-social'], 3, 400],
+  ['dsst-substance-abuse', ['tx-option'], 3, 400],
+  ['dsst-history-of-the-vietnam-war', ['tx-us-history'], 3, 400],
+  ['dsst-principles-of-supervision', ['tx-option'], 3, 400],
+];
+
+const TX_IB_DSST: Provenance = {
+  source_url: 'http://board.thecb.state.tx.us/apps/tcc/',
+  as_of: '2026-09-19',
+  confidence: 'needs_check',
+  note:
+    'Texas Education Code 51.968 caps the required score for ADVANCED PLACEMENT only \u2014 ' +
+    'it says nothing about IB or DSST, so the statutory floor Texas students rely on for ' +
+    'AP does not apply here. These mappings are the common case, not your campus\u2019s ' +
+    'published policy. Confirm with the registrar before you skip a course.',
+};
+
 const COURSE_RULES: ReadonlyArray<readonly [string, string[], number]> = [
   ['tx-engl-1301', ['tx-comm'], 3],
   ['tx-engl-1302', ['tx-comm'], 3],
@@ -109,6 +151,12 @@ for (const inst of ALL) {
     rules.push({
       institution_id: inst, credit_source_id: src, min_score: 50,
       units_granted: 3, satisfies_areas: [...areas], provenance: TX_EXAM_MAPPING,
+    });
+  }
+  for (const [src, areas, units, score] of IB_DSST_RULES) {
+    rules.push({
+      institution_id: inst, credit_source_id: src, min_score: score,
+      units_granted: units, satisfies_areas: [...areas], provenance: TX_IB_DSST,
     });
   }
   for (const [src, areas, units] of COURSE_RULES) {

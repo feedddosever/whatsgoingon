@@ -491,7 +491,7 @@ export function RouteDetailScreen(
         <View style={styles.instRow}>
           <InstFact
             text={`${institution.name} · ${system.short_name} · ${
-              institution.accepts_clep ? 'accepts CLEP' : 'awards no CLEP credit'
+              institution.refuses.includes('clep') ? 'awards no CLEP credit' : 'accepts CLEP'
             }`}
             p={institution.exam_policy_provenance}
           />

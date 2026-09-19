@@ -117,22 +117,22 @@ export interface Institution {
   residency_min_units: number;
   /** Cap on units transferable in from community college, if any. */
   max_transfer_units: number | null;
-  /** Whether this campus accepts CLEP at all. */
-  accepts_clep: boolean;
   /**
-   * Whether this campus will look at credit posted to a third-party transcript
-   * — Sophia, Study.com, StraighterLine, Saylor and the rest.
+   * Credit families this campus has PUBLISHED that it will not award at all.
    *
-   * `false` means a published refusal we can point at, not an absence of
-   * evidence. UC states plainly that it awards no credit for these; that is a
-   * fact worth several hundred dollars to a student about to buy a Sophia
-   * subscription, and it is the same shape of fact as `accepts_clep`.
+   * A list rather than one boolean per family, because the families keep
+   * arriving: this was `accepts_clep`, then `accepts_clep` plus
+   * `accepts_third_party_transcript`, and DSST would have made three booleans
+   * that all mean the same thing. UC refuses CLEP, DSST and third-party
+   * transcripts while accepting AP and IB, which is one fact about one campus
+   * and reads as one field.
    *
-   * `true` means only "no published refusal on file" — never "they accept it".
-   * Whether a specific course counts is an acceptance rule, and where we hold
-   * none the app says it has no record rather than guessing.
+   * Membership means a refusal we can point at. **Absence means only "no
+   * published refusal on file" — never "they accept it."** Whether a specific
+   * exam counts is an acceptance rule, and where we hold none the app says it
+   * has no record rather than inventing a policy.
    */
-  accepts_third_party_transcript: boolean;
+  refuses: CreditKind[];
 
   /**
    * Provenance is per claim, not per row.
@@ -181,7 +181,15 @@ export interface GeArea {
   provenance: Provenance;
 }
 
-export type CreditKind = 'clep' | 'ap' | 'cc_course' | 'alt_provider';
+/**
+ * A family of credit, not a single exam.
+ *
+ * Families matter because campuses refuse by family, not by subject: UC awards
+ * nothing for CLEP or DSST while accepting AP and IB, and that one sentence
+ * decides whether a student's whole plan is worth anything.
+ */
+export type CreditKind =
+  | 'ap' | 'ib' | 'clep' | 'dsst' | 'cc_course' | 'alt_provider';
 
 /**
  * Who has reviewed a third-party course and said what it is worth.

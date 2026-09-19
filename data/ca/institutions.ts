@@ -107,8 +107,9 @@ const uc = (id: string, name: string, tag: boolean): Institution => ({
   cost_per_unit_usd: UC_PER_UNIT,
   residency_min_units: 24,
   max_transfer_units: 70,
-  accepts_clep: false,
-  accepts_third_party_transcript: false,
+  // Published, and the most expensive fact in the dataset: UC awards nothing
+  // for CLEP, nothing for DSST, and nothing posted to a third-party transcript.
+  refuses: ['clep', 'dsst', 'alt_provider'],
   exam_policy_provenance: {
     ...UC_EXAM_POLICY,
     note: UC_EXAM_POLICY.note + ' ' + (tag ? TAG : NO_TAG(name)),
@@ -125,8 +126,9 @@ const csu = (id: string, name: string): Institution => ({
   cost_per_unit_usd: CSU_PER_UNIT,
   residency_min_units: 30,
   max_transfer_units: 70,
-  accepts_clep: true,
-  accepts_third_party_transcript: true,
+  // CSU publishes no refusal for any family. That is NOT acceptance — what a
+  // given exam clears is an acceptance rule, and CLEP's clears nothing.
+  refuses: [],
   exam_policy_provenance: CSU_EXAM_POLICY,
   residency_provenance: CSU_RESIDENCY,
   transfer_cap_provenance: CSU_TRANSFER_CAP,

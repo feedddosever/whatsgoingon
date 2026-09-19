@@ -35,6 +35,28 @@ const CLEP_FEE = {
     'by rule, cannot satisfy Cal-GETC at all, and UC awards no CLEP credit whatsoever.',
 };
 
+const IB_FEE = {
+  source_url: 'https://www.ibo.org/programmes/diploma-programme/assessment-and-exams/',
+  as_of: '',
+  confidence: 'needs_check' as const,
+  note:
+    'Per-subject exam fee, not confirmed against a current IB page \u2014 IB publishes fees ' +
+    'through schools rather than to candidates, and most candidates never see a bill ' +
+    'because the school registers them. Treat the figure as indicative.',
+};
+
+const DSST_FEE = {
+  source_url: 'https://getcollegecredit.com/about-dsst/',
+  as_of: '2026-09-19',
+  confidence: 'needs_check' as const,
+  note:
+    '$100 to DSST, plus a test-centre administration fee that is commonly $25-$50 and is ' +
+    'not included here. **Free for eligible active-duty service members** at a ' +
+    'DANTES-funded site, which waives both \u2014 first attempt only. What the credit is ' +
+    'WORTH varies more than any other family here: a CSU will award it toward a degree, ' +
+    'and the University of California awards nothing for it at all.',
+};
+
 export const examSources: CreditSource[] = [
   // ---- AP: accepted in some form almost everywhere, including at UC ----
   { id: 'ap-english-lang', kind: 'ap', name: 'AP English Language & Composition (score 3+)', cost_usd: 99, provenance: AP_FEE },
@@ -70,4 +92,42 @@ export const examSources: CreditSource[] = [
   { id: 'clep-american-literature', kind: 'clep', name: 'CLEP American Literature', cost_usd: 95, provenance: CLEP_FEE },
   { id: 'clep-natural-sciences', kind: 'clep', name: 'CLEP Natural Sciences', cost_usd: 95, provenance: CLEP_FEE },
   { id: 'clep-biology', kind: 'clep', name: 'CLEP Biology', cost_usd: 95, provenance: CLEP_FEE },
+
+
+  // ---- IB: the family UC accepts and this app could not represent ----
+  //
+  // Higher Level only, and score 5 or better. Standard Level exams are left out
+  // deliberately rather than priced at zero: UC awards credit for HL and the
+  // Cal-GETC external-exam standard is written for HL, so an SL row would be a
+  // promise nobody made.
+  //
+  // The cost is the per-subject exam fee. A student sitting the full diploma
+  // pays a registration fee on top, and their school usually handles both, so
+  // this is the marginal cost of one more subject rather than a bill.
+  { id: 'ib-biology-hl', kind: 'ib', name: 'IB Biology, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-chemistry-hl', kind: 'ib', name: 'IB Chemistry, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-physics-hl', kind: 'ib', name: 'IB Physics, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-mathematics-aa-hl', kind: 'ib', name: 'IB Mathematics: Analysis & Approaches, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-mathematics-ai-hl', kind: 'ib', name: 'IB Mathematics: Applications & Interpretation, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-english-a-hl', kind: 'ib', name: 'IB Language A: Literature, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-history-hl', kind: 'ib', name: 'IB History, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-economics-hl', kind: 'ib', name: 'IB Economics, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-psychology-hl', kind: 'ib', name: 'IB Psychology, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-geography-hl', kind: 'ib', name: 'IB Geography, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-visual-arts-hl', kind: 'ib', name: 'IB Visual Arts, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-spanish-b-hl', kind: 'ib', name: 'IB Spanish B, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+
+  // ---- DSST: worthless at a UC, real money at a CSU, free if you serve ----
+  //
+  // $100 to DSST plus a test-centre administration fee, commonly $25-$50.
+  // Priced here at the exam fee alone, because the centre fee varies and a
+  // DANTES-funded site waives both for eligible service members.
+  { id: 'dsst-principles-public-speaking', kind: 'dsst', name: 'DSST Principles of Public Speaking', cost_usd: 100, provenance: DSST_FEE },
+  { id: 'dsst-college-algebra', kind: 'dsst', name: 'DSST Fundamentals of College Algebra', cost_usd: 100, provenance: DSST_FEE },
+  { id: 'dsst-introduction-to-world-religions', kind: 'dsst', name: 'DSST Introduction to World Religions', cost_usd: 100, provenance: DSST_FEE },
+  { id: 'dsst-general-anthropology', kind: 'dsst', name: 'DSST General Anthropology', cost_usd: 100, provenance: DSST_FEE },
+  { id: 'dsst-substance-abuse', kind: 'dsst', name: 'DSST Substance Abuse', cost_usd: 100, provenance: DSST_FEE },
+  { id: 'dsst-environment-humanity', kind: 'dsst', name: 'DSST Environment and Humanity', cost_usd: 100, provenance: DSST_FEE },
+  { id: 'dsst-history-of-the-vietnam-war', kind: 'dsst', name: 'DSST A History of the Vietnam War', cost_usd: 100, provenance: DSST_FEE },
+  { id: 'dsst-principles-of-supervision', kind: 'dsst', name: 'DSST Principles of Supervision', cost_usd: 100, provenance: DSST_FEE },
 ];

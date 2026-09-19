@@ -141,8 +141,7 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
     }],
     institutions: [{
       id: 'x', name: 'X', system: 'CSU' as const, residency_min_units: 0,
-      cost_per_unit_usd: 400, max_transfer_units: null, accepts_clep: true,
-      accepts_third_party_transcript: true,
+      cost_per_unit_usd: 400, max_transfer_units: null, refuses: [],
       cost_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
       exam_policy_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
       residency_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
@@ -892,7 +891,7 @@ test('the same CLEP exam is worth nothing in California and clears an area in Fl
   const clep = 'clep-college-composition';
 
   const uc = us.institutions.find(i => i.id === 'uc-berkeley');
-  assert.ok(uc && !uc.accepts_clep, 'UC awards no CLEP credit at all');
+  assert.ok(uc && uc.refuses.includes('clep'), 'UC awards no CLEP credit at all');
 
   const caCleared = us.rules
     .filter(r => r.credit_source_id === clep && r.institution_id.startsWith('csu-'))
@@ -1056,4 +1055,73 @@ test('third-party providers survive a state slice even with no rule behind them'
   // sources would drop them — and the UC warning that justifies listing them
   // at all can only fire for a source the student can actually tick.
   assert.ok(california.creditSources.some(c => c.kind === 'alt_provider'));
+});
+
+test('UC takes IB and refuses DSST, in the same plan', () => {
+  // The whole reason exam FAMILY is a first-class concept. One campus, one
+  // student, two exam types, opposite answers — and until IB existed in the
+  // dataset this student could not describe themselves at all.
+  const input = {
+    profile: PLAIN, target_institution_id: 'uc-berkeley',
+    held_credit_ids: ['ib-biology-hl', 'dsst-college-algebra'], units_in_residence: 0,
+  };
+  const route = planRoute(us, input, 'cheapest');
+
+  const stranded = route.warnings.filter(w => w.kind === 'stranded_credit');
+  assert.equal(stranded.length, 1, 'exactly one of the two is refused');
+  assert.match(stranded[0].message, /DSST Fundamentals of College Algebra/);
+
+  // The IB score is honoured: area 5B is no longer on the list to solve.
+  const owed = [...route.areas_cleared, ...route.areas_unmet, ...route.areas_skipped];
+  assert.ok(!owed.includes('5B'), 'IB Biology should have cleared 5B before planning began');
+
+  // And nothing DSST-shaped was quietly planned with.
+  assert.ok(!route.items.some(i => i.kind === 'dsst'));
+});
+
+test('DSST at a CSU counts toward the degree and clears nothing', () => {
+  // The same quiet failure as CLEP, and it has to read the same way: the credit
+  // posts, the transcript looks right, and no requirement has moved.
+  const input = {
+    profile: PLAIN, target_institution_id: 'csu-long-beach',
+    held_credit_ids: ['dsst-college-algebra'], units_in_residence: 0,
+  };
+  const warnings = planRoute(us, input, 'cheapest').warnings;
+  assert.ok(warnings.some(w => w.kind === 'credit_not_toward_ge'));
+  assert.ok(!warnings.some(w => w.kind === 'stranded_credit'));
+});
+
+test('a refusal is by family, and covers every exam in it', () => {
+  const uc = us.institutions.find(i => i.id === 'uc-berkeley');
+  assert.ok(uc);
+  assert.deepEqual([...uc.refuses].sort(), ['alt_provider', 'clep', 'dsst']);
+
+  // No rule may exist for a family a campus refuses — a rule would say "here is
+  // what it is worth" about credit the campus will not look at.
+  for (const inst of us.institutions) {
+    for (const r of us.rules.filter(x => x.institution_id === inst.id)) {
+      const src = us.creditSources.find(c => c.id === r.credit_source_id);
+      assert.ok(src, `rule references unknown source ${r.credit_source_id}`);
+      assert.ok(
+        !inst.refuses.includes(src.kind),
+        `${inst.id} refuses ${src.kind} yet holds a rule for ${src.id}`,
+      );
+    }
+  }
+});
+
+test('every IB row is Higher Level, and every exam family is reachable', () => {
+  // Standard Level is deliberately absent: UC credit and the Cal-GETC standard
+  // are both written for HL, so an SL row would promise something nobody said.
+  for (const c of us.creditSources.filter(s => s.kind === 'ib')) {
+    assert.match(c.name, /Higher Level/, `${c.id} is not marked Higher Level`);
+    assert.ok(c.id.endsWith('-hl'), `${c.id} does not read as Higher Level`);
+  }
+  // Each family must be offerable somewhere, or it is dead weight in the picker.
+  for (const kind of ['ap', 'ib', 'clep', 'dsst', 'cc_course', 'alt_provider']) {
+    assert.ok(
+      us.creditSources.some(c => c.kind === kind),
+      `no credit sources at all for ${kind}`,
+    );
+  }
 });

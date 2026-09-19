@@ -305,7 +305,7 @@ function campusClaims(inst: Institution): CampusClaim[] {
   return [
     {
       label: 'Credit-by-exam policy',
-      claim: `${inst.name} ${inst.accepts_clep ? 'awards credit for CLEP' : 'awards no credit for CLEP'}.`,
+      claim: `${inst.name} ${inst.refuses.includes('clep') ? 'awards no credit for CLEP' : 'awards credit for CLEP'}.`,
       provenance: inst.exam_policy_provenance,
     },
     {
