@@ -20,6 +20,8 @@ Rules that keep the test meaningful:
 
 1. **One variable.** Same video, same cover, same posting time-of-day, same
    hashtag set. If you change the hook card too, you've learned nothing.
+   (Five hashtags maximum — Instagram capped it in December 2025 — and they are
+   for search, not reach, so they are not the thing under test.)
 2. **Alternate, don't split.** You have eleven A-slots, not an audience big
    enough to split. Run A on odd-numbered Reels (R01, R07, R13, R19, R25, R31)
    and B on even (R04, R10, R16, R22, R28), then compare the two groups.
@@ -32,6 +34,12 @@ Rules that keep the test meaningful:
 characters behind "… more", and most people never tap it. Every first line
 below stands alone and never repeats the on-screen hook — that text is already
 on their screen, and repeating it wastes the one line you get.
+
+**Ask for the send, not the tag.** Sends per reach — a DM share — is the
+strongest signal Instagram has for showing a post to people who don't follow
+you, worth several times a like. "Tag someone" produces a comment. "Send this
+to someone" produces a send. They are not the same instruction and they are not
+worth the same.
 
 **Every caption ends with the standard footer:**
 
@@ -111,7 +119,7 @@ Built for @revenuecat Shipaton 2026 🐱
 >
 > I built an app that surfaces this above everything else, because every student I asked had no idea it existed.
 >
-> Tag a Texas student who needs this.
+> Send this to a Texas student — DM, not tag.
 
 ---
 

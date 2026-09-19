@@ -29,11 +29,13 @@ invented for the camera.
 | | |
 |---|---|
 | **Aspect / size** | 9:16, 1080×1920 |
-| **Length** | 15–30s. The A-slot can run to 45s. Nothing over 60s. |
+| **Length** | **12–18s.** Instagram counts total seconds watched *including replays*, so a 15s Reel watched three times outranks a 45s Reel watched once. Nothing over 30s. |
 | **Hook** | On screen by frame 1, spoken by second 2. Never a logo, never "hey guys". |
 | **Captions** | Burned in, always. Assume sound off. |
 | **Face** | Optional. Screen recording + voice-over carries the whole series. |
 | **Cover** | Hook text on the dark background — generate with `node scripts/art/render.mjs` (see `docs/store/reels/`). |
+| **Loop** | Last frame should flow into the first, so a replay feels intentional. Replays are counted watch time, and watch time is the #1 signal. |
+| **Mirror** | Post the same cut to YouTube Shorts and TikTok. Depending on one algorithm is a single point of failure you don't need. |
 
 **Visual kit** — use the app's own tokens so the feed and the product agree:
 background `#0B0F14`, accent `#5BE895`, warning amber `#F5C542`, muted `#8A97A6`.
@@ -46,12 +48,18 @@ date. That motif *is* the brand.
 - **B (≈13:00) — the build log.** A bug, a commit, a diff. This is what #BuildInPublic is actually judged on.
 - **C (≈19:00) — the why.** Talking head or voice-over over b-roll. Cheapest to shoot.
 
-**Hashtag sets** (rotate; never repeat the same block twice in a row)
+**Hashtag sets — five maximum, and they are not for reach**
 
-- **SET-1 (build):** #buildinpublic #indiehacker #solofounder #shipaton #revenuecat #reactnative #expo #appdev #codinglife #buildinpublicjourney
-- **SET-2 (student):** #collegehacks #clep #transferstudent #communitycollege #collegeadmissions #dualenrollment #studentdebt #firstgen #collegeplanning #apexams
-- **SET-3 (state):** #texascollege #floridacollege #californiacollege #utaustin #ufl #calstate #uc #transfercredit #collegetransfer #statelaw
-- **SET-4 (craft):** #designinpublic #uidesign #productdesign #typescript #softwareengineering #debugging #opensource #mit #devlog #shipit
+Instagram capped hashtags at **5 per post** in December 2025, and Mosseri has
+said plainly that hashtags do not improve reach — they help *search*, and that
+is all. So these are five specific tags for topical clarity, not a distribution
+strategy. A longer list is not available to you any more, and would not have
+helped.
+
+- **SET-1 (build):** #buildinpublic #indiehacker #shipaton #reactnative #devlog
+- **SET-2 (student):** #collegehacks #clep #dualenrollment #transferstudent #collegeplanning
+- **SET-3 (state):** #texascollege #floridacollege #transfercredit #collegetransfer #communitycollege
+- **SET-4 (craft):** #designinpublic #typescript #opensource #uidesign #shipit
 
 **Every caption ends with the same two lines:**
 
@@ -65,7 +73,7 @@ Built for @revenuecat Shipaton 2026 🐱
 # DAY 1 — Sept 19 · The problem
 
 ### R01 · A · "They paid for exams that count for nothing"
-**Length** 28s · **Tags** SET-2
+**Length** 18s · **Tags** SET-2
 
 - **Hook card:** `3 exams. $285. Worth $0.`
 - **Beats:** "A friend sat three CLEP exams because a blog post said they were widely accepted." → *(beat)* → "They were going to a UC." → "The University of California awards no CLEP credit. Not reduced credit. Not elective credit. None." → "Nobody lied to them. That blog post was just true somewhere else."
@@ -73,7 +81,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Transfer-credit advice is written nationally and enforced locally. You find out which sentence applied to you after you've paid. So I'm building the thing that tells you first. Day 1.
 
 ### R02 · B · "Day 1 of building in public"
-**Length** 20s · **Tags** SET-1
+**Length** 18s · **Tags** SET-1
 
 - **Hook card:** `11 days. One app. No growth hacks.`
 - **Beats:** what it is in one sentence → the deadline → "I'll post every bug, including the embarrassing ones. Especially those."
@@ -81,7 +89,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Shipaton 2026 closes Sept 30. I'm posting 3x a day until then — the wins and the wrong numbers. First wrong number lands tomorrow.
 
 ### R03 · C · "Why this and not another to-do app"
-**Length** 25s · **Tags** SET-2
+**Length** 18s · **Tags** SET-2
 
 - **Hook card:** `A wrong answer here costs a semester.`
 - **Beats:** "Most apps, worst case, waste your time. This one, worst case, costs somebody a semester and a few thousand dollars." → "That's why every single claim in it carries a source, a date, and how confident we are." → "It's allowed to say 'I don't know'. Most products aren't."
@@ -93,7 +101,7 @@ Built for @revenuecat Shipaton 2026 🐱
 # DAY 2 — Sept 20 · The turn
 
 ### R04 · A · "Same exams. Different state. $1,500 difference."
-**Length** 30s · **Tags** SET-3
+**Length** 18s · **Tags** SET-3
 
 - **Hook card:** `$2,505 → $1,002. Nothing changed but the state.`
 - **Beats:** "Same student. Same three CLEP exams. Same scores." → switch California → Florida in-app → "Florida publishes one statewide table and every public university in the state has to follow it." → "Those exams clear three of five requirements. What she still owes drops from twenty-five-oh-five to a thousand and two."
@@ -101,7 +109,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Florida Rule 6A-10.024 is binding on all 12 state universities. California's Cal-GETC won't take CLEP at all. Identical exam, opposite outcome.
 
 ### R05 · B · "The bug that made the empty plan look best"
-**Length** 25s · **Tags** SET-1
+**Length** 18s · **Tags** SET-1
 
 - **Hook card:** `"$0 · saves $9,933 · clears 0 of 10"`
 - **Beats:** "This card shipped in an early build. Read it again." → "Zero dollars. Saves nine thousand. Clears nothing." → "I was computing saving as baseline minus cost — which credits a plan for everything it never touched. **An empty plan is always the cheapest plan.**"
@@ -109,7 +117,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** My worst bugs in this project are all the same shape: a wrong number that looked completely reasonable on screen.
 
 ### R06 · C · "Who this is for"
-**Length** 20s · **Tags** SET-2
+**Length** 18s · **Tags** SET-2
 
 - **Hook card:** `Built for 16-year-olds. Priced for parents.`
 - **Beats:** the student does the planning, free → the export that goes to an advisor or a parent is the one paid thing → "17-year-olds don't have $5. Parents of college-bound kids absolutely do."
@@ -121,7 +129,7 @@ Built for @revenuecat Shipaton 2026 🐱
 # DAY 3 — Sept 21 · State law is the cheat code
 
 ### R07 · A · "Texas can't legally make you retake it"
-**Length** 25s · **Tags** SET-3
+**Length** 18s · **Tags** SET-3
 
 - **Hook card:** `Finish it once. Anywhere. Statute.`
 - **Beats:** "Texas Education Code 61.822." → "Finish the 42-hour core at *any* Texas public college and the receiving university **must** substitute it for its own. You may not be required to take additional core courses." → "That's not a policy. That's the law. And no campus page will tell you, because it isn't theirs to give."
@@ -129,7 +137,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** The most valuable fact for a Texas student isn't on any university's website — it's in the education code. That's the gap.
 
 ### R08 · B · "Two lines were all that tied it to California"
-**Length** 28s · **Tags** SET-1
+**Length** 18s · **Tags** SET-1
 
 - **Hook card:** `1 state → 3 states. Two lines of engine.`
 - **Beats:** "I built this California-only. Adding Texas and Florida changed exactly two lines of the engine." → "Because scoping isn't a filter, it's a data invariant — a requirement names the systems that require it, so a Texas campus *can't reach* a Californian requirement." → "There's a test that asserts it rather than trusting it."
@@ -137,7 +145,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** The cost of going national was never the code. It was the data, and the copy that said "Cal-GETC" where it meant "the framework".
 
 ### R09 · C · "The rule that makes the whole thing work"
-**Length** 22s · **Tags** SET-4
+**Length** 18s · **Tags** SET-4
 
 - **Hook card:** `Source. Date. Confidence. Every claim.`
 - **Beats:** the provenance type, read out → "If a row is unverified it has to *look* unverified. That's not a style preference — it's the only reason any of this is safe to act on."
@@ -149,7 +157,7 @@ Built for @revenuecat Shipaton 2026 🐱
 # DAY 4 — Sept 22 · Free money nobody claims
 
 ### R10 · A · "Texas made dual credit free and enrolment doubled"
-**Length** 25s · **Tags** SET-2
+**Length** 18s · **Tags** SET-2
 
 - **Hook card:** `102,000 → 260,000 in one year.`
 - **Beats:** "Texas HB 8 created FAST — Financial Aid for Swift Transfer." → "If you're eligible for free or reduced lunch, dual-credit college courses cost you **nothing**." → "First year it ran, enrolment of economically disadvantaged students in dual credit more than doubled."
@@ -157,7 +165,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** The programme works. The problem is nobody's counsellor mentions it in time.
 
 ### R11 · B · "The bug that stole money in the student's favour"
-**Length** 30s · **Tags** SET-1
+**Length** 18s · **Tags** SET-1
 
 - **Hook card:** `The worst bugs are the ones nobody reports.`
 - **Beats:** "When I added Texas, every community-college course there came out free for fee-waiver students." → "Because California has the College Promise Grant and I'd hard-coded the waiver into the *credit type*." → "Texas has no statewide equivalent. I was under-pricing every route in the state — **in the student's favour**." → "Nobody complains that they saved too much. That bug would have lived forever."
@@ -165,7 +173,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Wrong-in-your-favour is the hardest class of bug to find, because your users are never the ones who tell you.
 
 ### R12 · C · "Reading the limit as carefully as the promise"
-**Length** 22s · **Tags** SET-3
+**Length** 18s · **Tags** SET-3
 
 - **Hook card:** `Guaranteed admission. Not to the one you want.`
 - **Beats:** "Florida has guaranteed AA holders admission to a state university since 1972. Genuinely great." → "It guarantees admission to **a** state university. Not the campus you want, not the programme you want." → "The app says that in the same breath as the guarantee. If we only printed the good half we'd be the blog post I started this over."
@@ -177,7 +185,7 @@ Built for @revenuecat Shipaton 2026 🐱
 # DAY 5 — Sept 23 · "Accepted" doesn't mean "useful"
 
 ### R13 · A · "Your credit counts. It just clears nothing."
-**Length** 28s · **Tags** SET-2
+**Length** 18s · **Tags** SET-2
 
 - **Hook card:** `Accepted ≠ useful.`
 - **Beats:** "A Cal State will accept your CLEP. Up to 30 units, toward your degree." → "It cannot satisfy a single Cal-GETC general-education requirement." → "So you get credit, your requirement list doesn't move, and nothing on your transcript looks wrong. That's the trap."
@@ -185,7 +193,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Two different failures and the second is far easier to miss: the school takes your credit and you still owe the requirement.
 
 ### R14 · B · "My engine invented a policy"
-**Length** 25s · **Tags** SET-1
+**Length** 18s · **Tags** SET-1
 
 - **Hook card:** `It made up a rule. Confidently.`
 - **Beats:** "For a campus/exam pair I had *no data for*, it printed: 'UC Berkeley counts this toward your degree.'" → "No source said that. The code inferred it from an absence." → "Now it says: 'We have no record of how UC Berkeley treats this.' Less satisfying. True."
@@ -193,7 +201,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** The default for missing data must be "I don't know", never a reasonable-sounding guess. Especially when the guess sounds helpful.
 
 ### R15 · C · "Free everywhere: Modern States"
-**Length** 20s · **Tags** SET-2
+**Length** 18s · **Tags** SET-2
 
 - **Hook card:** `A CLEP voucher. Any state. $0.`
 - **Beats:** Modern States covers the CLEP exam fee nationwide → "That one's actually national, unlike almost everything else in this app." → but check what your campus does with the credit *first*.
@@ -205,7 +213,7 @@ Built for @revenuecat Shipaton 2026 🐱
 # DAY 6 — Sept 24 · Bugs day
 
 ### R16 · A · "$19,550 → $17,825 because of one letter"
-**Length** 25s · **Tags** SET-3
+**Length** 18s · **Tags** SET-3
 
 - **Hook card:** `1C is CSU only. I was charging UC students for it.`
 - **Beats:** "Cal-GETC Area 1C, oral communication, is a **CSU** requirement. UC doesn't require it." → "I was imposing it on UC students — three units they never owed." → "Nineteen-five-fifty down to seventeen-eight-twenty-five, just from reading the standard properly."
@@ -213,7 +221,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Every requirement now names the systems that require it. Turns out that same field is what later let the app go national.
 
 ### R17 · B · "AP Biology carries its own lab"
-**Length** 25s · **Tags** SET-2
+**Length** 18s · **Tags** SET-2
 
 - **Hook card:** `I was sending students to a lab they'd already passed.`
 - **Beats:** "I had AP Biology clearing Area 5B. It clears 5B **and** the 5C laboratory." → "So the plan told students to go take a lab they'd already satisfied." → "Fixing it meant one field had to become a list — because AP English Lit clears 1A **or** 3B, and 'and' and 'or' are not the same thing."
@@ -221,7 +229,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Six exams in the California data clear two requirements at once. Three more are either/or. One field couldn't hold both — so the type changed.
 
 ### R18 · C · "One exam, one use"
-**Length** 20s · **Tags** SET-4
+**Length** 18s · **Tags** SET-4
 
 - **Hook card:** `You can't spend the same exam twice.`
 - **Beats:** AP English Lit clears 1A *or* 3B — your pick → "If the planner spent it on both, it'd build a plan you literally cannot execute." → there's a `Set` in the engine whose entire job is to stop that.
@@ -233,7 +241,7 @@ Built for @revenuecat Shipaton 2026 🐱
 # DAY 7 — Sept 25 · The honesty thesis
 
 ### R19 · A · "Watch my app refuse to answer"
-**Length** 30s · **Tags** SET-1
+**Length** 18s · **Tags** SET-1
 
 - **Hook card:** `The lowest-risk route came back empty.`
 - **Beats:** "Texas. Lowest-risk route. Watch." → *(it's empty)* → "'There is nothing here we would stake your money on.'" → "I could've made Texas look as strong as California by relaxing one confidence level. I'd rather ship an empty screen than a confident wrong answer."
@@ -241,7 +249,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Hardest product decision of the build, and the one I'd defend hardest. **This is the pinned post.**
 
 ### R20 · B · "48 states that say 'I haven't mapped this'"
-**Length** 22s · **Tags** SET-3
+**Length** 18s · **Tags** SET-3
 
 - **Hook card:** `All 51. 3 mapped. 48 honest.`
 - **Beats:** every US jurisdiction is in the dataset → 3 have campuses and requirements → "the other 48 carry no invented data and an honest 'we haven't mapped this yet', plus where to go and ask." → "Absence of data is data. It belongs in the dataset, not in a 404."
@@ -249,7 +257,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** A student in Ohio opening a "US" app and being told their state doesn't exist learns nothing. Being told the truth is a real answer.
 
 ### R21 · C · "The packet doesn't soften for parents"
-**Length** 25s · **Tags** SET-2
+**Length** 18s · **Tags** SET-2
 
 - **Hook card:** `Same evidence. Same amber. For everyone.`
 - **Beats:** there's an advisor version and a parent version → "Different framing, different ask — a parent's being asked to understand a decision, an advisor's being asked to rule on rows." → "**Same evidence. The unconfirmed rows stay marked in both.** Softening them for a parent is the exact dishonesty the document exists to prevent."
@@ -261,7 +269,7 @@ Built for @revenuecat Shipaton 2026 🐱
 # DAY 8 — Sept 26 · Craft
 
 ### R22 · A · "I shipped Expo's default icon for a week"
-**Length** 22s · **Tags** SET-4
+**Length** 18s · **Tags** SET-4
 
 - **Hook card:** `This is not my icon. It shipped anyway.`
 - **Beats:** the blue Expo "A" with construction guides → "On a store listing that reads as 'unfinished', and it's the first thing a judge sees." → the new one: a bright direct route to a mortarboard, two dim routes wandering to the same place.
@@ -269,7 +277,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** The mark is the product in one drawing: every route ends at the degree, the app just tells you which one costs less.
 
 ### R23 · B · "An SVG gradient that renders literally nothing"
-**Length** 25s · **Tags** SET-4
+**Length** 18s · **Tags** SET-4
 
 - **Hook card:** `My icon's main element was invisible.`
 - **Beats:** "The bright green route — the whole point of the icon — wasn't there." → "A linearGradient with default objectBoundingBox units on a **perfectly vertical line** has a zero-width bounding box. The gradient degenerates. The stroke renders as nothing." → "No error. No warning. Just absence." → `gradientUnits="userSpaceOnUse"`.
@@ -277,7 +285,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Filed under bugs that are only obvious once you know. Now it's a comment in the source so the next person doesn't lose the afternoon.
 
 ### R24 · C · "Every screenshot is real"
-**Length** 20s · **Tags** SET-4
+**Length** 18s · **Tags** SET-4
 
 - **Hook card:** `No mockups. Not one.`
 - **Beats:** the five store screenshots are captured from the built bundle by a script → "If a screenshot shows a number, the app produced it." → "For an app about not overclaiming, a mocked-up screenshot would be a weird place to start lying."
@@ -289,7 +297,7 @@ Built for @revenuecat Shipaton 2026 🐱
 # DAY 9 — Sept 27 · The money
 
 ### R25 · A · "$12,600 → $859"
-**Length** 25s · **Tags** SET-3
+**Length** 18s · **Tags** SET-3
 
 - **Hook card:** `$12,600 → $859`
 - **Beats:** first-year at UT Austin, nothing banked → the 42-hour core at the university's own rate is $12,600 → cheapest route that clears all nine: $859 → "Eleven thousand seven hundred and forty-one dollars, and every row of it cites where it came from."
@@ -297,7 +305,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** The saving isn't the product. The sources under the saving are. Anyone can print a big green number.
 
 ### R26 · B · "Charging the parent, not the student"
-**Length** 25s · **Tags** SET-1
+**Length** 18s · **Tags** SET-1
 
 - **Hook card:** `The paywall says "ask a parent first."`
 - **Beats:** RevenueCat SDK is required for the hackathon, so there's a paywall regardless → "This app is used by people who might be 14. So above the price, before anything else, there's a notice telling them to involve a parent." → one-time unlock, not a subscription.
@@ -305,7 +313,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** A paywall you'd be comfortable showing a 14-year-old is a different design problem than a paywall that converts.
 
 ### R27 · C · "The number I'm least sure of"
-**Length** 25s · **Tags** SET-2
+**Length** 18s · **Tags** SET-2
 
 - **Hook card:** `My headline number is an estimate. I say so.`
 - **Beats:** "Neither UC nor CSU actually charges per unit — they charge flat tiers." → "So my per-unit figure is derived, and it **overstates** the saving for someone already enrolled full time." → "It's labelled 'needs confirming' in the app, and it's the most scrutinised number in the project."
@@ -317,7 +325,7 @@ Built for @revenuecat Shipaton 2026 🐱
 # DAY 10 — Sept 28 · Plumbing
 
 ### R28 · A · "Your state has one of these and you don't know it"
-**Length** 25s · **Tags** SET-3
+**Length** 18s · **Tags** SET-3
 
 - **Hook card:** `31 states. One transferable core. Free.`
 - **Beats:** Education Commission of the States: at least 31 states require a transferable lower-division core and guarantee statewide transfer of an associate degree → "Thirty-one. Most students in those states have no idea it exists." → "I've mapped three. Which one should be next?"
@@ -325,7 +333,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Genuinely asking — comment your state. Next five are picked by enrolment, unless you tell me otherwise.
 
 ### R29 · B · "The bundler baked a stale key for three rebuilds"
-**Length** 25s · **Tags** SET-1
+**Length** 18s · **Tags** SET-1
 
 - **Hook card:** `Right key. Right file. Empty string.`
 - **Beats:** "Metro inlines `process.env.EXPO_PUBLIC_*` at *transform* time, then caches the transform." → "So I changed the RevenueCat key, rebuilt, and it silently baked the old one. Three times." → "`--clear` is now permanent in the build script, and the reason is a comment above it."
@@ -333,7 +341,7 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Also the week I found `.gitignore` had `.env*.local` but not `.env`. Two near-misses, one afternoon.
 
 ### R30 · C · "The import you must not 'fix'"
-**Length** 22s · **Tags** SET-4
+**Length** 18s · **Tags** SET-4
 
 - **Hook card:** `This missing file extension is load-bearing.`
 - **Beats:** every relative import in the codebase carries its extension — except one → "Metro only applies platform resolution — `.web.ts` over `.ts` — to **extensionless** imports." → "With the extension it bundled the native purchases module into the web build, where the native SDK doesn't exist." → "Verified by grepping the built bundle, not assumed. There's a comment telling the next person not to tidy it."
@@ -345,7 +353,7 @@ Built for @revenuecat Shipaton 2026 🐱
 # DAY 11 — Sept 29 · Land it
 
 ### R31 · A · "One PDF would upgrade an entire state"
-**Length** 25s · **Tags** SET-3
+**Length** 18s · **Tags** SET-3
 
 - **Hook card:** `One document. Twelve universities. Binding.`
 - **Beats:** Florida's Rule 6A-10.024 equivalency table → "One table. Every public institution in the state has to follow it." → "Reading it flips every Florida exam row from 'needs confirming' to statute in a single pass — and turns that empty route into the strongest screen in the app." → "That's the next thing I do."
@@ -353,15 +361,15 @@ Built for @revenuecat Shipaton 2026 🐱
 - **Caption:** Most data work in this space is 400 campuses. Florida is one document. That's why Florida's in the app.
 
 ### R32 · B · "11 days, 3 states, 57 tests"
-**Length** 30s · **Tags** SET-1
+**Length** 18s · **Tags** SET-1
 
-- **Hook card:** `The whole build, in 30 seconds.`
-- **Beats:** rapid montage — one state → three → the icon swap → the bugs → the empty route → the packet → "79 campuses. 3,150 acceptance rules. 51 states in the dataset. 57 tests." → "Submitting tomorrow."
+- **Hook card:** `The whole build, in 18 seconds.`
+- **Beats:** rapid montage (18s, hard cuts) — one state → three → the icon swap → the bugs → the empty route → the packet → "79 campuses. 3,150 acceptance rules. 51 states in the dataset. 57 tests." → "Submitting tomorrow."
 - **Film:** fast cuts of your own previous Reels. **This is the one that gets watched.** Give it the most editing time of anything in the series.
 - **Caption:** Everything I posted this month, in one cut. Open source, MIT, link below — go break it.
 
 ### R33 · C · "What I actually learned"
-**Length** 30s · **Tags** SET-1
+**Length** 18s · **Tags** SET-1
 
 - **Hook card:** `Shipping an "I don't know" screen was the hard part.`
 - **Beats:** "Every bug worth talking about here was a wrong number that looked right." → "The empty screen, the amber badges, the number carrying the loudest warning — those are the product. The savings are the marketing." → "If you're building where being wrong is expensive: make 'I don't know' a first-class state in your data model, not a fallback in your UI."
