@@ -108,6 +108,19 @@ const IB_DSST_RULES: ReadonlyArray<readonly [string, string[], number, number]> 
   ['dsst-substance-abuse', ['tx-option'], 3, 400],
   ['dsst-history-of-the-vietnam-war', ['tx-us-history'], 3, 400],
   ['dsst-principles-of-supervision', ['tx-option'], 3, 400],
+  // A Level. Texas has no statewide table for it and no statutory score floor,
+  // so this is campus policy we do not hold, exactly like IB and DSST.
+  ['alevel-english-literature', ['tx-comm'], 3, 0],
+  ['alevel-mathematics', ['tx-math'], 3, 0],
+  ['alevel-biology', ['tx-life-phys'], 3, 0],
+  ['alevel-chemistry', ['tx-life-phys'], 3, 0],
+  ['alevel-physics', ['tx-life-phys'], 3, 0],
+  ['alevel-spanish', ['tx-lang-phil'], 3, 0],
+  ['alevel-art-design', ['tx-arts'], 3, 0],
+  ['alevel-history', ['tx-us-history'], 3, 0],
+  ['alevel-psychology', ['tx-social'], 3, 0],
+  ['alevel-economics', ['tx-social'], 3, 0],
+  ['alevel-geography', ['tx-option'], 3, 0],
 ];
 
 const TX_IB_DSST: Provenance = {

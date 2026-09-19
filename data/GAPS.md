@@ -4,7 +4,7 @@
 > Do not edit by hand — re-run it. A gap list that can drift from the data
 > is the same failure this app exists to prevent.
 
-Counted 51 jurisdictions, 79 campuses, 4666 acceptance rules.
+Counted 51 jurisdictions, 79 campuses, 5687 acceptance rules.
 
 ## Gaps that need a type change, not research
 
@@ -16,7 +16,8 @@ things up helps until the field exists.
 - **Catalogue year, as distinct from when we read it.** `Provenance.as_of` records the day we read a page. It does not record which CATALOGUE YEAR the policy belongs to, and transfer policy is versioned by catalogue year. A row read today can describe a rule that changed in the autumn, and nothing in the model can tell the difference.
 - **Flat-rate tuition.** Both California systems charge a flat full-time rate, not per unit. Our per-unit figure is derived and OVERSTATES the saving for a student already enrolled full time — the most scrutinised number in the app, and still a guess about the shape of the price. `Institution` needs a pricing model, not just a rate.
 - **In-district, out-of-district, out-of-state.** Community colleges charge all three, and the spread is large — Texas in-district runs from about $77 to $164 per credit hour. One price per course row cannot express that, so the cheapest pathway in the app is priced at a single guess.
-- **A-Level, AICE, DLPT, UExcel.** IB and DSST are now modelled. Still missing: A-Level, which UC explicitly accepts alongside AP and IB, and AICE, DLPT and UExcel, which Florida’s binding statewide table covers. We model four of Florida’s seven families. Also missing on the IB side: **Standard Level** exams, left out on purpose because UC credit and the Cal-GETC standard are both written for Higher Level, and an SL row would promise something nobody said.
+- **Letter-graded exams cannot be expressed.** `AcceptanceRule.min_score` is a number. A Levels are graded A to E, so every A Level rule carries `min_score: null` and the real requirement — grade A, B or C — lives in a prose note the engine cannot read. Nothing can warn a student holding a D.
+- **AS Level, and IB Standard Level.** Both are half of the qualification above them, with their own credit rules, and both are deliberately absent rather than guessed. All seven of Florida’s statutory exam families are now modelled; these two sub-levels are what is left.
 - **Major-specific pathways.** Tennessee’s Transfer Pathways and SUNY’s Transfer Paths are organised by MAJOR, not by general education. We model general education only, so in those states we describe the wrong half of the guarantee.
 - **Community colleges as destinations.** They are credit sources, never targets. In Florida the statutory guarantee attaches to the Associate in Arts rather than to the university, so the thing the state actually promises is a destination we cannot select.
 - **Per-campus third-party transcript policy.** Only UC publishes a position on Sophia, Study.com and the rest. Everywhere else is "we have no record", which is honest and nearly useless. These policies exist; they are just not collected.
@@ -39,7 +40,7 @@ things up helps until the field exists.
 
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] Confirm, for campuses we already price: per-credit cost, residency minimum, transfer-credit cap.
-- [ ] Confirm **888 of 1588 acceptance rules** still marked `needs_check` — these are what the conservative route refuses to use.
+- [ ] Confirm **1272 of 1972 acceptance rules** still marked `needs_check` — these are what the conservative route refuses to use.
 
 ### Florida (FL)
 
@@ -48,7 +49,7 @@ things up helps until the field exists.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
 - [ ] Confirm, for campuses we already price: per-credit cost, residency minimum, transfer-credit cap.
-- [ ] Confirm **768 of 768 acceptance rules** still marked `needs_check` — these are what the conservative route refuses to use.
+- [ ] Confirm **1020 of 1020 acceptance rules** still marked `needs_check` — these are what the conservative route refuses to use.
 
 ### Texas (TX)
 
@@ -57,7 +58,7 @@ things up helps until the field exists.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
 - [ ] Confirm, for campuses we already price: per-credit cost, residency minimum, transfer-credit cap.
-- [ ] Confirm **2310 of 2310 acceptance rules** still marked `needs_check` — these are what the conservative route refuses to use.
+- [ ] Confirm **2695 of 2695 acceptance rules** still marked `needs_check` — these are what the conservative route refuses to use.
 
 
 ## Tier 2 — statewide rule only

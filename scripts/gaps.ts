@@ -166,13 +166,16 @@ const SCHEMA_GAPS: ReadonlyArray<readonly [string, string]> = [
     + 'express that, so the cheapest pathway in the app is priced at a single guess.',
   ],
   [
-    'A-Level, AICE, DLPT, UExcel',
-    'IB and DSST are now modelled. Still missing: A-Level, which UC explicitly accepts '
-    + 'alongside AP and IB, and AICE, DLPT and UExcel, which Florida\u2019s binding statewide '
-    + 'table covers. We model four of Florida\u2019s seven families. Also missing on the IB '
-    + 'side: **Standard Level** exams, left out on purpose because UC credit and the '
-    + 'Cal-GETC standard are both written for Higher Level, and an SL row would promise '
-    + 'something nobody said.',
+    'Letter-graded exams cannot be expressed',
+    '`AcceptanceRule.min_score` is a number. A Levels are graded A to E, so every A Level '
+    + 'rule carries `min_score: null` and the real requirement \u2014 grade A, B or C \u2014 lives in '
+    + 'a prose note the engine cannot read. Nothing can warn a student holding a D.',
+  ],
+  [
+    'AS Level, and IB Standard Level',
+    'Both are half of the qualification above them, with their own credit rules, and both '
+    + 'are deliberately absent rather than guessed. All seven of Florida\u2019s statutory exam '
+    + 'families are now modelled; these two sub-levels are what is left.',
   ],
   [
     'Major-specific pathways',

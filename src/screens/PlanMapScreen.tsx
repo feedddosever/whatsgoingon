@@ -59,6 +59,21 @@ const PATH_COPY: Record<string, readonly [string, string]> = {
     'school; what the programme is called, and whether it is free, is set by ' +
     'your state.',
   ],
+  a_level: [
+    'A Levels (Cambridge · AICE)',
+    'Grade A to C. UC names A Level among the three exam families it accepts, ' +
+    'and Florida counts the same exams as AICE under its binding statewide table.',
+  ],
+  dlpt: [
+    'DLPT language ratings',
+    'Free, and only if you serve \u2014 the Defense Language Institute administers ' +
+    'it and there is no civilian route in. Never suggested, always counted.',
+  ],
+  uexcel: [
+    'UExcel',
+    'Retired in August 2022. Nothing to buy; scores already earned still move, ' +
+    'and Florida\u2019s statute still names them.',
+  ],
   ib: [
     'IB exams',
     'Higher Level at a 5 or better. Accepted where CLEP and DSST are refused \u2014 ' +

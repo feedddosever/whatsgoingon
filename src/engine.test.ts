@@ -1094,7 +1094,15 @@ test('DSST at a CSU counts toward the degree and clears nothing', () => {
 test('a refusal is by family, and covers every exam in it', () => {
   const uc = us.institutions.find(i => i.id === 'uc-berkeley');
   assert.ok(uc);
-  assert.deepEqual([...uc.refuses].sort(), ['alt_provider', 'clep', 'dsst']);
+  // UC's own sentence is "AP, IB and A-Level" and nothing else, so everything
+  // outside that list is a refusal we can point at rather than a silence.
+  assert.deepEqual(
+    [...uc.refuses].sort(),
+    ['alt_provider', 'clep', 'dlpt', 'dsst', 'uexcel'],
+  );
+  for (const accepted of ['ap', 'ib', 'a_level'] as const) {
+    assert.ok(!uc.refuses.includes(accepted), `UC should accept ${accepted}`);
+  }
 
   // No rule may exist for a family a campus refuses — a rule would say "here is
   // what it is worth" about credit the campus will not look at.
@@ -1122,6 +1130,51 @@ test('every IB row is Higher Level, and every exam family is reachable', () => {
     assert.ok(
       us.creditSources.some(c => c.kind === kind),
       `no credit sources at all for ${kind}`,
+    );
+  }
+});
+
+test('a retired or restricted exam is never recommended, only counted', () => {
+  // UExcel cannot be bought since August 2022 and the DLPT has no civilian
+  // route in. Both still carry Florida rules, so both would be planned with if
+  // availability were not gated — sending a student to buy a discontinued exam.
+  const fl = { profile: PLAIN, target_institution_id: 'u-florida',
+    held_credit_ids: [], units_in_residence: 0 };
+  for (const kind of ['cheapest', 'fastest', 'lowest_risk'] as const) {
+    const route = planRoute(us, fl, kind);
+    assert.ok(
+      !route.items.some(i => i.kind === 'uexcel' || i.kind === 'dlpt'),
+      `${kind} recommended something nobody can sit`,
+    );
+  }
+  assert.ok(!optionsForArea(us, fl, 'fl-comm').some(o => o.kind === 'uexcel'));
+
+  // …but a score already held still clears its area.
+  const held = { ...fl, held_credit_ids: ['uexcel-english-composition'] };
+  const route = planRoute(us, held, 'cheapest');
+  const touched = [...route.areas_cleared, ...route.areas_unmet, ...route.areas_skipped];
+  assert.ok(!touched.includes('fl-comm'), 'a held UExcel score should have cleared fl-comm');
+});
+
+test('UC accepts A Level by name, and that is the point of having it', () => {
+  const input = {
+    profile: PLAIN, target_institution_id: 'uc-berkeley',
+    held_credit_ids: ['alevel-biology'], units_in_residence: 0,
+  };
+  const route = planRoute(us, input, 'cheapest');
+  assert.ok(!route.warnings.some(w => w.kind === 'stranded_credit'));
+  const touched = [...route.areas_cleared, ...route.areas_unmet, ...route.areas_skipped];
+  assert.ok(!touched.includes('5B'), 'A Level Biology should have cleared 5B');
+});
+
+test('prices carry a date once they have been checked', () => {
+  // A price with no `as_of` is a number nobody can date, and these move: CLEP
+  // went $95 to $97 between cycles and the dataset did not notice for a while.
+  for (const c of us.creditSources) {
+    if (c.cost_usd === 0) continue; // free rows make no price claim
+    assert.notEqual(
+      c.provenance.as_of.trim(), '',
+      `${c.id} quotes ${c.cost_usd} with no date on the source`,
     );
   }
 });

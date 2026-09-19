@@ -29,7 +29,7 @@ not a guarantee".
 
 | Provider | Price | Recommended by | Notes |
 |---|---|---|---|
-| **Sophia Learning** | $99 / month, unlimited courses | ACE | No proctoring fee. A fast student clears several courses on one month's subscription. |
+| **Sophia Learning** | $99 / month, unlimited courses (12-month plan ~$599) | ACE | No proctoring fee. A fast student clears several courses on one month's subscription. |
 | **Study.com** (College Saver) | $95 / month | **ACE and NCCRS** | The only dual-recommended row, which widens the set of colleges that may take it. Finals are open-book, unproctored, graded instantly. |
 | **StraighterLine** | ~$99 / month **plus** ~$79 per course | ACE | Priced differently — the arithmetic only works taking few courses slowly. Some finals proctored. Larger partner network. |
 | **Saylor Academy** | Free; ~$5 proctored final | ACE and NCCRS | Non-profit. The cheapest credit in the dataset by a wide margin. |
@@ -53,6 +53,22 @@ family with the widest spread in value: a Cal State will award it toward a
 degree, and the University of California awards nothing for it at all. Florida
 is the opposite again — DSST is named in the same binding statewide table as AP
 and CLEP, and no Florida public university gets a vote.
+
+## Exams that cannot be bought
+
+Two families in the dataset are real, carry credit, and cannot be purchased:
+
+- **UExcel** is **retired**. Excelsior stopped offering the exams after 21
+  August 2022 and accepts no new registrations. Scores already earned still
+  transfer, and Florida's statute still names UExcel — so the app lets a student
+  declare one and will never suggest sitting one.
+- **DLPT** is **restricted**. The Defense Language Institute administers it to
+  service members and government-sponsored personnel; there is no civilian route
+  in. Free to those eligible, and worth real credit in Florida.
+
+Both are marked `availability` in the data, and anything not `open` is
+declarable but never recommended. A planner that tells a student to go and buy a
+discontinued exam is worse than one that says nothing.
 
 ## Regional vs national accreditation: say this carefully
 

@@ -85,6 +85,59 @@ The remaining 26 carry an honest "we have not confirmed one", which is a fact
 about us and not about them — ECS counts at least 31 states with a transferable
 core, so most of those 26 have one we simply have not checked.
 
+### All seven of Florida's statutory exam families (2026-09-19)
+
+Section 1007.27(2) names AP, AICE, IB, DSST, DLPT, UExcel and CLEP. The dataset
+now models all seven, plus community-college courses and third-party providers
+— nine credit families.
+
+Three arrived with conditions that needed a new concept, `CreditAvailability`:
+
+- **A Level** (Cambridge International) — what Florida calls **AICE**. Modelled
+  as ONE family, because the Cambridge AICE Diploma is assembled from these same
+  subject exams and a separate AICE family would be an invented exam. UC accepts
+  A Level by name; for general-education credit it must be Cambridge
+  International, taken **2013 or later**.
+- **DLPT** — `availability: 'restricted'`. Administered by the Defense Language
+  Institute to service members and government-sponsored personnel; there is no
+  civilian route in.
+- **UExcel** — `availability: 'retired'`. Excelsior stopped offering it after
+  **21 August 2022** and takes no new registrations. Scores already earned still
+  transfer, and Florida's statute still names it.
+
+Anything not `open` is **declarable but never recommended**. The gate sits in
+`candidatesFor`, not in `unmetAreas`, so credit a student already holds still
+clears everything it is worth while the planner never sends anyone to buy a
+discontinued exam or one they cannot sit.
+
+UC's refusal list grew to match its own quoted sentence — it accepts "AP, IB and
+A-Level" and nothing else, so `refuses` is now
+`['clep', 'dsst', 'dlpt', 'uexcel', 'alt_provider']`. And `forState()` now keeps
+any family a campus in that state refuses, generalising what had been a special
+case for third-party providers: a source filtered out for having no acceptance
+rule is a source the student cannot tick, so the refusal can never be shown.
+
+### Freshness audit, 2026-09-19
+
+Every price and version in the dataset re-checked:
+
+| Row | Status |
+|---|---|
+| **CLEP $95** | **STALE → $97.** College Board raised it for the 2025-26 cycle. Fixed, and the note now says the test-centre fee is extra. |
+| AP $99 | Current, and held for 2026-27. `as_of` was blank; now dated. |
+| IB per subject | Was undated and guessed at $130. Now $128 against a school fee schedule, with the ~$172 one-off diploma registration called out as NOT included. |
+| DSST $100 | Current, plus a $25–$50 centre fee and free at DANTES sites. |
+| CCC $46/unit | Current for 2026-27 (LAO). |
+| Cal-GETC v1.4 | Current version, 2026. |
+| Sophia $99/mo | Current. Note now adds the 12-month plan at $599 (~$50/mo). |
+| Study.com $95/mo | Current. |
+| StraighterLine $99/mo + $79/course | Current. |
+| Saylor $5 proctoring | Current. |
+| TEEX free | Current; credit total softened to ~10–13, which is where sources disagree. |
+
+A test now fails the build if any priced row quotes a figure with no `as_of` —
+the CLEP drift went unnoticed precisely because nothing forced a date.
+
 ### IB and DSST (added 2026-09-19)
 
 Two families the app previously could not represent at all, while quoting a UC

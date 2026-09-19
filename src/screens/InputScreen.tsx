@@ -30,6 +30,7 @@ import type {
   NativeSyntheticEvent,
 } from 'react-native';
 import type {
+  CreditAvailability,
   CreditKind,
   CreditRecognition,
   CreditSource,
@@ -52,6 +53,21 @@ const CREDIT_GROUPS: ReadonlyArray<{ kind: CreditKind; title: string; blurb: str
   { kind: 'dsst', title: 'DSST exams', blurb: 'Free for serving members at a DANTES site — and refused outright by some campuses' },
   { kind: 'ap', title: 'AP exams', blurb: 'Scores you already hold from high school' },
   { kind: 'ib', title: 'IB exams', blurb: 'Higher Level only, score 5 or better — Standard Level is not modelled' },
+  {
+    kind: 'a_level',
+    title: 'A Levels (Cambridge · AICE)',
+    blurb: 'Grade A–C. Accepted by UC by name; Florida calls the same exams AICE',
+  },
+  {
+    kind: 'dlpt',
+    title: 'DLPT language ratings',
+    blurb: 'Defense Language Institute — free, and only if you serve',
+  },
+  {
+    kind: 'uexcel',
+    title: 'UExcel (retired 2022)',
+    blurb: 'Nobody can sit one any more. Tick it only if you already hold the score',
+  },
   { kind: 'cc_course', title: 'Community college courses', blurb: 'Courses you have already passed' },
   {
     kind: 'alt_provider',
@@ -200,6 +216,18 @@ function InstitutionCard(
  * the recommendation is printed next to the price — where the decision is — and
  * worded as a recommendation rather than as a status.
  */
+/**
+ * Said on the row, not in the group header.
+ *
+ * A student scanning for something cheap will read a price before a heading,
+ * and "$0" on a retired exam is an invitation to go and look for it. The reason
+ * it cannot be bought has to travel with the price.
+ */
+const AVAILABILITY_LABEL: Record<Exclude<CreditAvailability, 'open'>, string> = {
+  retired: 'Retired — no longer offered. Existing scores still transfer.',
+  restricted: 'Not open to the public — you must be eligible to sit it.',
+};
+
 const RECOGNITION_LABEL: Record<CreditRecognition, string> = {
   ace: 'ACE recommends credit',
   nccrs: 'NCCRS recommends credit',
@@ -232,6 +260,9 @@ function CreditRow(
           </Text>
           <SourceBadge p={src.provenance} compact />
         </View>
+        {src.availability !== undefined && src.availability !== 'open' && (
+          <Text style={styles.unavailable}>{AVAILABILITY_LABEL[src.availability]}</Text>
+        )}
         {src.recognition !== undefined && (
           <Text style={styles.recognition}>
             {RECOGNITION_LABEL[src.recognition]} — a recommendation, not a guarantee.
@@ -1041,6 +1072,7 @@ const styles = StyleSheet.create({
   chipText: { ...theme.font.mono, color: theme.color.textMuted, letterSpacing: 1 },
 
   recognition: { ...theme.font.small, color: theme.color.textMuted, marginTop: 2 },
+  unavailable: { ...theme.font.small, color: theme.color.warn, marginTop: 2 },
   thirdParty: {
     marginTop: theme.space.sm,
     padding: theme.space.md,

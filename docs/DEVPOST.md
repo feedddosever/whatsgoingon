@@ -95,9 +95,11 @@ are priced back in so a plan that clears less can never *look* cheaper than it i
 
 The dataset is typed TypeScript modules rather than JSON, so a malformed row is a
 compile error. It currently holds **79 public campuses across three states**, 25 requirement
-areas, 97 credit sources across six credit families (AP, IB, CLEP, DSST,
-community-college courses and third-party providers) and **4,666 acceptance
-rules**.
+areas, 118 credit sources across **nine credit families** — AP, IB, Cambridge A
+Level (what Florida calls AICE), CLEP, DSST, DLPT, UExcel, community-college
+courses and third-party providers — and over **5,000 acceptance rules**. That is
+all seven families named in Florida's credit-by-exam statute, plus the two that
+are not exams at all.
 
 Coverage is deliberately two-tiered and the app never blurs them. Campus-level
 planning — the part that produces a number — is California, Texas and Florida.

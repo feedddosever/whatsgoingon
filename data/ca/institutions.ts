@@ -23,7 +23,9 @@ const UC_EXAM_POLICY: Provenance = {
   as_of: '2026-09-18',
   confidence: 'published',
   note:
-    'UC accepts only AP, IB and A-Level exams. It awards no credit for CLEP or DSST, and ' +
+    'UC accepts only AP, IB and A-Level exams \u2014 and for general-education credit an '
+    + 'A Level must be Cambridge International, taken 2013 or later. It awards no credit '
+    + 'for CLEP, DSST, DLPT or UExcel, and ' +
     'does not honour credit posted to a third-party transcript (Sophia, Study.com, ' +
     'StraighterLine, Saylor). Build a UC plan on AP/IB only.',
 };
@@ -109,7 +111,9 @@ const uc = (id: string, name: string, tag: boolean): Institution => ({
   max_transfer_units: 70,
   // Published, and the most expensive fact in the dataset: UC awards nothing
   // for CLEP, nothing for DSST, and nothing posted to a third-party transcript.
-  refuses: ['clep', 'dsst', 'alt_provider'],
+  // From UC's own sentence, quoted below: it accepts AP, IB and A-Level and
+  // nothing else. Everything outside that list is a refusal we can point at.
+  refuses: ['clep', 'dsst', 'dlpt', 'uexcel', 'alt_provider'],
   exam_policy_provenance: {
     ...UC_EXAM_POLICY,
     note: UC_EXAM_POLICY.note + ' ' + (tag ? TAG : NO_TAG(name)),

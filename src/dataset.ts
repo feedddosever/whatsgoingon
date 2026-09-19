@@ -64,6 +64,7 @@ export function forState(ds: Dataset, state: StateCode): Dataset {
   const instIds = new Set(institutions.map(i => i.id));
   const rules = ds.rules.filter(r => instIds.has(r.institution_id));
   const sourceIds = new Set(rules.map(r => r.credit_source_id));
+  const refusedKinds = new Set(institutions.flatMap(i => i.refuses));
   return {
     ...ds,
     jurisdictions: ds.jurisdictions.filter(j => j.code === state),
@@ -71,12 +72,14 @@ export function forState(ds: Dataset, state: StateCode): Dataset {
     systems: ds.systems.filter(s => systemIds.has(s.id)),
     institutions,
     areas: ds.areas.filter(a => a.applies_to.some(s => systemIds.has(s))),
-    // Third-party providers survive the slice even with no rule behind them.
-    // The whole reason to list Sophia is to tell a UC-bound student that UC
-    // will not look at it, and a source filtered out for having no acceptance
-    // rule is a source that can never produce that warning.
+    // A family that some campus in this state REFUSES survives the slice even
+    // with no rule behind it. The whole reason to list Sophia, or UExcel, is to
+    // tell a UC-bound student that UC will not look at it — and a source
+    // filtered out for having no acceptance rule is a source the student cannot
+    // tick, so the warning can never fire. This used to be a special case for
+    // `alt_provider`; DLPT and UExcel arrived and it stopped being special.
     creditSources: ds.creditSources.filter(
-      c => sourceIds.has(c.id) || c.kind === 'alt_provider',
+      c => sourceIds.has(c.id) || refusedKinds.has(c.kind),
     ),
     rules,
   };

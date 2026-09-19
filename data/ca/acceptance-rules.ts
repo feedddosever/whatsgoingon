@@ -143,6 +143,44 @@ const CSU_DSST: Provenance = {
     'DSST credit whatsoever, which is why no UC rows exist for it at all.',
 };
 
+/**
+ * A Level against Cal-GETC.
+ *
+ * UC accepts it by name, which is the whole reason it is here: an A Level
+ * student arriving at a UC has credit that CLEP and DSST students do not.
+ *
+ * `min_score` is null and cannot be otherwise — A Levels are graded A to E, and
+ * the field is a number. The grade requirement (A, B or C) lives in the note,
+ * which is a gap in the model rather than in the data. Recorded in data/GAPS.md.
+ */
+const CAL_GETC_ALEVEL: Provenance = {
+  source_url: 'https://admission.universityofcalifornia.edu/admission-requirements/ap-exam-credits/a-levels.html',
+  as_of: '2026-09-19',
+  confidence: 'needs_check',
+  note:
+    'UC grants credit at grade A, B or C, up to 12 quarter (8 semester) units per exam. ' +
+    'For general-education credit the exam must be a Cambridge International A Level taken ' +
+    'in 2013 or later \u2014 not one from another board, and not an earlier sitting. Which AREA ' +
+    'each subject clears has not been checked against the Cal-GETC external-exam table, and ' +
+    'UC says campus faculty review these awards periodically. Confirm before you rely on it.',
+};
+
+/** [source, areas cleared together, semester units]. */
+const ALEVEL_RULES: ReadonlyArray<readonly [string, string[], number]> = [
+  ['alevel-english-literature', ['1A'], 3],
+  ['alevel-english-literature', ['3B'], 3],
+  ['alevel-mathematics', ['2'], 3],
+  ['alevel-art-design', ['3A'], 3],
+  ['alevel-spanish', ['3B'], 3],
+  ['alevel-history', ['4'], 3],
+  ['alevel-economics', ['4'], 3],
+  ['alevel-psychology', ['4'], 3],
+  ['alevel-geography', ['4'], 3],
+  ['alevel-chemistry', ['5A'], 3],
+  ['alevel-physics', ['5A'], 3],
+  ['alevel-biology', ['5B'], 3],
+];
+
 /** [source, areas cleared together, semester units]. */
 const IB_RULES: ReadonlyArray<readonly [string, string[], number]> = [
   ['ib-english-a-hl', ['1A'], 3],
@@ -175,6 +213,13 @@ for (const inst of ALL_IDS) {
       institution_id: inst, credit_source_id: src,
       min_score: 5, units_granted: units, satisfies_areas: [...areas],
       provenance: CAL_GETC_IB,
+    });
+  }
+  for (const [src, areas, units] of ALEVEL_RULES) {
+    rules.push({
+      institution_id: inst, credit_source_id: src,
+      min_score: null, units_granted: units, satisfies_areas: [...areas],
+      provenance: CAL_GETC_ALEVEL,
     });
   }
   for (const [src, areas, note] of CCC_RULES) {

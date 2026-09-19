@@ -116,6 +116,11 @@ function candidatesFor(ds: Dataset, inst: Institution, profile: StudentProfile):
     const src = byId(ds.creditSources, rule.credit_source_id);
     if (!src) continue;
     if (!willLookAt(inst, src)) continue;
+    // Never RECOMMEND something the student cannot go and obtain. A retired
+    // exam or one they are not eligible to sit is worse advice than silence.
+    // This gate is deliberately here and not in `unmetAreas`: credit they
+    // already hold still clears everything it is worth.
+    if (src.availability !== undefined && src.availability !== 'open') continue;
     items.push(toPlanItem(rule, src, profile, jur));
   }
   return items;
@@ -538,7 +543,9 @@ export function pathwayCosts(ds: Dataset, input: StudentInput): PathwayCost[] {
 
   const required = unmetAreas(ds, inst, input.held_credit_ids);
   const candidates = candidatesFor(ds, inst, input.profile);
-  const kinds: CreditKind[] = ['ap', 'ib', 'cc_course', 'clep', 'dsst', 'alt_provider'];
+  const kinds: CreditKind[] = [
+    'ap', 'ib', 'a_level', 'cc_course', 'clep', 'dsst', 'dlpt', 'uexcel', 'alt_provider',
+  ];
 
   return kinds.map(kind => {
     let covered = 0;

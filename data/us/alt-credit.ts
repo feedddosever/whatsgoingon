@@ -113,8 +113,10 @@ export const altCreditSources: CreditSource[] = [
     provenance: {
       ...FREE,
       note:
-        'Texas A&M Engineering Extension Service offers up to about 13 credits at no ' +
-        'cost, unproctored. Genuinely free, and genuinely narrow — the subject range is ' +
+        'Texas A&M Engineering Extension Service offers roughly 10 to 13 credits at no ' +
+        'cost \u2014 sources disagree on the total and the catalogue moves \u2014 unproctored, and ' +
+        'DHS/FEMA-funded, which is why it is free to the general public and not just to ' +
+        'Texans. Genuinely free, and genuinely narrow — the subject range is ' +
         'small, so it fills gaps rather than a degree. ' + FREE.note,
     },
   },

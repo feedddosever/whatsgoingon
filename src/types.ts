@@ -189,7 +189,30 @@ export interface GeArea {
  * decides whether a student's whole plan is worth anything.
  */
 export type CreditKind =
-  | 'ap' | 'ib' | 'clep' | 'dsst' | 'cc_course' | 'alt_provider';
+  | 'ap' | 'ib' | 'a_level' | 'clep' | 'dsst' | 'dlpt' | 'uexcel'
+  | 'cc_course' | 'alt_provider';
+
+/**
+ * Whether a student can actually go and obtain this credit today.
+ *
+ * Not the same question as whether a campus will accept it, and the app has to
+ * answer both. UExcel was retired in August 2022 — the credit still transfers,
+ * and nobody can sit one — while the DLPT is administered by the Defense
+ * Language Institute to service members and is not something a civilian can
+ * register for.
+ *
+ * Anything not `open` is declarable but never RECOMMENDED: the planner exists
+ * to tell a student what to go and do next, and sending them to buy a
+ * discontinued exam, or one they are not eligible to sit, is worse than saying
+ * nothing. Credit they already hold still counts for everything it is worth.
+ */
+export type CreditAvailability =
+  /** Anyone can register and sit it. */
+  | 'open'
+  /** Real, but you must qualify — military service, an employer, a programme. */
+  | 'restricted'
+  /** No longer offered. Existing scores still transfer. */
+  | 'retired';
 
 /**
  * Who has reviewed a third-party course and said what it is worth.
@@ -207,6 +230,8 @@ export interface CreditSource {
   name: string;
   /** What it costs the student to obtain, in USD. */
   cost_usd: number;
+  /** Absent means `open`. See `CreditAvailability`. */
+  availability?: CreditAvailability;
   /**
    * Who recommends it, for `alt_provider` rows. Absent on AP, CLEP and
    * community-college courses, which do not work this way: an AP score and a

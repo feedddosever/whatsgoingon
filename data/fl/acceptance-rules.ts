@@ -110,6 +110,30 @@ const IB_DSST_RULES: ReadonlyArray<readonly [string, string[], number]> = [
   ['dsst-substance-abuse', ['fl-social'], 400],
   ['dsst-introduction-to-world-religions', ['fl-hum'], 400],
   ['dsst-environment-humanity', ['fl-nat'], 400],
+  // AICE is Florida's name for these Cambridge exams, and 1007.27(2) names it
+  // alongside AP, IB, DSST, DLPT, UExcel and CLEP under one binding table.
+  ['alevel-english-literature', ['fl-comm'], 0],
+  ['alevel-mathematics', ['fl-math'], 0],
+  ['alevel-history', ['fl-social'], 0],
+  ['alevel-psychology', ['fl-social'], 0],
+  ['alevel-economics', ['fl-social'], 0],
+  ['alevel-geography', ['fl-social'], 0],
+  ['alevel-art-design', ['fl-hum'], 0],
+  ['alevel-spanish', ['fl-hum'], 0],
+  ['alevel-biology', ['fl-nat'], 0],
+  ['alevel-chemistry', ['fl-nat'], 0],
+  ['alevel-physics', ['fl-nat'], 0],
+  // Retired and restricted, and still worth credit here: the statute names both.
+  ['uexcel-english-composition', ['fl-comm'], 0],
+  ['uexcel-college-algebra', ['fl-math'], 0],
+  ['uexcel-introduction-to-psychology', ['fl-social'], 0],
+  ['uexcel-introduction-to-sociology', ['fl-social'], 0],
+  ['uexcel-world-population', ['fl-social'], 0],
+  ['dlpt-spanish', ['fl-hum'], 0],
+  ['dlpt-arabic', ['fl-hum'], 0],
+  ['dlpt-korean', ['fl-hum'], 0],
+  ['dlpt-russian', ['fl-hum'], 0],
+  ['dlpt-chinese-mandarin', ['fl-hum'], 0],
 ];
 
 const COURSE_RULES: ReadonlyArray<readonly [string, string[]]> = [
