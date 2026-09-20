@@ -166,6 +166,54 @@ const SCHEMA_GAPS: ReadonlyArray<readonly [string, string]> = [
     + 'express that, so the cheapest pathway in the app is priced at a single guess.',
   ],
   [
+    'Score-tiered exam rules',
+    'One rule per exam, one outcome. Florida\u2019s table routinely awards MORE at a higher '
+    + 'score \u2014 AP US History clears nothing at 3 and two core courses at 4, AP Calculus BC '
+    + 'awards 4 credits at 3 and 8 at 4. We model the floor, which under-claims for every '
+    + 'student who scored well. `AcceptanceRule` needs score bands.',
+  ],
+  [
+    'A cap on guaranteed exam credit',
+    'Florida guarantees transfer of at most 45 credit-by-exam credits; CSU caps CLEP at 30 '
+    + 'units; Utah caps each CLEP test at 10. The engine will happily build a plan that '
+    + 'exceeds any of them and say nothing. `max_exam_credits_guaranteed` per jurisdiction.',
+  ],
+  [
+    'Exam exclusions from a block, as an enforceable refusal',
+    'Cal-GETC bars CLEP. The Michigan Transfer Agreement bars CLEP, IB AND DSST. North '
+    + 'Carolina bars non-AP credit when the degree is incomplete. Today these live in prose '
+    + 'or in per-campus `refuses`; they are properties of the FRAMEWORK and the engine '
+    + 'should enforce them there.',
+  ],
+  [
+    'How a state decides exam credit at all',
+    'Four shapes, and they are not interchangeable: a binding statewide table (Florida), a '
+    + 'statutory score floor (Texas AP), a system policy (CSU), or nothing but campus '
+    + 'discretion (most states). `ExamPolicyKind` would let the app say WHY it is confident '
+    + 'rather than only how confident.',
+  ],
+  [
+    'Pricing shapes beyond per-credit',
+    '`per_credit`, `per_credit_capped` (Georgia bills to 15), `tiered`, `flat_full_time` '
+    + '(both California systems) and `per_contact_hour` (some Michigan colleges) are all in '
+    + 'use, plus in-district / out-of-district / out-of-state residency tiers. One number '
+    + 'per campus cannot express any of it.',
+  ],
+  [
+    'Aid that must be shown rather than subtracted',
+    'Only a need-based waiver and a universal promise can honestly be applied to a price. '
+    + 'Programmes gated on age, graduation year, field of study or service \u2014 Oregon '
+    + 'Promise, Georgia\u2019s HOPE Career Grant, Maine Free College \u2014 must be surfaced and '
+    + 'NOT auto-subtracted, or the app quotes a discount the student may not get.',
+  ],
+  [
+    'Third-party stance is more than yes/no',
+    'Published refusal, agreement-only, official partner, system policy permits, '
+    + 'evaluate-on-request by law, no record. Today `refuses` expresses the first and last '
+    + 'and nothing between, so a state where the law REQUIRES an evaluation looks identical '
+    + 'to one where nobody has said anything.',
+  ],
+  [
     'Letter-graded exams cannot be expressed',
     '`AcceptanceRule.min_score` is a number. A Levels are graded A to E, so every A Level '
     + 'rule carries `min_score: null` and the real requirement \u2014 grade A, B or C \u2014 lives in '

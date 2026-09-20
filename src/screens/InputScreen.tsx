@@ -404,8 +404,21 @@ function StateRow(
       )}
 
       {chosen !== undefined && chosen.transfer_guarantee !== null && (
-        <View style={styles.guarantee}>
-          <Text style={styles.guaranteeKicker}>THE STATEWIDE RULE</Text>
+        <View
+          style={[
+            styles.guarantee,
+            // "We checked and there is no statewide rule" is a finding a student
+            // can act on, and it is not good news. Printing it under a green
+            // rule headed THE STATEWIDE RULE would be the app contradicting
+            // itself in two lines.
+            chosen.statewide_framework === 'none' && styles.guaranteeNone,
+          ]}
+        >
+          <Text style={styles.guaranteeKicker}>
+            {chosen.statewide_framework === 'none'
+              ? 'NO STATEWIDE RULE — WE LOOKED'
+              : 'THE STATEWIDE RULE'}
+          </Text>
           <Text style={styles.guaranteeText}>{chosen.transfer_guarantee}</Text>
           <SourceBadge p={chosen.transfer_provenance} />
         </View>
@@ -1149,6 +1162,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: theme.color.accent,
   },
+  guaranteeNone: { borderLeftColor: theme.color.textMuted },
   guaranteeKicker: {
     ...theme.font.small, color: theme.color.textMuted, letterSpacing: 2,
     marginBottom: theme.space.xs,

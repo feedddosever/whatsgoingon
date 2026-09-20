@@ -4,7 +4,7 @@
 > Do not edit by hand — re-run it. A gap list that can drift from the data
 > is the same failure this app exists to prevent.
 
-Counted 51 jurisdictions, 79 campuses, 5687 acceptance rules.
+Counted 51 jurisdictions, 79 campuses, 5675 acceptance rules.
 
 ## Gaps that need a type change, not research
 
@@ -16,6 +16,13 @@ things up helps until the field exists.
 - **Catalogue year, as distinct from when we read it.** `Provenance.as_of` records the day we read a page. It does not record which CATALOGUE YEAR the policy belongs to, and transfer policy is versioned by catalogue year. A row read today can describe a rule that changed in the autumn, and nothing in the model can tell the difference.
 - **Flat-rate tuition.** Both California systems charge a flat full-time rate, not per unit. Our per-unit figure is derived and OVERSTATES the saving for a student already enrolled full time — the most scrutinised number in the app, and still a guess about the shape of the price. `Institution` needs a pricing model, not just a rate.
 - **In-district, out-of-district, out-of-state.** Community colleges charge all three, and the spread is large — Texas in-district runs from about $77 to $164 per credit hour. One price per course row cannot express that, so the cheapest pathway in the app is priced at a single guess.
+- **Score-tiered exam rules.** One rule per exam, one outcome. Florida’s table routinely awards MORE at a higher score — AP US History clears nothing at 3 and two core courses at 4, AP Calculus BC awards 4 credits at 3 and 8 at 4. We model the floor, which under-claims for every student who scored well. `AcceptanceRule` needs score bands.
+- **A cap on guaranteed exam credit.** Florida guarantees transfer of at most 45 credit-by-exam credits; CSU caps CLEP at 30 units; Utah caps each CLEP test at 10. The engine will happily build a plan that exceeds any of them and say nothing. `max_exam_credits_guaranteed` per jurisdiction.
+- **Exam exclusions from a block, as an enforceable refusal.** Cal-GETC bars CLEP. The Michigan Transfer Agreement bars CLEP, IB AND DSST. North Carolina bars non-AP credit when the degree is incomplete. Today these live in prose or in per-campus `refuses`; they are properties of the FRAMEWORK and the engine should enforce them there.
+- **How a state decides exam credit at all.** Four shapes, and they are not interchangeable: a binding statewide table (Florida), a statutory score floor (Texas AP), a system policy (CSU), or nothing but campus discretion (most states). `ExamPolicyKind` would let the app say WHY it is confident rather than only how confident.
+- **Pricing shapes beyond per-credit.** `per_credit`, `per_credit_capped` (Georgia bills to 15), `tiered`, `flat_full_time` (both California systems) and `per_contact_hour` (some Michigan colleges) are all in use, plus in-district / out-of-district / out-of-state residency tiers. One number per campus cannot express any of it.
+- **Aid that must be shown rather than subtracted.** Only a need-based waiver and a universal promise can honestly be applied to a price. Programmes gated on age, graduation year, field of study or service — Oregon Promise, Georgia’s HOPE Career Grant, Maine Free College — must be surfaced and NOT auto-subtracted, or the app quotes a discount the student may not get.
+- **Third-party stance is more than yes/no.** Published refusal, agreement-only, official partner, system policy permits, evaluate-on-request by law, no record. Today `refuses` expresses the first and last and nothing between, so a state where the law REQUIRES an evaluation looks identical to one where nobody has said anything.
 - **Letter-graded exams cannot be expressed.** `AcceptanceRule.min_score` is a number. A Levels are graded A to E, so every A Level rule carries `min_score: null` and the real requirement — grade A, B or C — lives in a prose note the engine cannot read. Nothing can warn a student holding a D.
 - **AS Level, and IB Standard Level.** Both are half of the qualification above them, with their own credit rules, and both are deliberately absent rather than guessed. All seven of Florida’s statutory exam families are now modelled; these two sub-levels are what is left.
 - **Major-specific pathways.** Tennessee’s Transfer Pathways and SUNY’s Transfer Paths are organised by MAJOR, not by general education. We model general education only, so in those states we describe the wrong half of the guarantee.
@@ -28,8 +35,8 @@ things up helps until the field exists.
 | Tier | What a student gets | States |
 |---|---|---|
 | **1 — campus pricing** | A priced plan | 3 |
-| **2 — statewide rule** | The rule, no numbers | 22 |
-| **3 — nothing confirmed** | An honest refusal | 26 |
+| **2 — statewide rule** | The rule, no numbers | 48 |
+| **3 — nothing confirmed** | An honest refusal | 0 |
 
 
 ## Tier 1 — campus pricing
@@ -49,7 +56,7 @@ things up helps until the field exists.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
 - [ ] Confirm, for campuses we already price: per-credit cost, residency minimum, transfer-credit cap.
-- [ ] Confirm **1020 of 1020 acceptance rules** still marked `needs_check` — these are what the conservative route refuses to use.
+- [ ] Confirm **1008 of 1008 acceptance rules** still marked `needs_check` — these are what the conservative route refuses to use.
 
 ### Texas (TX)
 
@@ -64,6 +71,20 @@ things up helps until the field exists.
 ## Tier 2 — statewide rule only
 
 ### Alabama (AL)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Alaska (AK)
 
 - [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
@@ -119,7 +140,77 @@ things up helps until the field exists.
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
 - [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
+### Connecticut (CT)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Delaware (DE)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### District of Columbia (DC)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
 ### Georgia (GA)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Hawaii (HI)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Idaho (ID)
 
 - [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
@@ -161,6 +252,34 @@ things up helps until the field exists.
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
 - [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
+### Iowa (IA)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Kansas (KS)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
 ### Kentucky (KY)
 
 - [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
@@ -176,6 +295,34 @@ things up helps until the field exists.
 - [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Louisiana (LA)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Maine (ME)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Maryland (MD)
 
 - [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
@@ -259,6 +406,90 @@ things up helps until the field exists.
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
 - [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
+### Montana (MT)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Nebraska (NE)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Nevada (NV)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### New Hampshire (NH)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### New Jersey (NJ)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### New Mexico (NM)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
 ### New York (NY)
 
 - [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
@@ -287,7 +518,35 @@ things up helps until the field exists.
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
 - [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
+### North Dakota (ND)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
 ### Ohio (OH)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Oklahoma (OK)
 
 - [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
@@ -315,7 +574,91 @@ things up helps until the field exists.
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
 - [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
+### Pennsylvania (PA)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Rhode Island (RI)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### South Carolina (SC)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### South Dakota (SD)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
 ### Tennessee (TN)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Utah (UT)
+
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
+- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
+- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
+- [ ] **The public campuses**, with the system each belongs to.
+- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
+- [ ] **Residency minimum** and **transfer-credit cap** per campus.
+- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
+- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
+- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
+- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+### Vermont (VT)
 
 - [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
@@ -371,349 +714,10 @@ things up helps until the field exists.
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
 - [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
-
-## Tier 3 — nothing confirmed
-
-### Alaska (AK)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Connecticut (CT)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Delaware (DE)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### District of Columbia (DC)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Hawaii (HI)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Idaho (ID)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Iowa (IA)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Kansas (KS)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Maine (ME)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Maryland (MD)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Montana (MT)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Nebraska (NE)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Nevada (NV)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### New Hampshire (NH)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### New Jersey (NJ)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### New Mexico (NM)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### North Dakota (ND)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Oklahoma (OK)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Pennsylvania (PA)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Rhode Island (RI)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### South Carolina (SC)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### South Dakota (SD)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Utah (UT)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
-### Vermont (VT)
-
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
-- [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
-- [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
-- [ ] **The public campuses**, with the system each belongs to.
-- [ ] **Per-credit cost per campus**, and whether the institution charges per credit or a flat full-time tier.
-- [ ] **Residency minimum** and **transfer-credit cap** per campus.
-- [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
-- [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
-
 ### Wisconsin (WI)
 
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
 - [ ] **The public campuses**, with the system each belongs to.
@@ -726,8 +730,8 @@ things up helps until the field exists.
 
 ### Wyoming (WY)
 
-- [ ] **Does a statewide transferable general-education core exist?** Name it, or establish that the state has none. (ECS counts at least 31 states that do.)
-- [ ] The agreement or statute behind it, as a URL we can print.
+- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
+- [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
 - [ ] **The public campuses**, with the system each belongs to.
@@ -737,4 +741,7 @@ things up helps until the field exists.
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
 - [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
+
+
+## Tier 3 — nothing confirmed
 

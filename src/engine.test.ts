@@ -127,7 +127,8 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
   // Grant) or a Modern States voucher shifts the cost ordering.
   const synthetic = {
     jurisdictions: [{
-      code: 'CA' as const, name: 'Test', framework_id: 'f', transfer_guarantee: null,
+      code: 'CA' as const, name: 'Test', framework_id: 'f',
+      statewide_framework: 'unknown' as const, transfer_guarantee: null,
       transfer_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
       fee_waiver: null, dual_enrollment: null,
     }],
@@ -969,9 +970,14 @@ test('a statewide guarantee always says where it came from', () => {
   // it to a counsellor. An unsourced one is a rumour with our name on it.
   for (const jur of us.jurisdictions) {
     if (jur.transfer_guarantee === null) continue;
-    assert.match(
-      jur.transfer_provenance.source_url, /^https?:\/\//,
-      `${jur.code} states a guarantee with no source`,
+    // A URL where one exists, and otherwise a named authority in the note —
+    // "Wis. Stat. § 36.31(2m)(b)" is a better, more stable source than most
+    // campus explainer pages, and several of these rules have no canonical URL.
+    const url = jur.transfer_provenance.source_url.trim();
+    const note = jur.transfer_provenance.note ?? '';
+    assert.ok(
+      /^https?:\/\//.test(url) || /Authority: \S/.test(note),
+      `${jur.code} states a guarantee with neither a URL nor a named authority`,
     );
     assert.notEqual(jur.transfer_provenance.as_of.trim(), '', `${jur.code} has no as_of`);
     assert.ok(
@@ -1176,5 +1182,74 @@ test('prices carry a date once they have been checked', () => {
       c.provenance.as_of.trim(), '',
       `${c.id} quotes ${c.cost_usd} with no date on the source`,
     );
+  }
+});
+
+test('every jurisdiction says which of the three things it knows', () => {
+  // "There is no statewide rule" is a finding. "We have not looked" is an
+  // admission. Collapsing them would have the app print THE STATEWIDE RULE
+  // above a sentence saying there isn't one.
+  for (const j of us.jurisdictions) {
+    if (j.statewide_framework === 'unknown') {
+      assert.equal(j.transfer_guarantee, null, `${j.code} claims a rule it calls unknown`);
+      continue;
+    }
+    assert.ok(
+      (j.transfer_guarantee ?? '').trim() !== '',
+      `${j.code} is marked ${j.statewide_framework} with nothing to say`,
+    );
+  }
+  const yes = us.jurisdictions.filter(j => j.statewide_framework === 'yes');
+  assert.ok(yes.length >= 44, `only ${yes.length} states carry a statewide rule`);
+});
+
+test('a quarter-credit state says so, because every unit here is a semester unit', () => {
+  // Oregon and Washington count in quarter credits. Everything the engine
+  // computes assumes semester units, so a quarter state that did not say so
+  // would be wrong by a factor of 1.5 with nothing to complain about.
+  for (const code of ['OR', 'WA'] as const) {
+    const j = us.jurisdictions.find(x => x.code === code);
+    assert.ok(j, `${code} missing`);
+    assert.match(
+      j.transfer_provenance.note ?? '', /QUARTER credits/,
+      `${code} counts in quarter credits and does not say so`,
+    );
+  }
+});
+
+test('Florida awards credit that clears no core area, and says which', () => {
+  // The bug this test exists for: every Florida exam row used to claim a core
+  // area. The August 2026 table awards a named COURSE, and only some of those
+  // courses are core. Eleven rows were overclaiming.
+  const notCore = us.rules.filter(r =>
+    r.institution_id === 'u-florida' && r.satisfies_areas.length === 0);
+  assert.ok(notCore.length >= 9, `only ${notCore.length} Florida rows clear nothing`);
+
+  for (const id of ['ap-microeconomics', 'ap-human-geography', 'ap-comparative-government',
+    'ap-spanish', 'ap-european-history', 'clep-intro-sociology', 'clep-humanities',
+    'clep-american-literature', 'ap-us-history']) {
+    const r = us.rules.find(x => x.institution_id === 'u-florida' && x.credit_source_id === id);
+    assert.ok(r, `${id} has no Florida rule`);
+    assert.deepEqual(r.satisfies_areas, [], `${id} still claims a Florida core area`);
+  }
+
+  // AP English Literature awards ENC X101, which is Communication, not Humanities.
+  const lit = us.rules.find(r =>
+    r.institution_id === 'u-florida' && r.credit_source_id === 'ap-english-lit');
+  assert.deepEqual(lit?.satisfies_areas, ['fl-comm']);
+
+  // CLEP Natural Sciences has no row in the table at all — so no rule, and the
+  // engine falls through to "we have no record" rather than inventing credit.
+  assert.equal(
+    us.rules.find(r =>
+      r.institution_id === 'u-florida' && r.credit_source_id === 'clep-natural-sciences'),
+    undefined,
+  );
+
+  // The AP sciences and Calculus need a 4, and award 4 credits, not 3.
+  for (const id of ['ap-biology', 'ap-chemistry', 'ap-physics-1', 'ap-calculus-ab']) {
+    const r = us.rules.find(x => x.institution_id === 'u-florida' && x.credit_source_id === id);
+    assert.equal(r?.min_score, 4, `${id} should need a 4 in Florida`);
+    assert.equal(r?.units_granted, 4, `${id} should award 4 credits in Florida`);
   }
 });

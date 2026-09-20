@@ -89,7 +89,20 @@ export interface Jurisdiction {
   name: string;
   /** The statewide framework, or null where the state has none we model. */
   framework_id: string | null;
-  /** The guarantee, in one sentence a student can act on. Null when there is none. */
+  /**
+   * Whether the state HAS a statewide instrument at all.
+   *
+   * Three outcomes, not two. Delaware and New Hampshire genuinely have none —
+   * that is a finding a student can act on ("ask each campus separately"), and
+   * it is not the same as a state we have not looked at. Collapsing the two
+   * would have the app print "THE STATEWIDE RULE" above a sentence saying there
+   * isn't one.
+   */
+  statewide_framework: 'yes' | 'none' | 'unknown';
+  /**
+   * One sentence a student can act on: the rule where there is one, or what we
+   * found where there is not. Null only when we have not looked.
+   */
   transfer_guarantee: string | null;
   transfer_provenance: Provenance;
   /** Programme that can waive community-college tuition here. */

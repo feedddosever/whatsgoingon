@@ -95,6 +95,22 @@ rule behind them. The entire reason to list Sophia is to warn a UC-bound student
 about it, and a source filtered out for having no acceptance rule can never
 produce that warning.
 
+## Where the statewide data comes from
+
+`data/research/MASTER-LIST.md` and its JSON twin are the research of record for
+the statewide layer — all 51 jurisdictions with governing citations, guarantee
+conditions, pricing shape and a per-row grade (A = governing document opened and
+cross-checked, down to C = recalled). `data/us/states.ts` is generated from it.
+
+The grade is **not** a confidence level. Every row stays `needs_check` until a
+person opens the source; the grade says how much work that promotion is. Do not
+promote a row because it is graded A — promote it because you read the statute.
+
+The master list also carries a corrections ledger, and it has already caught
+this repo shipping wrong data twice: Georgia's framework, and eleven Florida
+exam rows that claimed a core area they do not clear. Read § 1 and § 10 before
+trusting anything in `data/fl/`.
+
 ## The one rule that matters
 
 Every factual claim shown to a student carries its `Provenance`: a source URL, an
