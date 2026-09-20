@@ -3,6 +3,18 @@ import type {
   CreditSource, Jurisdiction, PlanItem, Route, RouteKind, RouteWarning,
   StudentInput, StudentProfile, System,
 } from './types.ts';
+import { AUTO_APPLIED_AID } from './types.ts';
+
+/**
+ * Whether a state's fee waiver may be taken off a price, or only shown.
+ *
+ * A programme gated on age, graduation year, field of study or service is real
+ * money and not a discount we can assume. Subtracting one would quote a
+ * student a price they may never be offered — wrong in their favour, which is
+ * the direction nobody reports.
+ */
+const waiverApplies = (jur: Jurisdiction): boolean =>
+  jur.fee_waiver !== null && AUTO_APPLIED_AID.includes(jur.fee_waiver.kind);
 
 export interface Dataset {
   /** One row per state, including the states we have not mapped. */
@@ -78,7 +90,7 @@ export function effectiveCost(
 ): number {
   if (profile.waiver !== 'eligible') return src.cost_usd;
   if (src.kind === 'clep') return 0; // Modern States, nationwide
-  if (src.kind === 'cc_course' && jur.fee_waiver !== null) return 0;
+  if (src.kind === 'cc_course' && waiverApplies(jur)) return 0;
   return src.cost_usd; // AP has no equivalent blanket waiver anywhere
 }
 
@@ -195,6 +207,19 @@ function profileWarnings(
         `credit available to you. We have not mapped ${jur.name}'s programme, so ask your ` +
         'counsellor what it is called and what it costs before paying for anything below.',
       provenance: jur.transfer_provenance,
+    });
+  }
+
+  // Money the student may be entitled to that we deliberately did NOT subtract.
+  if (jur.fee_waiver !== null && !waiverApplies(jur)) {
+    out.push({
+      kind: 'opportunity',
+      message:
+        `${jur.name} has ${jur.fee_waiver.name}, and the prices below do NOT assume it. ` +
+        `${jur.fee_waiver.note} We have not taken it off anything because it depends on ` +
+        'something we never asked you about — so check whether it is yours, and treat ' +
+        'every figure here as the version where it is not.',
+      provenance: jur.fee_waiver.provenance,
     });
   }
 

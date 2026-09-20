@@ -134,6 +134,7 @@ through several rebuilds until the cache was cleared.
     npm run typecheck
     npm run demo    # prints the CLEP-at-UC scenario
     npm run gaps    # what the dataset does not know, per state
+    npm run audit   # dataset vs data/research/ — exits non-zero on drift
 
 `data/GAPS.md` is GENERATED (`npm run gaps:write`). Do not edit it by hand and
 do not answer "what is missing?" from memory — re-run it. A gap list that can

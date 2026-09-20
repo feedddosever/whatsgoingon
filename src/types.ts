@@ -67,11 +67,79 @@ export interface GeFramework {
   provenance: Provenance;
 }
 
-/** A programme that can take a price to zero. Modelled per state. */
+/**
+ * What kind of gate a programme has, which decides whether the app may quietly
+ * subtract it from a price.
+ *
+ * Only two kinds may be applied automatically. Everything else is gated on
+ * something we never asked about — how old you are, what year you left school,
+ * what you intend to study, whether you served — and subtracting one of those
+ * quotes a student a discount they may not get, in the direction that never
+ * gets reported.
+ */
+export type AidKind =
+  /** Need-tested waiver of the fee itself. Safe to apply once they say they qualify. */
+  | 'need_waiver'
+  /** Free for everyone in the state. Safe to apply. */
+  | 'universal_promise'
+  /** Gated on leaving school recently. SHOW ONLY. */
+  | 'recent_grad'
+  /** Gated on being an adult returner. SHOW ONLY. */
+  | 'adult'
+  /** Gated on studying a named field. SHOW ONLY. */
+  | 'field_restricted'
+  /** Gated on grades or a test score. SHOW ONLY. */
+  | 'merit'
+  /** Arrives later as a tax credit, not as a smaller bill. SHOW ONLY. */
+  | 'tax_credit'
+  /** Follows the student somewhere else. SHOW ONLY. */
+  | 'portable_grant'
+  /** Real, and gated on something we have not modelled. SHOW ONLY. */
+  | 'other';
+
+/**
+ * What a state has published about third-party credit, from strongest promise
+ * to weakest.
+ *
+ * None of these lets third-party credit into a statewide general-education
+ * block by right — no state found does that. They decide whether a student has
+ * a route to argue for it at all.
+ */
+export interface ThirdPartyStance {
+  kind:
+    /** A campus says in writing that it awards nothing. UC. */
+    | 'published_refusal'
+    /** Statute or regulation gives the student a right to an evaluation. Florida. */
+    | 'evaluate_on_request_by_law'
+    /** Named institutions have signed with named providers. */
+    | 'official_partner'
+    /** System policy allows campuses to grant it; each campus still decides. */
+    | 'system_policy_permits'
+    /** One institution accepts it, and only from providers it has agreements with. */
+    | 'agreement_only'
+    /** Nobody has said anything. Not a refusal, and not permission. */
+    | 'no_record';
+  /** Named institutions and the caveats that travel with them. */
+  detail: string;
+}
+
+/** Aid kinds the engine is allowed to take off a price. */
+export const AUTO_APPLIED_AID: readonly AidKind[] = ['need_waiver', 'universal_promise'];
+
+/** A programme that can reduce what a student pays. Modelled per state. */
 export interface AidProgram {
   name: string;
   /** Student-facing. Rendered verbatim. */
   note: string;
+  /**
+   * Decides whether this may be subtracted or only shown. See `AidKind`.
+   *
+   * The distinction is not cosmetic: Oregon Promise is gated on having left
+   * school recently, and a plan that silently zeroed a course fee for a
+   * 30-year-old would be wrong in their favour, which is the direction nobody
+   * complains about.
+   */
+  kind: AidKind;
   provenance: Provenance;
 }
 
@@ -109,6 +177,15 @@ export interface Jurisdiction {
   fee_waiver: AidProgram | null;
   /** Programme giving high-school students free or cheap college credit here. */
   dual_enrollment: AidProgram | null;
+  /**
+   * What the state has said about credit from Sophia, Study.com and the rest.
+   *
+   * Six answers, not two. `refuses` on an Institution expresses the first and
+   * the last; everything between was invisible, so a state where the LAW
+   * requires an evaluation on request looked identical to one where nobody has
+   * ever said anything. Florida is the first kind. Most states are the last.
+   */
+  third_party: ThirdPartyStance;
 }
 
 export interface Institution {

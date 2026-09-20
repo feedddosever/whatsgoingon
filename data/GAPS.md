@@ -82,7 +82,6 @@ things up helps until the field exists.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Alaska (AK)
 
@@ -96,7 +95,6 @@ things up helps until the field exists.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Arizona (AZ)
 
@@ -110,7 +108,6 @@ things up helps until the field exists.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Arkansas (AR)
 
@@ -123,8 +120,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Colorado (CO)
 
@@ -137,8 +132,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Connecticut (CT)
 
@@ -151,8 +144,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Delaware (DE)
 
@@ -165,8 +156,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### District of Columbia (DC)
 
@@ -179,8 +168,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Georgia (GA)
 
@@ -193,8 +180,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Hawaii (HI)
 
@@ -207,8 +192,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Idaho (ID)
 
@@ -221,8 +204,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Illinois (IL)
 
@@ -236,7 +217,6 @@ things up helps until the field exists.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Indiana (IN)
 
@@ -249,8 +229,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Iowa (IA)
 
@@ -263,8 +241,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Kansas (KS)
 
@@ -277,8 +253,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Kentucky (KY)
 
@@ -291,8 +265,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Louisiana (LA)
 
@@ -305,8 +277,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Maine (ME)
 
@@ -319,8 +289,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Maryland (MD)
 
@@ -333,8 +301,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Massachusetts (MA)
 
@@ -347,8 +313,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Michigan (MI)
 
@@ -361,8 +325,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Minnesota (MN)
 
@@ -375,8 +337,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Mississippi (MS)
 
@@ -389,8 +349,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Missouri (MO)
 
@@ -403,8 +361,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Montana (MT)
 
@@ -417,8 +373,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Nebraska (NE)
 
@@ -432,7 +386,6 @@ things up helps until the field exists.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Nevada (NV)
 
@@ -445,8 +398,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### New Hampshire (NH)
 
@@ -460,7 +411,6 @@ things up helps until the field exists.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### New Jersey (NJ)
 
@@ -473,8 +423,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### New Mexico (NM)
 
@@ -487,8 +435,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### New York (NY)
 
@@ -501,8 +447,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### North Carolina (NC)
 
@@ -515,8 +459,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### North Dakota (ND)
 
@@ -544,7 +486,6 @@ things up helps until the field exists.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Oklahoma (OK)
 
@@ -557,8 +498,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Oregon (OR)
 
@@ -571,8 +510,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Pennsylvania (PA)
 
@@ -586,7 +523,6 @@ things up helps until the field exists.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Rhode Island (RI)
 
@@ -599,8 +535,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### South Carolina (SC)
 
@@ -613,8 +547,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### South Dakota (SD)
 
@@ -627,8 +559,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Tennessee (TN)
 
@@ -641,8 +571,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Utah (UT)
 
@@ -655,8 +583,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Vermont (VT)
 
@@ -669,8 +595,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Virginia (VA)
 
@@ -683,8 +607,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Washington (WA)
 
@@ -697,8 +619,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### West Virginia (WV)
 
@@ -711,8 +631,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Wisconsin (WI)
 
@@ -726,7 +644,6 @@ things up helps until the field exists.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 ### Wyoming (WY)
 
@@ -739,8 +656,6 @@ things up helps until the field exists.
 - [ ] **Residency minimum** and **transfer-credit cap** per campus.
 - [ ] **AP and CLEP policy**: is there a statewide table (as in Florida), a statutory score floor (as in Texas), or is it campus by campus?
 - [ ] **Community-college course numbering**: is there a statewide common-course system we can name courses by, or is articulation institution-pair specific?
-- [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] **The dual-enrolment programme**: its name, and whether it is free and for whom. This is the largest saving available to anyone still in high school.
 
 
 ## Tier 3 — nothing confirmed

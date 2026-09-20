@@ -131,6 +131,7 @@ test('cheapest and fastest diverge when the cheap option costs a term', () => {
       statewide_framework: 'unknown' as const, transfer_guarantee: null,
       transfer_provenance: { source_url: '', as_of: '', confidence: 'published' as const },
       fee_waiver: null, dual_enrollment: null,
+      third_party: { kind: 'no_record' as const, detail: 'test' },
     }],
     frameworks: [{
       id: 'f', name: 'F', full_name: 'Framework', state: 'CA' as const, total_units: 3,
@@ -1252,4 +1253,62 @@ test('Florida awards credit that clears no core area, and says which', () => {
     assert.equal(r?.min_score, 4, `${id} should need a 4 in Florida`);
     assert.equal(r?.units_granted, 4, `${id} should award 4 credits in Florida`);
   }
+});
+
+test('a gated aid programme is shown, never subtracted', () => {
+  // Oregon Promise is gated on having left school recently; Georgia's HOPE
+  // Career Grant on studying a named field. Zeroing a course fee for either
+  // would quote a price the student may never be offered — wrong in their
+  // favour, which is the direction nobody reports.
+  const eligible = withProfile({ waiver: 'eligible' });
+  const course = { id: 'c', kind: 'cc_course' as const, name: 'Course', cost_usd: 300,
+    provenance: { source_url: '', as_of: '', confidence: 'published' as const } };
+
+  for (const code of ['OR', 'GA'] as const) {
+    const jur = us.jurisdictions.find(j => j.code === code);
+    assert.ok(jur?.fee_waiver, `${code} should hold a named programme`);
+    assert.ok(
+      !['need_waiver', 'universal_promise'].includes(jur.fee_waiver.kind),
+      `${code}'s programme is gated and must not be auto-applied`,
+    );
+    assert.equal(
+      effectiveCost(course, eligible, jur), 300,
+      `${code} subtracted a gated programme from a price`,
+    );
+  }
+
+  // California's College Promise Grant waives the fee itself and is need-tested,
+  // so it is one of the two kinds that may be applied.
+  const ca = us.jurisdictions.find(j => j.code === 'CA');
+  assert.equal(ca?.fee_waiver?.kind, 'need_waiver');
+  assert.equal(effectiveCost(course, eligible, ca!), 0);
+});
+
+test('every aid programme declares how it is gated', () => {
+  for (const j of us.jurisdictions) {
+    for (const [what, p] of [['fee waiver', j.fee_waiver], ['dual enrolment', j.dual_enrollment]] as const) {
+      if (p === null) continue;
+      assert.ok(p.kind !== undefined, `${j.code} ${what} has no kind`);
+      assert.notEqual(p.name.trim(), '', `${j.code} ${what} is unnamed`);
+      assert.notEqual(p.note.trim(), '', `${j.code} ${what} has nothing to say`);
+    }
+  }
+});
+
+test('dual enrolment never discounts the plan, however universal it is', () => {
+  // Florida's dual enrolment is fee-exempt by statute — as universal as aid
+  // gets — and it still must not come off this plan's price. It is a different
+  // and cheaper way to earn the same credit, not a discount on buying it the
+  // expensive way, and `effectiveCost` consults only `fee_waiver` for exactly
+  // this reason. The kind on a dual-enrolment row is for display.
+  const fl = us.jurisdictions.find(j => j.code === 'FL');
+  assert.ok(fl?.dual_enrollment, 'Florida should hold a dual-enrolment programme');
+  assert.equal(fl.fee_waiver, null, 'and no statewide fee waiver');
+
+  const course = { id: 'c', kind: 'cc_course' as const, name: 'Course', cost_usd: 228,
+    provenance: { source_url: '', as_of: '', confidence: 'published' as const } };
+  assert.equal(
+    effectiveCost(course, withProfile({ waiver: 'eligible' }), fl), 228,
+    'Florida dual enrolment was subtracted from a course price',
+  );
 });

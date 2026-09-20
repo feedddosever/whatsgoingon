@@ -1,4 +1,6 @@
-import type { AidProgram, Jurisdiction, Provenance, StateCode } from '../../src/types.ts';
+import type {
+  AidProgram, Jurisdiction, Provenance, StateCode, ThirdPartyStance,
+} from '../../src/types.ts';
 
 /**
  * Every state, including the ones we have not mapped.
@@ -34,6 +36,7 @@ const NOT_MAPPED = (name: string): Provenance => ({
 
 const CCPG: AidProgram = {
   name: 'California College Promise Grant',
+  kind: 'need_waiver',
   note:
     'Waives the California community-college enrolment fee ($46/unit) entirely for ' +
     'eligible students. There is no income cut-off to look up before applying — the ' +
@@ -47,6 +50,7 @@ const CCPG: AidProgram = {
 
 const CCAP: AidProgram = {
   name: 'dual enrolment (CCAP)',
+  kind: 'other',
   note:
     'College and Career Access Pathways partnerships let a high-school student take ' +
     'community-college courses with the enrolment fee waived, up to 15 units a term. ' +
@@ -62,6 +66,7 @@ const CCAP: AidProgram = {
 
 const FAST: AidProgram = {
   name: 'Financial Aid for Swift Transfer (FAST)',
+  kind: 'need_waiver',
   note:
     'Created by HB 8 (2023). A high-school student who is or recently was eligible for ' +
     'free or reduced-price lunch takes dual-credit courses at a participating Texas ' +
@@ -78,6 +83,7 @@ const FAST: AidProgram = {
 
 const FL_DUAL: AidProgram = {
   name: 'dual enrolment',
+  kind: 'universal_promise',
   note:
     'Florida Statutes 1007.271 exempts a dual-enrolment student from registration, ' +
     'tuition and laboratory fees outright. Not a discount and not means-tested — the ' +
@@ -731,6 +737,1691 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
   },
 };
 
+
+/**
+ * Aid, imported from the research and deliberately NOT all treated alike.
+ *
+ * `kind` decides whether the engine may subtract a programme from a price or
+ * must only show it. Two kinds are safe to apply — a need-tested waiver of the
+ * fee itself, and a promise that is genuinely universal in the state. Every
+ * other kind is gated on something this app never asks about: how old you are,
+ * what year you left school, what you intend to study, whether you served.
+ *
+ * Subtracting one of those quotes a student a price they may never be offered.
+ * That is wrong in their favour, which is the direction nobody reports, so a
+ * compound kind is read as its MOST gated half rather than its most generous.
+ *
+ * Dual-enrolment programmes carry `kind: 'other'` throughout: they are never a
+ * discount on the plan the app is pricing, they are a different and usually
+ * cheaper way to get the same credit, and they belong on screen as an
+ * opportunity rather than in an arithmetic.
+ */
+const AID: Partial<Record<StateCode,
+  { fee_waiver?: AidProgram; dual_enrollment?: AidProgram }>> = {
+  AL: {
+    dual_enrollment: {
+      name: 'ACCS dual enrolment',
+      kind: 'other',
+      note:
+        'ACCS dual enrolment; state CTE scholarships (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  AK: {
+    dual_enrollment: {
+      name: 'Regents\' Policy ch. 09.02',
+      kind: 'other',
+      note:
+        'Regents\' Policy ch. 09.02; district middle colleges.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  AZ: {
+    dual_enrollment: {
+      name: 'priced locally',
+      kind: 'other',
+      note:
+        'priced locally.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  AR: {
+    fee_waiver: {
+      name: 'Arkansas Future Grant',
+      kind: 'field_restricted',
+      note:
+        'Arkansas Future Grant.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Concurrent Challenge Scholarship (recalled)',
+      kind: 'other',
+      note:
+        'Concurrent Challenge Scholarship (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  CO: {
+    fee_waiver: {
+      name: 'Colorado Promise',
+      kind: 'tax_credit',
+      note:
+        'Colorado Promise — refundable tax credit, ≤ $90k (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Concurrent Enrollment, district-paid (recalled)',
+      kind: 'other',
+      note:
+        'Concurrent Enrollment, district-paid (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  CT: {
+    fee_waiver: {
+      name: 'Mary Ann Handley Award (formerly PACT)',
+      kind: 'recent_grad',
+      note:
+        'Mary Ann Handley Award (formerly PACT).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'CSCU dual enrolment',
+      kind: 'other',
+      note:
+        'CSCU dual enrolment.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  DE: {
+    fee_waiver: {
+      name: 'SEED and SEED+ (14 Del. C. ch. 34)',
+      kind: 'recent_grad',
+      note:
+        'SEED and SEED+ (14 Del. C. ch. 34).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'district-paid (recalled)',
+      kind: 'other',
+      note:
+        'district-paid (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  DC: {
+    fee_waiver: {
+      name: 'DCTAG: up to $15,000/yr and $75,000 lifetime at out-of-state publics from 2026-27 ($3,750/yr private tier)',
+      kind: 'portable_grant',
+      note:
+        'DCTAG: up to $15,000/yr and $75,000 lifetime at out-of-state publics from ' +
+        '2026-27 ($3,750/yr private tier).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'OSSE consortium (recalled)',
+      kind: 'other',
+      note:
+        'OSSE consortium (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  GA: {
+    fee_waiver: {
+      name: 'HOPE Career Grant',
+      kind: 'field_restricted',
+      note:
+        'HOPE Career Grant.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Dual Enrollment, state-funded to 30 hrs (recalled)',
+      kind: 'other',
+      note:
+        'Dual Enrollment, state-funded to 30 hrs (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  HI: {
+    fee_waiver: {
+      name: 'Hawaiʻi Promise',
+      kind: 'need_waiver',
+      note:
+        'Hawaiʻi Promise.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Early College (free, recalled)',
+      kind: 'other',
+      note:
+        'Early College (free, recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  ID: {
+    fee_waiver: {
+      name: 'Idaho LAUNCH',
+      kind: 'field_restricted',
+      note:
+        'Idaho LAUNCH.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Advanced Opportunities',
+      kind: 'other',
+      note:
+        'Advanced Opportunities — $4,125/student, ≤ $75/credit, also pays AP/CLEP fees ' +
+        '(recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  IL: {
+    dual_enrollment: {
+      name: 'Dual Credit Quality Act',
+      kind: 'other',
+      note:
+        'Dual Credit Quality Act; priced by district.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  IN: {
+    fee_waiver: {
+      name: '21st Century Scholars',
+      kind: 'field_restricted',
+      note:
+        '21st Century Scholars; Workforce Ready Grant.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'priority courses free (recalled)',
+      kind: 'other',
+      note:
+        'priority courses free (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  IA: {
+    fee_waiver: {
+      name: 'Last-Dollar Scholarship',
+      kind: 'field_restricted',
+      note:
+        'Last-Dollar Scholarship.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Senior Year Plus',
+      kind: 'other',
+      note:
+        'Senior Year Plus — Iowa Code ch. 261E.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  KS: {
+    fee_waiver: {
+      name: 'Kansas Promise',
+      kind: 'field_restricted',
+      note:
+        'Kansas Promise.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Excel in CTE free',
+      kind: 'other',
+      note:
+        'Excel in CTE free; academic not (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  KY: {
+    fee_waiver: {
+      name: 'Work Ready Kentucky Scholarship',
+      kind: 'field_restricted',
+      note:
+        'Work Ready Kentucky Scholarship.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Dual Credit Scholarship',
+      kind: 'other',
+      note:
+        'Dual Credit Scholarship — 2 courses (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  LA: {
+    fee_waiver: {
+      name: 'MJ Foster Promise',
+      kind: 'adult',
+      note:
+        'MJ Foster Promise; TOPS Tech.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'statewide, priced locally',
+      kind: 'other',
+      note:
+        'statewide, priced locally.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  ME: {
+    fee_waiver: {
+      name: 'Free College Scholarship',
+      kind: 'recent_grad',
+      note:
+        'Free College Scholarship — class of 2026 covered, tuition only, 150% of ' +
+        'programme time.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Early College, ≤ 12 free credits/yr (recalled)',
+      kind: 'other',
+      note:
+        'Early College, ≤ 12 free credits/yr (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  MD: {
+    fee_waiver: {
+      name: 'Community College Promise Scholarship',
+      kind: 'other',
+      note:
+        'Community College Promise Scholarship.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Blueprint for Maryland\'s Future (free, recalled)',
+      kind: 'other',
+      note:
+        'Blueprint for Maryland\'s Future (free, recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  MA: {
+    fee_waiver: {
+      name: 'MassEducate (+ MassReconnect)',
+      kind: 'universal_promise',
+      note:
+        'MassEducate (+ MassReconnect) — $137M FY27 per one legislative source.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'CDEP / Early College',
+      kind: 'other',
+      note:
+        'CDEP / Early College.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  MI: {
+    fee_waiver: {
+      name: 'Community College Guarantee',
+      kind: 'recent_grad',
+      note:
+        'Community College Guarantee; Michigan Reconnect (25+); Tuition Incentive ' +
+        'Program.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'district pays most (recalled)',
+      kind: 'other',
+      note:
+        'district pays most (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  MN: {
+    fee_waiver: {
+      name: 'North Star Promise (< $80k)',
+      kind: 'need_waiver',
+      note:
+        'North Star Promise (< $80k).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'PSEO',
+      kind: 'other',
+      note:
+        'PSEO — free (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  MS: {
+    fee_waiver: {
+      name: 'HELP grant',
+      kind: 'merit',
+      note:
+        'HELP grant; MTAG.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'statewide, priced locally',
+      kind: 'other',
+      note:
+        'statewide, priced locally.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  MO: {
+    fee_waiver: {
+      name: 'A+ Scholarship',
+      kind: 'recent_grad',
+      note:
+        'A+ Scholarship; Fast Track.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'need-based scholarship (recalled)',
+      kind: 'other',
+      note:
+        'need-based scholarship (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  MT: {
+    fee_waiver: {
+      name: 'American Indian tuition waiver',
+      kind: 'need_waiver',
+      note:
+        'American Indian tuition waiver.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'One-Two-Free (recalled)',
+      kind: 'other',
+      note:
+        'One-Two-Free (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  NE: {
+    dual_enrollment: {
+      name: 'MCC CollegeNow! tuition waived',
+      kind: 'other',
+      note:
+        'MCC CollegeNow! tuition waived; ACE scholarship elsewhere.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  NV: {
+    fee_waiver: {
+      name: 'Nevada Promise',
+      kind: 'recent_grad',
+      note:
+        'Nevada Promise.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'reduced fee',
+      kind: 'other',
+      note:
+        'reduced fee.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  NH: {
+    dual_enrollment: {
+      name: 'Running Start (recalled)',
+      kind: 'other',
+      note:
+        'Running Start (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  NJ: {
+    fee_waiver: {
+      name: 'Community College Opportunity Grant (recalled)',
+      kind: 'need_waiver',
+      note:
+        'Community College Opportunity Grant (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'varies',
+      kind: 'other',
+      note:
+        'varies.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  NM: {
+    fee_waiver: {
+      name: 'Opportunity Scholarship',
+      kind: 'universal_promise',
+      note:
+        'Opportunity Scholarship; Lottery Scholarship.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'NMSA 21-1-1.2',
+      kind: 'other',
+      note:
+        'NMSA 21-1-1.2; NMAC 6.30.7 — tuition-free.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  NY: {
+    fee_waiver: {
+      name: 'TAP',
+      kind: 'field_restricted',
+      note:
+        'TAP; Excelsior; SUNY/CUNY Reconnect (NYS Opportunity Promise, ages 25–55, ' +
+        'high-demand fields, from Fall 2025).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'CUNY College Now',
+      kind: 'other',
+      note:
+        'CUNY College Now; SUNY varies.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  NC: {
+    fee_waiver: {
+      name: 'Next NC Scholarship',
+      kind: 'need_waiver',
+      note:
+        'Next NC Scholarship.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Career & College Promise',
+      kind: 'other',
+      note:
+        'Career & College Promise — tuition-free (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  OH: {
+    dual_enrollment: {
+      name: 'College Credit Plus',
+      kind: 'other',
+      note:
+        'College Credit Plus — free (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  OK: {
+    fee_waiver: {
+      name: 'Oklahoma\'s Promise (enrol by grade 11)',
+      kind: 'need_waiver',
+      note:
+        'Oklahoma\'s Promise (enrol by grade 11).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'concurrent-enrolment tuition waiver',
+      kind: 'other',
+      note:
+        'concurrent-enrolment tuition waiver.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  OR: {
+    fee_waiver: {
+      name: 'Oregon Promise',
+      kind: 'recent_grad',
+      note:
+        'Oregon Promise.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'mostly free / nominal (recalled)',
+      kind: 'other',
+      note:
+        'mostly free / nominal (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  PA: {
+    dual_enrollment: {
+      name: 'priced by college',
+      kind: 'other',
+      note:
+        'priced by college.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  RI: {
+    fee_waiver: {
+      name: 'RI Promise (permanent)',
+      kind: 'recent_grad',
+      note:
+        'RI Promise (permanent); Hope Scholarship at RIC (pilot ending with class of ' +
+        '2026).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'PrepareRI',
+      kind: 'other',
+      note:
+        'PrepareRI — free (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  SC: {
+    fee_waiver: {
+      name: 'Lottery Tuition Assistance',
+      kind: 'field_restricted',
+      note:
+        'Lottery Tuition Assistance; SC WINS; Workforce Scholarships for the Future.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'technical-college dual enrolment',
+      kind: 'other',
+      note:
+        'technical-college dual enrolment.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  SD: {
+    fee_waiver: {
+      name: 'Build Dakota',
+      kind: 'field_restricted',
+      note:
+        'Build Dakota; Freedom Scholarship.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'High School Dual Credit at a reduced rate',
+      kind: 'other',
+      note:
+        'High School Dual Credit at a reduced rate.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  TN: {
+    fee_waiver: {
+      name: 'Tennessee Promise',
+      kind: 'recent_grad',
+      note:
+        'Tennessee Promise; Tennessee Reconnect.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Dual Enrollment Grant',
+      kind: 'other',
+      note:
+        'Dual Enrollment Grant.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  UT: {
+    fee_waiver: {
+      name: 'Utah Promise Grant',
+      kind: 'need_waiver',
+      note:
+        'Utah Promise Grant.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: '$5/credit cap (recalled)',
+      kind: 'other',
+      note:
+        '$5/credit cap (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  VT: {
+    fee_waiver: {
+      name: '802 Opportunity',
+      kind: 'need_waiver',
+      note:
+        '802 Opportunity; Free Degree Promise.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Act 77',
+      kind: 'other',
+      note:
+        'Act 77 — two free courses + Early College.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  VA: {
+    fee_waiver: {
+      name: 'G3',
+      kind: 'field_restricted',
+      note:
+        'G3.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Passport/UCGS courses at no cost (recalled)',
+      kind: 'other',
+      note:
+        'Passport/UCGS courses at no cost (recalled).',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  WA: {
+    fee_waiver: {
+      name: 'Washington College Grant',
+      kind: 'need_waiver',
+      note:
+        'Washington College Grant — full award to $83,500 (family of 4), partial to ≈ ' +
+        '$139,500.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'Running Start',
+      kind: 'other',
+      note:
+        'Running Start; College in the High School free since 2023.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  WV: {
+    fee_waiver: {
+      name: 'WV Invests',
+      kind: 'field_restricted',
+      note:
+        'WV Invests.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: '133 CSR 19 pilot',
+      kind: 'other',
+      note:
+        '133 CSR 19 pilot.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  WI: {
+    dual_enrollment: {
+      name: 'Early College Credit Program',
+      kind: 'other',
+      note:
+        'Early College Credit Program; Start College Now.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+  WY: {
+    fee_waiver: {
+      name: 'Hathaway',
+      kind: 'merit',
+      note:
+        'Hathaway; Wyoming\'s Tomorrow.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+    dual_enrollment: {
+      name: 'W.S. § 21-20-201',
+      kind: 'other',
+      note:
+        'W.S. § 21-20-201.',
+        provenance: {
+          source_url: '',
+          as_of: '2026-09-20',
+          confidence: 'needs_check',
+          note:
+            'From the statewide research in data/research/, not from the programme\u2019s ' +
+            'own page. Terms, income ceilings and eligibility years move every cycle \u2014 ' +
+            'check the programme itself before you count on it.',
+        },
+    },
+  },
+};
+
+/**
+ * What each state has published about third-party credit. Compound answers read
+ * as their STRONGEST promise, because that is the door a student can try.
+ */
+const THIRD_PARTY: Record<StateCode, ThirdPartyStance> = {
+  AL: {
+    kind: 'official_partner',
+    detail:
+      'Athens State (StraighterLine, Sophia); Alabama State, Alabama A&M (Sophia)',
+  },
+  AK: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  AZ: {
+    kind: 'official_partner',
+    detail:
+      'ASU Universal Learner Courses: $25 + $400 only if passed, ASU transcript ' +
+      'credit (A). Partners: Rio Salado (StraighterLine); Northern Arizona University ' +
+      '(Sophia); Univ. of Arizona Global Campus (StraighterLine, Sophia, Saylor, ' +
+      'Study.com)',
+  },
+  AR: {
+    kind: 'official_partner',
+    detail:
+      'Univ. of Arkansas Grantham (StraighterLine; Sophia adviser page); Arkansas ' +
+      'State University (Saylor)',
+  },
+  CA: {
+    kind: 'system_policy_permits',
+    detail:
+      'UC: no credit for third-party transcripts. CSU Credit for Prior Learning ' +
+      'Policy (ex-EO 1036): campuses shall credit learning outside formal higher ' +
+      'education; ACE-recommended non-collegiate instruction, military or civilian; ' +
+      'CSULB caps at 20%',
+  },
+  CO: {
+    kind: 'official_partner',
+    detail:
+      'I-X lets campuses accept other PLA meeting campus standards. CSU Global ' +
+      'partner (StraighterLine, Saylor, Study.com)',
+  },
+  CT: {
+    kind: 'agreement_only',
+    detail:
+      'Charter Oak State College accepts ACE/NCCRS credit only from providers under ' +
+      'agreement — AP, CLEP, CSM Learn, DSST, StraighterLine, Study.com, Sophia; cap ' +
+      '90 (bachelor\'s) / 45 (associate)',
+  },
+  DE: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  DC: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  FL: {
+    kind: 'evaluate_on_request_by_law',
+    detail:
+      'Fla. Stat. § 1004.0961; BOG Reg. 6.020; Rule 6A-14.0304 — must evaluate ' +
+      'online/MOOC coursework on request before the first term; policy must describe ' +
+      'ACE-recognised credit. FIU is a Saylor partner; Miami Dade accepts ACE but is ' +
+      'not a partner',
+  },
+  GA: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  HI: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  ID: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  IL: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  IN: {
+    kind: 'official_partner',
+    detail:
+      'Purdue Global (StraighterLine, Sophia, Saylor, Study.com); Ivy Tech (Sophia)',
+  },
+  IA: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  KS: {
+    kind: 'official_partner',
+    detail:
+      'Fort Hays State University (StraighterLine)',
+  },
+  KY: {
+    kind: 'system_policy_permits',
+    detail:
+      'KCTCS awards credit per ACE\'s National Guide',
+  },
+  LA: {
+    kind: 'official_partner',
+    detail:
+      'Grambling, McNeese, Southeastern Louisiana (StraighterLine); Southern Univ. at ' +
+      'Shreveport (Sophia); LCTCS system, Bossier Parish CC, Central Louisiana ' +
+      'Technical CC, South Louisiana CC (Saylor)',
+  },
+  ME: {
+    kind: 'official_partner',
+    detail:
+      'Univ. of Maine at Presque Isle — YourPace (StraighterLine, Sophia, Study.com)',
+  },
+  MD: {
+    kind: 'official_partner',
+    detail:
+      'UMGC (StraighterLine, Sophia, Saylor, Study.com); Morgan State (Saylor)',
+  },
+  MA: {
+    kind: 'official_partner',
+    detail:
+      'Middlesex Community College (Study.com)',
+  },
+  MI: {
+    kind: 'official_partner',
+    detail:
+      'Central Michigan University (Sophia)',
+  },
+  MN: {
+    kind: 'system_policy_permits',
+    detail:
+      'Procedure 3.35.1 covers industry credentials, licences, certifications and ' +
+      'non-credit instruction',
+  },
+  MS: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  MO: {
+    kind: 'official_partner',
+    detail:
+      'Univ. of Central Missouri (StraighterLine); Harris-Stowe State (Sophia)',
+  },
+  MT: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  NE: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  NV: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  NH: {
+    kind: 'no_record',
+    detail:
+      'UNH CPS (ex-Granite State) appeared on an older Saylor list',
+  },
+  NJ: {
+    kind: 'official_partner',
+    detail:
+      'Thomas Edison State University (StraighterLine, Sophia, Saylor, Study.com — ' +
+      'transcript must come direct from Study.com); Rowan — Rohrer College of ' +
+      'Business (Sophia adviser page)',
+  },
+  NM: {
+    kind: 'official_partner',
+    detail:
+      'Central New Mexico CC (StraighterLine, Sophia)',
+  },
+  NY: {
+    kind: 'official_partner',
+    detail:
+      'SUNY Empire State (StraighterLine, Sophia, Saylor, Study.com; accepts eligible ' +
+      'Coursera courses); SUNY Brockport (Sophia); CUNY School of Professional ' +
+      'Studies (Saylor)',
+  },
+  NC: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  ND: {
+    kind: 'official_partner',
+    detail:
+      'Bismarck State College (StraighterLine). UND\'s \'ACE\' wording in the second ' +
+      'pass looks like a misreading — treat as unverified',
+  },
+  OH: {
+    kind: 'system_policy_permits',
+    detail:
+      'Industry-Recognized Credential Transfer Assurance Guides (ITAGs) give ' +
+      'guaranteed credit',
+  },
+  OK: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  OR: {
+    kind: 'official_partner',
+    detail:
+      'Southern Oregon University (StraighterLine)',
+  },
+  PA: {
+    kind: 'no_record',
+    detail:
+      'Penn State World Campus accepts ACE credit but is not a Saylor partner',
+  },
+  RI: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  SC: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  SD: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  TN: {
+    kind: 'official_partner',
+    detail:
+      'Tennessee State University (StraighterLine); University of Memphis (Saylor)',
+  },
+  TX: {
+    kind: 'official_partner',
+    detail:
+      'Dallas College incl. Cedar Valley, Northeast Lakeview (StraighterLine). UT ' +
+      'System–Coursera \'Texas Credentials for the Future\' is free but non-credit',
+  },
+  UT: {
+    kind: 'system_policy_permits',
+    detail:
+      'Statute lets the Board sign articulation agreements with competency-based GE ' +
+      'providers; HB 353 (2026) on external transfer',
+  },
+  VT: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  VA: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  WA: {
+    kind: 'no_record',
+    detail:
+      'Nothing published that we have found.',
+  },
+  WV: {
+    kind: 'system_policy_permits',
+    detail:
+      '133 CSR 59 covers prior learning, AP, CLEP and micro-credentials',
+  },
+  WI: {
+    kind: 'system_policy_permits',
+    detail:
+      'Regent policy on extra-institutional learning; SYS Procedure 138.A (PLA)',
+  },
+  WY: {
+    kind: 'no_record',
+    detail:
+      'UW reviews military ACE transcripts only',
+  },
+};
+
 const MAPPED: Partial<Record<StateCode, Jurisdiction>> = {
   CA: {
     code: 'CA',
@@ -738,18 +2429,18 @@ const MAPPED: Partial<Record<StateCode, Jurisdiction>> = {
     framework_id: 'cal-getc',
     statewide_framework: 'yes',
     transfer_guarantee:
-      'Complete Cal-GETC at a California community college and every UC and CSU campus ' +
-      'accepts it as their lower-division general education, whole.',
+      'Cal-GETC v1.4. Complete it at a California community college and every UC and CSU campus accepts it as their lower-division general education, whole.',
     transfer_provenance: {
       source_url: 'https://icas-ca.org/cal-getc/',
       as_of: '2026-09-18',
       confidence: 'published',
       note:
-        'AB 928 required a single lower-division transfer pattern for UC and CSU. ' +
+        'Authority: AB 928; ICAS Cal-GETC Standards v1.4. AB 928 required a single lower-division transfer pattern for UC and CSU. ' +
         'Cal-GETC replaced IGETC and CSU GE Breadth from Fall 2025.',
     },
     fee_waiver: CCPG,
     dual_enrollment: CCAP,
+    third_party: THIRD_PARTY.CA,
   },
   TX: {
     code: 'TX',
@@ -757,15 +2448,13 @@ const MAPPED: Partial<Record<StateCode, Jurisdiction>> = {
     framework_id: 'tx-core',
     statewide_framework: 'yes',
     transfer_guarantee:
-      'Finish the 42-hour Texas Core at ANY Texas public college and the whole block ' +
-      'transfers: the receiving university must substitute it for its own core and may ' +
-      'not make you retake it.',
+      'Texas Core Curriculum. Finish the 42-hour core at ANY Texas public college and the whole block transfers: the receiving university must substitute it for its own core and may not make you retake it.',
     transfer_provenance: {
       source_url: 'https://texas.public.law/statutes/tex._educ._code_section_61.822',
       as_of: '2026-09-19',
       confidence: 'statute',
       note:
-        'Texas Education Code 61.822(c): a completed core curriculum "may be transferred ' +
+        'Authority: TEC §§ 61.821–61.823; 19 TAC ch. 4 subch. B. Texas Education Code 61.822(c): a completed core curriculum "may be transferred ' +
         'to any other institution of higher education and must be substituted for the ' +
         'receiving institution’s core curriculum", and the student "may not be required ' +
         'to take additional core curriculum courses". This is the single most valuable ' +
@@ -775,6 +2464,7 @@ const MAPPED: Partial<Record<StateCode, Jurisdiction>> = {
     // comparable to the CCPG. Saying otherwise would price a Texas plan wrong.
     fee_waiver: null,
     dual_enrollment: FAST,
+    third_party: THIRD_PARTY.TX,
   },
   FL: {
     code: 'FL',
@@ -782,20 +2472,19 @@ const MAPPED: Partial<Record<StateCode, Jurisdiction>> = {
     framework_id: 'fl-core',
     statewide_framework: 'yes',
     transfer_guarantee:
-      'Earn an Associate in Arts at a Florida public college and you are guaranteed ' +
-      'admission to a state university with junior standing and 60 credits toward the ' +
-      'bachelor’s — though not to the campus or programme of your choice.',
+      'General-education core of 5 areas inside a 36-hour GE programme. Earn an Associate in Arts at a Florida public college and you are guaranteed admission to a state university with junior standing and 60 credits toward the bachelor’s — though not to the campus or programme of your choice.',
     transfer_provenance: {
       source_url: 'https://www.flsenate.gov/Laws/Statutes/2025/1007.23',
       as_of: '2026-09-19',
       confidence: 'statute',
       note:
-        'The statewide articulation agreement has guaranteed AA holders university ' +
+        'Authority: Fla. Stat. §§ 1007.23, 1007.24, 1007.25, 1007.27; Rule 6A-10.024; BOG Reg. 6.006, 8.005. The statewide articulation agreement has guaranteed AA holders university ' +
         'admission since 1972. Read the limit as carefully as the promise: the guarantee ' +
         'is admission to A state university, not to the one you want.',
     },
     fee_waiver: null,
     dual_enrollment: FL_DUAL,
+    third_party: THIRD_PARTY.FL,
   },
 };
 
@@ -814,8 +2503,9 @@ export const jurisdictions: Jurisdiction[] = (
       statewide_framework: 'unknown',
       transfer_guarantee: null,
       transfer_provenance: NOT_MAPPED(name),
-      fee_waiver: null,
-      dual_enrollment: null,
+      fee_waiver: AID[code]?.fee_waiver ?? null,
+      dual_enrollment: AID[code]?.dual_enrollment ?? null,
+      third_party: THIRD_PARTY[code],
     };
   }
 
@@ -847,7 +2537,8 @@ export const jurisdictions: Jurisdiction[] = (
         `${name}'s campuses or its requirement list, so we cannot price a plan here — ` +
         'only tell you the rule that applies to all of them.',
     },
-    fee_waiver: null,
-    dual_enrollment: null,
+    fee_waiver: AID[code]?.fee_waiver ?? null,
+    dual_enrollment: AID[code]?.dual_enrollment ?? null,
+    third_party: THIRD_PARTY[code],
   };
 });

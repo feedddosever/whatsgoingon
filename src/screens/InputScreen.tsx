@@ -486,7 +486,20 @@ function StateRow(
  * Repeating the old labels as though they were current would be wrong, and
  * pretending the distinction stopped mattering would be worse.
  */
-function ThirdPartyNotice({ inst }: { inst: Institution | null }): ReactElement {
+const STANCE_LEAD: Record<string, string> = {
+  published_refusal: 'has published that it awards no credit for these',
+  evaluate_on_request_by_law: 'gives you a legal right to have this evaluated on request — '
+    + 'ask before your first term, in writing',
+  official_partner: 'has named institutions with signed provider agreements',
+  system_policy_permits: 'lets its campuses grant this; each campus still decides',
+  agreement_only: 'has one institution that takes it, and only from providers it has '
+    + 'agreements with',
+  no_record: 'has published nothing we have found either way',
+};
+
+function ThirdPartyNotice(
+  { inst, jurisdiction }: { inst: Institution | null; jurisdiction: Jurisdiction | null },
+): ReactElement {
   return (
     <View style={styles.thirdParty}>
       <Text style={styles.thirdPartyTitle}>Before you buy a subscription</Text>
@@ -504,6 +517,16 @@ function ThirdPartyNotice({ inst }: { inst: Institution | null }): ReactElement 
               'registrar, in writing, before you pay for anything here.'
             : 'Pick your campus above and we will tell you what we know about it.'}
       </Text>
+      {jurisdiction !== null && (
+        <Text style={styles.thirdPartyText}>
+          {jurisdiction.name} {STANCE_LEAD[jurisdiction.third_party.kind]}.{' '}
+          {jurisdiction.third_party.detail}
+          {jurisdiction.third_party.kind === 'no_record'
+            ? ' Nothing published is not the same as a refusal — it means nobody has said, '
+              + 'and you will have to ask.'
+            : ''}
+        </Text>
+      )}
       <Text style={styles.thirdPartyText}>
         You will also see schools sorted into "regionally" and "nationally" accredited. The
         US Department of Education stopped making that distinction in July 2020 and the
@@ -536,6 +559,8 @@ export function InputScreen(
   }
 
   const target = institutions.find(i => i.id === value.target_institution_id);
+  const jurisdiction =
+    [...states, ...unmappedStates].find(j => j.code === selectedState) ?? null;
 
   // System ids are dataset keys — `FL-SUS` is not something to show a student.
   const systemLabel = (inst: Institution): string =>
@@ -848,7 +873,9 @@ export function InputScreen(
               {group.kind === 'clep' && target !== undefined && notTowardGe.length > 0 && (
                 <NotTowardGeNotice inst={target} exams={notTowardGe} />
               )}
-              {group.kind === 'alt_provider' && <ThirdPartyNotice inst={target ?? null} />}
+              {group.kind === 'alt_provider' && (
+                <ThirdPartyNotice inst={target ?? null} jurisdiction={jurisdiction} />
+              )}
             </View>
           ))
         )}
