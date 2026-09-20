@@ -4,7 +4,7 @@ import {
   planRoute, planAllRoutes, baselineCost, routeSaving, optionsForArea, pathwayCosts,
   effectiveCost, frameworkFor, jurisdictionFor, systemFor,
 } from './engine.ts';
-import { california, unitedStates } from './dataset.ts';
+import { california, forState, unitedStates } from './dataset.ts';
 import type { StudentProfile } from './types.ts';
 
 const ds = california;
@@ -1057,11 +1057,19 @@ test('every third-party provider names its transcript and who recommends it', ()
   }
 });
 
-test('third-party providers survive a state slice even with no rule behind them', () => {
+test('third-party providers survive every state slice, refusal or not', () => {
   // They have no acceptance rules anywhere, so a slice that filtered unused
-  // sources would drop them — and the UC warning that justifies listing them
-  // at all can only fire for a source the student can actually tick.
-  assert.ok(california.creditSources.some(c => c.kind === 'alt_provider'));
+  // sources drops them. Keeping them only where a campus REFUSED them hid the
+  // whole section in Florida — the state with the strongest published right in
+  // the country, where statute gives you the right to have this credit
+  // evaluated on request. Silence had been wired to "nobody objected".
+  for (const code of ['CA', 'TX', 'FL'] as const) {
+    const slice = forState(us, code);
+    assert.ok(
+      slice.creditSources.some(c => c.kind === 'alt_provider'),
+      `${code} lost its third-party providers`,
+    );
+  }
 });
 
 test('UC takes IB and refuses DSST, in the same plan', () => {

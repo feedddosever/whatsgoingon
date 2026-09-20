@@ -72,14 +72,20 @@ export function forState(ds: Dataset, state: StateCode): Dataset {
     systems: ds.systems.filter(s => systemIds.has(s.id)),
     institutions,
     areas: ds.areas.filter(a => a.applies_to.some(s => systemIds.has(s))),
-    // A family that some campus in this state REFUSES survives the slice even
-    // with no rule behind it. The whole reason to list Sophia, or UExcel, is to
-    // tell a UC-bound student that UC will not look at it — and a source
-    // filtered out for having no acceptance rule is a source the student cannot
-    // tick, so the warning can never fire. This used to be a special case for
-    // `alt_provider`; DLPT and UExcel arrived and it stopped being special.
+    // Three reasons to keep a source the rules do not reach.
+    //
+    // A family some campus here REFUSES: the whole reason to list UExcel is to
+    // tell a UC-bound student UC will not look at it, and a source the student
+    // cannot tick is a warning that can never fire.
+    //
+    // And `alt_provider` ALWAYS, regardless of state. Keeping it only where a
+    // campus refused it hid the entire third-party section in Florida — the
+    // state with the strongest published right in the country, where statute
+    // gives a student the right to have that credit evaluated on request before
+    // their first term. The app was silent exactly where it had the most to
+    // say, because silence had been wired to "nobody objected".
     creditSources: ds.creditSources.filter(
-      c => sourceIds.has(c.id) || refusedKinds.has(c.kind),
+      c => sourceIds.has(c.id) || refusedKinds.has(c.kind) || c.kind === 'alt_provider',
     ),
     rules,
   };
