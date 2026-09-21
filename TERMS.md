@@ -60,6 +60,8 @@ the app after that means you accept the change.
 
 ## Contact
 
-<!-- TODO before publishing: a real, monitored address is required by every app
-     store. Replace this line. -->
-**Contact:** _add a support email address before publishing_
+<!-- The address is NOT written here. `scripts/build-landing.mjs` substitutes
+     EXPO_PUBLIC_SUPPORT_EMAIL when it renders this file to /privacy and /terms,
+     so one environment variable fills the app, both legal pages and the store
+     listing. A second copy of an address is a second copy to forget. -->
+**Contact:** {{SUPPORT_EMAIL}}

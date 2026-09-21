@@ -111,6 +111,17 @@ this repo shipping wrong data twice: Georgia's framework, and eleven Florida
 exam rows that claimed a core area they do not clear. Read § 1 and § 10 before
 trusting anything in `data/fl/`.
 
+## The support address is an environment variable, once
+
+`EXPO_PUBLIC_SUPPORT_EMAIL` fills the app's waitlist button, `/privacy`,
+`/terms` and the store listing. `PRIVACY.md` and `TERMS.md` carry
+`{{SUPPORT_EMAIL}}` and `scripts/build-landing.mjs` substitutes it — do not
+write an address into the Markdown, that is a second copy to forget.
+
+Unset, the pages say there is no address rather than printing a placeholder that
+looks like one, and the waitlist button does not render. `npm run preflight`
+treats it as a blocker, because every app store requires a monitored address.
+
 ## The one rule that matters
 
 Every factual claim shown to a student carries its `Provenance`: a source URL, an
@@ -135,6 +146,7 @@ through several rebuilds until the cache was cleared.
     npm run demo    # prints the CLEP-at-UC scenario
     npm run gaps    # what the dataset does not know, per state
     npm run audit   # dataset vs data/research/ — exits non-zero on drift
+    npm run preflight  # is this submittable? blockers vs things a human must do
 
 `data/GAPS.md` is GENERATED (`npm run gaps:write`). Do not edit it by hand and
 do not answer "what is missing?" from memory — re-run it. A gap list that can

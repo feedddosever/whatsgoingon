@@ -42,17 +42,8 @@ cannot drift between screens:
 - [x] `TERMS.md` — not academic or financial advice, not affiliated with any
       institution, confirm in writing before paying, refunds handled by whoever
       took the payment.
-- [ ] **Both still need a real support email address** — each has a TODO where it
-      belongs. Every store requires one.
-- [ ] Host both at public URLs and link them from the store listing.
-
----
-
-## 2. Data still unconfirmed
-
-Tracked in full in `data/VERIFICATION.md`. The ones that change a number a
-student sees:
-
+- [x] ~~**Both still need a real support email address**~~ Now ONE env var, `EXPO_PUBLIC_SUPPORT_EMAIL`, substituted into both at build time. Still unset — `npm run preflight` fails on it.
+- [x] ~~Host both at public URLs~~ `/privacy` and `/terms`, rendered from the Markdown by `scripts/build-landing.mjs`.
 - [ ] **CCC course articulations** — every `ccc-*` row is `needs_check`.
       Articulation is institution-pair specific and lives on ASSIST; there is no
       shortcut. This is the largest remaining block of unconfirmed data.
@@ -68,11 +59,7 @@ student sees:
       cannot tell a student whether they actually qualify. The *state* half is
       now right — a waiver-eligible Texan is no longer given a Californian
       discount — but the *student* half is still a yes/no question.
-- [ ] **Florida's credit-by-exam list has not been read.** Rule 6A-10.024 is one
-      table, binding on all 12 SUS institutions, and reading it would confirm
-      every AP and CLEP row in `data/fl/` in a single pass. `fldoe.org` is
-      blocked by this environment's egress proxy — it is not blocked from a
-      laptop. **Highest value-per-minute item on this list.**
+- [ ] **Florida's credit-by-exam list: AP and CLEP audited, the rest not.** The August 2026 table corrected eleven rows (see VERIFICATION.md). IB, A Level, DSST, DLPT and UExcel rows are still unaudited.
 - [ ] **Texas per-campus core lists and designated tuition.** The 42-hour block
       transfer is statute and solid; which exam clears which component area is
       set campus by campus, and designated tuition ranges from $213/SCH (Texas
@@ -134,9 +121,12 @@ student sees:
       "unverified" is signalled, so it becomes a real bug the moment a campus
       policy drops to `needs_check`.
 
-## 5. Store assets not started
+## 5. Store assets
 
-- [ ] **The icon is still the Expo default.** So is the splash.
+Run `npm run preflight` — it checks these rather than trusting this list.
+
+
+- [x] ~~**The icon is still the Expo default.**~~ Replaced; HTML source in `scripts/art/`.
 - [ ] Screenshots at phone **and** tablet sizes — take the tablet ones on the
       Tab S6 Lite rather than faking them.
 - [ ] Store description, category, keywords.

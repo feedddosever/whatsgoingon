@@ -21,6 +21,23 @@ const DIST = join(ROOT, 'dist');
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /**
+ * The support address lives in exactly one place: the environment.
+ *
+ * Every app store requires a monitored contact address on the privacy policy,
+ * and the app's own "tell me when my state is ready" button needs the same one.
+ * Writing it into the Markdown would put a second copy somewhere to go stale,
+ * so `{{SUPPORT_EMAIL}}` is substituted here at render time.
+ *
+ * Unset, the pages say plainly that there is no address yet rather than
+ * printing a placeholder that looks like one. `npm run preflight` fails on it.
+ */
+const SUPPORT_EMAIL = (process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? '').trim();
+const contactLine = SUPPORT_EMAIL === ''
+  ? '_No support address is configured for this build. It must be set before '
+    + 'this app is submitted to any store._'
+  : `[${SUPPORT_EMAIL}](mailto:${SUPPORT_EMAIL})`;
+
+/**
  * A deliberately small Markdown subset — headings, paragraphs, lists, rules,
  * bold, italics, code and links — because that is all PRIVACY.md and TERMS.md
  * use. It asserts at the end that nothing unconverted survived, so the day
@@ -140,7 +157,11 @@ for (const [src, slug, title] of [
   ['PRIVACY.md', 'privacy', 'Privacy Policy'],
   ['TERMS.md', 'terms', 'Terms'],
 ]) {
-  write(`${slug}/index.html`, page(title, render(readFileSync(join(ROOT, src), 'utf8'))));
+  const md = readFileSync(join(ROOT, src), 'utf8').replaceAll('{{SUPPORT_EMAIL}}', contactLine);
+  if (md.includes('{{')) {
+    throw new Error(`build-landing: unsubstituted placeholder left in ${src}`);
+  }
+  write(`${slug}/index.html`, page(title, render(md)));
 }
 
 const og = join(ROOT, 'docs/store/og.png');

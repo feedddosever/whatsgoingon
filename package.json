@@ -14,7 +14,8 @@
     "serve:web": "python3 -m http.server 8080 --directory dist",
     "gaps": "node --experimental-strip-types scripts/gaps.ts",
     "gaps:write": "node --experimental-strip-types scripts/gaps.ts --markdown > data/GAPS.md",
-    "audit": "node --experimental-strip-types scripts/audit.ts"
+    "audit": "node --experimental-strip-types scripts/audit.ts",
+    "preflight": "node scripts/preflight.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "^57.0.16",
