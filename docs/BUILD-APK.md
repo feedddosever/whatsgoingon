@@ -1,112 +1,148 @@
-# Building an APK for the Samsung Galaxy Store
+# Getting this onto a Galaxy Tab S6 Lite
 
-**None of the commands below were run in this environment.** The container has no
-Android SDK and its egress proxy blocks Expo's build servers, so this is written
-from the toolchain's documented behaviour, not from a build I watched succeed.
-Expect to hit at least one thing that needs a small adjustment.
-
-`eas.json` in the repo root is real and ready — that part is done.
-
----
-
-## Why APK and not AAB
-
-Google Play requires an **AAB**. The **Galaxy Store takes an APK**, and that
-difference is the whole reason this path exists: Galaxy Store has no equivalent
-of Google Play's 12-tester / 14-day closed-testing rule for new personal
-developer accounts, which is what makes a late release feasible at all.
-
-Both the `preview` and `production` profiles in `eas.json` are set to
-`buildType: "apk"` for exactly this reason. **Do not "fix" that to `app-bundle`.**
+**The build cannot happen in this container** — no Android SDK, and the egress
+proxy blocks Expo's build servers. Everything below runs on your machine. The
+*config* was checked here: `npx expo config` resolves, the Android package is
+`com.degreeroute.app`, and the layout was driven at both tablet geometries
+(1000×600 and 600×1000) with no horizontal overflow.
 
 ---
 
-## The short path (EAS Build — recommended)
+## Before anything: Expo Go will not work
 
-Runs on Expo's servers. You need no Android SDK, no Java, no Android Studio.
+The app uses `react-native-purchases`, which is native code. **Expo Go cannot
+load it.** You need a real build — which is what this page is for. Do not spend
+an evening on the QR-code path; it will fail at the first import.
+
+---
+
+## The short path — EAS Build
+
+Runs on Expo's servers. No Android SDK, no Java, no Android Studio.
 
 ```bash
 npm install -g eas-cli
-eas login                      # create a free Expo account if you have none
-eas init                       # writes extra.eas.projectId into app.json
+eas login                 # free Expo account
+eas init                  # writes extra.eas.projectId into app.json — commit that
 eas build --platform android --profile preview
 ```
 
-The first build asks whether to generate a new Android keystore. **Say yes, and
-let EAS keep it.** Losing the keystore means you can never update the listing —
-you would have to publish a new app under a new package name. EAS storing it is
-the safer default for a solo builder.
+`eas.json` is already set up: both `preview` and `production` use
+`buildType: "apk"`. **Do not change that to `app-bundle`** — Google Play wants
+an AAB, the Galaxy Store takes an APK, and the Galaxy Store is the path here
+precisely because it has no equivalent of Play's 12-tester / 14-day closed-test
+rule for new personal accounts.
 
-The build queues, runs remotely, and ends with a download URL for the `.apk`.
-On the free tier expect to wait — budget an hour, not five minutes, and do not
-start this the night before the deadline.
+The first build asks about a keystore. **Say yes and let EAS keep it.** Losing
+it means you can never update the listing — you would have to republish under a
+new package name.
 
-To install straight onto the Tab S6 Lite for testing:
+Budget an hour on the free tier, not five minutes. Do not start this the night
+before the deadline.
+
+### Installing on the tablet
+
+The build ends with a URL. Easiest route:
+
+1. Open that URL **in the tablet's browser** and download the `.apk`.
+2. Android will ask to allow installs from that browser. Allow it.
+3. Tap the downloaded file.
+
+Or over USB, with developer options and USB debugging on:
 
 ```bash
-eas build --platform android --profile preview
-# then open the build URL on the tablet and install, or:
-adb install path/to/your.apk
+adb install -r ~/Downloads/degree-route.apk
 ```
-
-## The long path (local build, no Expo servers)
-
-Only worth it if EAS is queued badly or you want full control. Needs **JDK 17**
-and the **Android SDK** installed.
-
-```bash
-npx expo prebuild --platform android --clean
-cd android
-./gradlew assembleRelease
-# output: android/app/build/outputs/apk/release/app-release.apk
-```
-
-`expo prebuild` generates the native `android/` directory. It is currently
-gitignored on purpose — the project is managed-workflow, and checking in
-generated native code means every future Expo upgrade becomes a merge conflict.
-If you run prebuild, treat `android/` as build output, not source.
-
-A locally built release APK still needs signing with your own keystore before the
-Galaxy Store will accept it.
 
 ---
 
-## Galaxy Store submission
+## Three things that will bite
 
-1. Register as a seller at **seller.samsungapps.com** (free; business verification
-   can take a few days — start this first, it is the slowest step and it is pure
-   waiting).
-2. Create a new application, upload the APK.
-3. Fill in the listing: title, description, screenshots, category, age rating.
-   Screenshots at phone **and** tablet sizes — you own a Tab S6 Lite, so take the
-   tablet ones there rather than faking them.
-4. Submit for review. **Review is measured in days, not hours.**
+### 1 · Your env vars do not travel
 
-### Two things that are permanent
+`.env` is gitignored, and EAS builds from a clean checkout on a remote machine.
+**Anything you have locally is simply absent in the build.** The app will run —
+nothing crashes — but the paywall will report purchases unavailable, the
+waitlist button will not render, and the packet will print the default URL.
 
-- **`android.package` is `com.degreeroute.app`.** Once the listing is live this
-  can never change. If you want a different id, change it in `app.json` *before*
-  the first upload.
-- **The keystore.** See above. Back it up if you manage it yourself.
+Set them on the build, not in a file:
 
-### Testing in-app purchases
+```bash
+eas secret:create --scope project --name EXPO_PUBLIC_REVENUECAT_KEY   --value "…"
+eas secret:create --scope project --name EXPO_PUBLIC_SUPPORT_EMAIL    --value "…"
+eas secret:create --scope project --name EXPO_PUBLIC_APP_URL          --value "https://…"
+```
 
-Galaxy Store IAP test purchases require a **physical Galaxy device signed in with
-a Samsung account**. No emulator. Your Tab S6 Lite qualifies.
+Metro inlines `EXPO_PUBLIC_*` at transform time, so a secret added after a build
+needs a **new** build — it is not a runtime setting.
 
-This only matters once purchasing is restored — see `docs/HACKATHON.md`, because
-it is not optional for the hackathon.
+### 2 · Your RevenueCat key is the wrong kind
+
+The key you have (`test_…`) is a **Web Billing** key. It drives
+`@revenuecat/purchases-js` on the web build and **will not work on Android.**
+
+An Android build needs a key from a native app in the RevenueCat dashboard —
+Google Play, or Amazon/Samsung if you are targeting the Galaxy Store. Those are
+different keys for different stores, and the Galaxy Store one is not the Play
+one.
+
+Without it the app still runs end to end and the paywall says so honestly. With
+the wrong one, it fails at purchase time instead, which is worse. If the
+dashboard has no Android app yet, create one before you build.
+
+### 3 · In-app purchases only work through the store
+
+A sideloaded APK cannot complete a real purchase — the billing client needs the
+app to be installed from the store it was signed for. To test the paywall and
+Customer Center properly you need the build uploaded to Galaxy Store's internal
+testing track and installed from there.
+
+This matters for the demo video: a sandbox purchase on camera is the single most
+valuable five seconds you can show a RevenueCat judge, and a sideloaded build
+cannot produce one.
+
+---
+
+## The long path — local build
+
+Only if EAS is queued badly. Needs **JDK 17** and the Android SDK.
+
+```bash
+npx expo prebuild --platform android --clean
+cd android && ./gradlew assembleRelease
+# android/app/build/outputs/apk/release/app-release.apk
+```
+
+`prebuild` generates the `android/` directory from `app.json`. It is not
+committed here and should not be — regenerate it rather than editing it, or the
+next `prebuild --clean` silently discards your changes.
+
+---
+
+## Two permanent decisions
+
+**Package name** `com.degreeroute.app`. It cannot be changed after first
+publish, on any store.
+
+**Keystore.** Whoever holds it owns future updates. Let EAS keep it.
 
 ---
 
 ## Before you build
 
 ```bash
-npm test          # 33 engine tests
+npm run preflight   # what is missing for a submission
+npm test
 npm run typecheck
 ```
 
-Both should be clean. A red test here becomes a wasted 40-minute build queue.
+`preflight` will tell you if the support address is still unset. It fills the
+app, `/privacy`, `/terms` and the store listing from one variable, and every
+store requires a monitored address on the privacy policy.
 
-Bump `expo.version` in `app.json` for each store upload. The Galaxy Store rejects
-a re-upload of a version it has already seen.
+## What changed for the tablet
+
+`orientation` was `"portrait"`, which would have locked a tablet — usually held
+in landscape, often in a keyboard cover — to one rotation. It is now
+`"default"`. The layout was already built for both: driven at 1000×600 and
+600×1000, same figures, no horizontal overflow.
