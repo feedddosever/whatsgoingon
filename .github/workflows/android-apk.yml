@@ -1,0 +1,88 @@
+# Builds an installable APK and attaches it to the run.
+#
+# This exists because the app cannot be built in the Claude container: it has no
+# Android SDK, and the egress proxy blocks dl.google.com, which is where the
+# Android Gradle Plugin and every AndroidX artifact live. GitHub's ubuntu runner
+# has both, so the build happens here instead.
+#
+# Run it: Actions -> "Android APK" -> Run workflow. ~15 minutes, then download
+# the artifact at the bottom of the run page.
+#
+# No Expo account and no EAS involved. `expo prebuild` generates android/ from
+# app.json and Gradle builds it locally on the runner.
+name: Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      note:
+        description: 'Optional label for this build'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      # EXPO_PUBLIC_* are inlined by Metro at BUILD time, not read at runtime —
+      # a secret added after a build needs a new build. Unset ones are not an
+      # error: the app runs, the paywall reports purchases unavailable, and the
+      # waitlist button does not render. See AGENTS.md.
+      EXPO_PUBLIC_REVENUECAT_KEY: ${{ secrets.EXPO_PUBLIC_REVENUECAT_KEY }}
+      EXPO_PUBLIC_SUPPORT_EMAIL: ${{ secrets.EXPO_PUBLIC_SUPPORT_EMAIL }}
+      EXPO_PUBLIC_APP_URL: ${{ secrets.EXPO_PUBLIC_APP_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # AGP 8.x wants 17. The runner's default JDK drifts, so pin it.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Cheap, and it means a broken dataset fails in 30 seconds rather than
+      # after a 15-minute Gradle build.
+      - name: Checks
+        run: |
+          npm run typecheck
+          npm test
+
+      - name: Generate the android project
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      # The Expo template signs `release` with the DEBUG keystore
+      # (android/app/build.gradle: `release { signingConfig signingConfigs.debug }`),
+      # so this APK installs on a device with no keystore setup at all. That is
+      # right for sideloading and testing, and wrong for a store: a store build
+      # needs a real keystore you keep, or EAS holding one for you.
+      - name: Name the file
+        id: name
+        run: |
+          SRC=android/app/build/outputs/apk/release/app-release.apk
+          test -f "$SRC" || { echo "no APK at $SRC"; find android -name '*.apk'; exit 1; }
+          OUT="degree-route-${GITHUB_SHA::7}.apk"
+          cp "$SRC" "$OUT"
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
+          ls -lh "$OUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: degree-route-apk
+          path: ${{ steps.name.outputs.path }}
+          if-no-files-found: error
+          retention-days: 30
