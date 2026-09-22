@@ -48,6 +48,36 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # A build with an unset secret still succeeds and still installs — the app
+      # degrades honestly rather than crashing. That is good behaviour and a
+      # terrible way to find out, because the APK looks identical. So the run
+      # says which ones landed, in the job summary, where it cannot be missed.
+      - name: Which secrets landed
+        run: |
+          {
+            echo '### Build configuration'
+            echo
+            echo '| Variable | In this APK |'
+            echo '|---|---|'
+            for v in EXPO_PUBLIC_REVENUECAT_KEY EXPO_PUBLIC_SUPPORT_EMAIL EXPO_PUBLIC_APP_URL; do
+              if [ -n "${!v}" ]; then
+                echo "| \`$v\` | ✅ set |"
+              else
+                echo "| \`$v\` | ❌ **unset** |"
+              fi
+            done
+            echo
+            if [ -z "$EXPO_PUBLIC_REVENUECAT_KEY" ]; then
+              echo '- Paywall will report purchases unavailable.'
+            fi
+            if [ -z "$EXPO_PUBLIC_SUPPORT_EMAIL" ]; then
+              echo '- The "tell me when my state is ready" button will not render.'
+            fi
+            echo
+            echo 'These are inlined by Metro at build time. Adding a secret after this'
+            echo 'run does nothing to this APK — rebuild.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Install dependencies
         run: npm ci
 
