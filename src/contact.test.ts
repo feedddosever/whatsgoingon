@@ -5,10 +5,18 @@ import { unitedStates as us } from './dataset.ts';
 
 const ohio = us.jurisdictions.find(j => j.code === 'OH');
 
-test('the waitlist link degrades rather than lying when no address is set', () => {
+test('the waitlist button exists exactly when an address does', () => {
   // With no EXPO_PUBLIC_SUPPORT_EMAIL the app must not offer a way to get in
-  // touch that silently goes nowhere — every caller gates on this.
-  assert.equal(hasContact(), false, 'no address is configured in this environment');
+  // touch that silently goes nowhere — every caller gates on this. The test
+  // follows the environment rather than assuming one: it used to assert "no
+  // address here", which held until the APK build was given a real address and
+  // the release build failed on its own configuration.
+  const configured = (process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? '').trim() !== '';
+  assert.equal(hasContact(), configured);
+  if (configured) {
+    assert.ok(ohio);
+    assert.match(waitlistMailto(ohio), /^mailto:[^?\s]+@[^?\s]+\?/, 'the link names the address');
+  }
 });
 
 test('the waitlist link names the state, in both the subject and the body', () => {
