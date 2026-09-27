@@ -171,4 +171,9 @@ export interface PaywallScreenProps {
   onPurchase: () => void;
   onRestore: () => void;
   onDismiss: () => void;
+  /**
+   * TEMPORARY testing unlock (see TESTING_UNLOCK in purchases/config.ts).
+   * Null hides it — which is what every real build must do.
+   */
+  onTestingUnlock: (() => void) | null;
 }

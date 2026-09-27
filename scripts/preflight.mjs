@@ -53,6 +53,9 @@ for (const f of ['PRIVACY.md', 'TERMS.md']) {
   check(`${f} has no unresolved TODO`, !/TODO before publishing/.test(read(f)),
     'resolve it before submitting');
 }
+check('Testing unlock switched off',
+  !/export const TESTING_UNLOCK = true/.test(read('src/purchases/config.ts')),
+  'set TESTING_UNLOCK = false in src/purchases/config.ts — it lets anyone skip the paywall');
 check('eas.json present', has('eas.json'), 'needed to build the APK');
 check('APK build documented', has('docs/BUILD-APK.md'), 'write docs/BUILD-APK.md');
 

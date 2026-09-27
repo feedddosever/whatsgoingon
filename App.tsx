@@ -19,7 +19,7 @@ import { exportAdvisorPacket } from './src/packet/advisorPacket.ts';
 import { clearPlan, loadPlan, savePlan } from './src/storage.ts';
 import { isSchoolAge } from './src/disclaimer.ts';
 import { PaywallScreen } from './src/screens/PaywallScreen.tsx';
-import { NATIVE_API_KEY, WEB_API_KEY } from './src/purchases/config.ts';
+import { NATIVE_API_KEY, TESTING_UNLOCK, WEB_API_KEY } from './src/purchases/config.ts';
 import {
   CUSTOMER_CENTER_AVAILABLE,
   configurePurchases,
@@ -351,6 +351,11 @@ export default function App() {
         onPurchase={handlePurchase}
         onRestore={handleRestore}
         onDismiss={() => { setPaywallOpen(false); setPurchaseError(null); }}
+        onTestingUnlock={
+          TESTING_UNLOCK
+            ? () => { setUnlocked(true); setPaywallOpen(false); setPurchaseError(null); }
+            : null
+        }
       />
     );
   } else if (screen === 'map' && institution && framework && system && selected) {

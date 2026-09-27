@@ -28,3 +28,13 @@ export const PRODUCTS = {
  */
 export const WEB_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_WEB_KEY ?? '';
 export const NATIVE_API_KEY = process.env.EXPO_PUBLIC_REVENUECAT_KEY ?? '';
+
+/**
+ * TEMPORARY — a "skip payment" button on the paywall, so the advisor packet can
+ * be reached and tested while no store key is configured.
+ *
+ * It unlocks for the current session only (nothing is saved), and it is loud
+ * on screen so nobody mistakes a testing build for a real one. `npm run
+ * preflight` treats it as a submission blocker. Set to false to remove it.
+ */
+export const TESTING_UNLOCK = true;

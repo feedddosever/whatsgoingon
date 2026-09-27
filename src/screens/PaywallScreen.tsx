@@ -78,7 +78,7 @@ function BenefitRow(props: { index: number; benefit: Benefit }) {
 export function PaywallScreen(props: PaywallScreenProps) {
   const {
     schoolAge, savingUsd, priceLabel, alreadyOwned, busy, error,
-    onPurchase, onRestore, onDismiss,
+    onPurchase, onRestore, onDismiss, onTestingUnlock,
   } = props;
   const { width } = useWindowDimensions();
   const wide = width >= 700;
@@ -258,6 +258,19 @@ export function PaywallScreen(props: PaywallScreenProps) {
               <Text style={styles.ctaText}>{busy ? 'Talking to the store…' : buyText}</Text>
             </Pressable>
 
+            {/* TEMPORARY. Dashed and labelled as a testing build so it can
+                never pass for the real thing on a screenshot or a demo. */}
+            {onTestingUnlock !== null && (
+              <Pressable
+                onPress={onTestingUnlock}
+                accessibilityRole="button"
+                accessibilityLabel="Testing build: skip payment and open the packet"
+                style={({ pressed }) => [styles.testing, pressed && styles.pressed]}
+              >
+                <Text style={styles.testingText}>Skip payment — testing build only</Text>
+              </Pressable>
+            )}
+
             <View style={styles.secondaryRow}>
               <Pressable
                 onPress={onRestore}
@@ -295,6 +308,12 @@ export function PaywallScreen(props: PaywallScreenProps) {
 const COLUMN = 640;
 
 const styles = StyleSheet.create({
+  testing: {
+    marginTop: theme.space.sm, paddingVertical: theme.space.sm, alignItems: 'center',
+    borderWidth: 1, borderStyle: 'dashed', borderColor: theme.color.warn,
+    borderRadius: theme.radius.md,
+  },
+  testingText: { ...theme.font.small, color: theme.color.warn, fontWeight: '600' },
   minorNotice: {
     marginHorizontal: theme.space.md, marginTop: theme.space.md,
     padding: theme.space.md, borderRadius: theme.radius.md,
