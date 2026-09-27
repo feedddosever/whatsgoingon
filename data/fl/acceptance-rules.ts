@@ -139,7 +139,7 @@ const AWARDED_NOT_CORE: ReadonlyArray<readonly [string, number, string]> = [
  */
 
 /**
- * IB, Cambridge A Level (AICE), DSST, DLPT and UExcel are all named in
+ * IB, Cambridge A Level (AICE), DSST and DLPT are all named in
  * 1007.27(2) and all sit in the same binding table — but these rows have NOT
  * been audited against the August 2026 edition the way the AP and CLEP rows
  * above have. Treat them as the weaker half of this file.
@@ -174,11 +174,6 @@ const UNAUDITED: ReadonlyArray<readonly [string, string[], number]> = [
   ['alevel-biology', ['fl-nat'], 0],
   ['alevel-chemistry', ['fl-nat'], 0],
   ['alevel-physics', ['fl-nat'], 0],
-  ['uexcel-english-composition', ['fl-comm'], 0],
-  ['uexcel-college-algebra', ['fl-math'], 0],
-  ['uexcel-introduction-to-psychology', ['fl-social'], 0],
-  ['uexcel-introduction-to-sociology', ['fl-social'], 0],
-  ['uexcel-world-population', ['fl-social'], 0],
   ['dlpt-spanish', ['fl-hum'], 0],
   ['dlpt-arabic', ['fl-hum'], 0],
   ['dlpt-korean', ['fl-hum'], 0],

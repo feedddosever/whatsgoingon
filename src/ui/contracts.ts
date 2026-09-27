@@ -5,19 +5,41 @@
  */
 import type {
   Institution, Route, StudentInput, CreditSource, GeArea, GeFramework,
-  Jurisdiction, StateCode, StudentProfile, System, AreaChoice, PlanItem,
+  Jurisdiction, StateCode, StudentProfile, System, AreaChoice, PlanItem, TransferPolicy,
 } from '../types.ts';
 import type { PathwayCost } from '../engine.ts';
 
-export interface ProfileScreenProps {
-  value: StudentProfile;
-  onChange: (next: StudentProfile) => void;
-  onSubmit: () => void;
+/**
+ * The onboarding, one question at a time. Order is fixed; which questions appear
+ * depends on the answers (IB subjects only after "yes, I am in IB") and on the
+ * state (Texas has no DLPT rules, so it is never asked there).
+ */
+export type OnboardingStep =
+  | 'welcome' | 'year' | 'field' | 'budget' | 'waiver'
+  | 'state' | 'campus'
+  | 'clep' | 'ap' | 'ib_q' | 'ib' | 'alevel_q' | 'alevel' | 'dsst' | 'dlpt'
+  | 'cc_q' | 'cc' | 'alt_q' | 'alt'
+  | 'residency' | 'name';
+
+/** Credit families asked about with a yes/no before any list is shown. */
+export type GatedKind = 'ib' | 'a_level' | 'cc_course' | 'alt_provider';
+
+/**
+ * Where the student is in the onboarding, and their yes/no answers.
+ *
+ * Held by App rather than the screen so that "‹ back" from the routes returns to
+ * the question they left, not to the greeting. The yes/no answers live here and
+ * not in StudentInput because they change nothing the engine computes: a "yes"
+ * with no subject ticked is the same plan as a "no".
+ */
+export interface OnboardingNav {
+  step: OnboardingStep;
+  gates: Partial<Record<GatedKind, boolean>>;
 }
 
-export interface InputScreenProps {
-  /** Back to the onboarding answers, which change how this plan is priced. */
-  onBack: () => void;
+export interface OnboardingScreenProps {
+  nav: OnboardingNav;
+  onNav: (next: OnboardingNav) => void;
   /**
    * The states we hold campuses for, each with its statewide guarantee.
    *
@@ -47,6 +69,14 @@ export interface InputScreenProps {
   /** Already narrowed to `selectedState` by the caller. */
   institutions: Institution[];
   creditSources: CreditSource[];
+  /**
+   * The free-CLEP voucher row. Not something a student "holds", so it is kept
+   * out of the provider question; the CLEP question mentions it in one line and
+   * the plan carries the detail.
+   */
+  freeClep: CreditSource | null;
+  /** What the chosen campus's system publishes about credit from other colleges. */
+  transferPolicy: TransferPolicy | null;
   value: StudentInput;
   onChange: (next: StudentInput) => void;
   onSubmit: () => void;
@@ -85,6 +115,12 @@ export interface PlanMapScreenProps {
   /** null resets the requirement back to our recommendation. */
   onChoose: (areaId: string, choice: AreaChoice | null) => void;
   onOpenDetail: () => void;
+  /**
+   * The free-CLEP voucher, for the card that explains it. The onboarding only
+   * says "you can take them for free" and points here; this is where the how
+   * lives. Null hides the card.
+   */
+  freeClep: CreditSource | null;
   /** Sends the plan to a parent or guardian, framed for them rather than an advisor. */
   onShareWithGuardian: () => void;
   /** Clears the saved plan and returns to the first question. */

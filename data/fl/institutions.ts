@@ -64,7 +64,10 @@ const FL_TRANSFER_CAP: Provenance = {
   note:
     'An associate in arts is 60 semester hours and transfers whole with junior standing. ' +
     'Separately, no more than 45 credit-by-exam hours count toward guaranteed transfer. ' +
-    'The interaction of the two is not confirmed here.',
+    'The interaction of the two is not confirmed here. Read 2026-09-27: s. 1007.23 itself ' +
+    'guarantees that an AA graduate has met all general education and is admitted to the ' +
+    'upper division, but states no 60-hour figure and no cap \u2014 the 60 rests on some ' +
+    'other document we have not opened.',
 };
 
 const fl = (id: string, name: string): Institution => ({

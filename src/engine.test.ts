@@ -4,7 +4,7 @@ import {
   planRoute, planAllRoutes, baselineCost, routeSaving, optionsForArea, pathwayCosts,
   effectiveCost, frameworkFor, jurisdictionFor, systemFor,
 } from './engine.ts';
-import { california, forState, unitedStates } from './dataset.ts';
+import { california, forState, transferPolicies, unitedStates } from './dataset.ts';
 import type { StudentProfile } from './types.ts';
 
 const ds = california;
@@ -1113,7 +1113,7 @@ test('a refusal is by family, and covers every exam in it', () => {
   // outside that list is a refusal we can point at rather than a silence.
   assert.deepEqual(
     [...uc.refuses].sort(),
-    ['alt_provider', 'clep', 'dlpt', 'dsst', 'uexcel'],
+    ['alt_provider', 'clep', 'dlpt', 'dsst'],
   );
   for (const accepted of ['ap', 'ib', 'a_level'] as const) {
     assert.ok(!uc.refuses.includes(accepted), `UC should accept ${accepted}`);
@@ -1149,26 +1149,33 @@ test('every IB row is Higher Level, and every exam family is reachable', () => {
   }
 });
 
-test('a retired or restricted exam is never recommended, only counted', () => {
-  // UExcel cannot be bought since August 2022 and the DLPT has no civilian
-  // route in. Both still carry Florida rules, so both would be planned with if
-  // availability were not gated — sending a student to buy a discontinued exam.
+test('a restricted exam is never recommended, only counted', () => {
+  // The DLPT has no civilian route in. It still carries Florida rules, so it
+  // would be planned with if availability were not gated — sending a student to
+  // sit an exam they are not eligible for.
   const fl = { profile: PLAIN, target_institution_id: 'u-florida',
     held_credit_ids: [], units_in_residence: 0 };
   for (const kind of ['cheapest', 'fastest', 'lowest_risk'] as const) {
     const route = planRoute(us, fl, kind);
     assert.ok(
-      !route.items.some(i => i.kind === 'uexcel' || i.kind === 'dlpt'),
+      !route.items.some(i => i.kind === 'dlpt'),
       `${kind} recommended something nobody can sit`,
     );
   }
-  assert.ok(!optionsForArea(us, fl, 'fl-comm').some(o => o.kind === 'uexcel'));
+  assert.ok(!optionsForArea(us, fl, 'fl-hum').some(o => o.kind === 'dlpt'));
 
-  // …but a score already held still clears its area.
-  const held = { ...fl, held_credit_ids: ['uexcel-english-composition'] };
+  // …but a rating already held still clears its area.
+  const held = { ...fl, held_credit_ids: ['dlpt-spanish'] };
   const route = planRoute(us, held, 'cheapest');
   const touched = [...route.areas_cleared, ...route.areas_unmet, ...route.areas_skipped];
-  assert.ok(!touched.includes('fl-comm'), 'a held UExcel score should have cleared fl-comm');
+  assert.ok(!touched.includes('fl-hum'), 'a held DLPT rating should have cleared fl-hum');
+});
+
+test('UExcel is gone, not merely hidden', () => {
+  // Dropped as legacy: retired in 2022, nothing to sit, and a picker row that
+  // only ever said "you cannot buy this". No row, no rule, no refusal names it.
+  assert.ok(!us.creditSources.some(c => c.id.startsWith('uexcel-')));
+  assert.ok(!us.rules.some(r => r.credit_source_id.startsWith('uexcel-')));
 });
 
 test('UC accepts A Level by name, and that is the point of having it', () => {
@@ -1319,4 +1326,25 @@ test('dual enrolment never discounts the plan, however universal it is', () => {
     effectiveCost(course, withProfile({ waiver: 'eligible' }), fl), 228,
     'Florida dual enrolment was subtracted from a course price',
   );
+});
+
+test('every system with campuses says how it treats credit from another college', () => {
+  // The onboarding asks about community-college courses and then reads the
+  // campus's policy back. A system with campuses and no policy would show a
+  // student an empty card at exactly the moment they asked the question.
+  const withCampuses = unitedStates.systems.filter(sys =>
+    unitedStates.institutions.some(i => i.system === sys.id));
+  for (const sys of withCampuses) {
+    const p = transferPolicies.find(x => x.system === sys.id);
+    assert.ok(p !== undefined && p.points.length > 0, `${sys.id} has no transfer policy`);
+  }
+  for (const p of transferPolicies) {
+    assert.ok(unitedStates.systems.some(s => s.id === p.system), `unknown system ${p.system}`);
+    for (const pt of p.points) {
+      // Read to a student verbatim, so each sentence must be backed by a page
+      // someone actually opened — no blank sources, no undated rows.
+      assert.match(pt.provenance.source_url, /^https:\/\//, `${p.system}: "${pt.text}" has no source`);
+      assert.match(pt.provenance.as_of, /^\d{4}-\d{2}-\d{2}$/, `${p.system}: "${pt.text}" is undated`);
+    }
+  }
 });

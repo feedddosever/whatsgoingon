@@ -33,9 +33,10 @@ stranded-credit warnings, so the first frame is:
 Three of those, stacked. Let them sit for a beat with no narration over the last
 one.
 
-**Setup to record this:** four questions → *fee waiver: No* → California → UC
-Berkeley → tick CLEP College Composition, CLEP College Algebra, CLEP
-Introductory Psychology → Price my route.
+**Setup to record this:** tap through the greeting and the profile questions →
+*fee waiver: No* → California → UC Berkeley → on the CLEP question tick CLEP
+College Composition, CLEP College Algebra, CLEP Introductory Psychology → answer
+*No* / skip the rest → Price my route.
 
 ---
 
@@ -61,9 +62,9 @@ Florida**, tap **Price my route**. Land on the routes screen.
 
 ## What it actually does — 0:40–1:10
 
-> **VO:** "Four questions. No account, no transcript upload. Pick a state, pick a
-> campus, and it prices the requirements you still have to clear — at that
-> campus's own rate."
+> **VO:** "A few quick questions, one per screen, most of them one tap. No
+> account, no transcript upload. Pick a state, pick a campus, and it prices the
+> requirements you still have to clear — at that campus's own rate."
 
 **On screen:** Texas → UT Austin → Price my route. Hold on the hero:
 

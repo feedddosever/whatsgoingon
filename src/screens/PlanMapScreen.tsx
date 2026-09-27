@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Linking } from 'react-native';
 import type { ReactElement } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -69,11 +70,6 @@ const PATH_COPY: Record<string, readonly [string, string]> = {
     'Free, and only if you serve \u2014 the Defense Language Institute administers ' +
     'it and there is no civilian route in. Never suggested, always counted.',
   ],
-  uexcel: [
-    'UExcel',
-    'Retired in August 2022. Nothing to buy; scores already earned still move, ' +
-    'and Florida\u2019s statute still names them.',
-  ],
   ib: [
     'IB exams',
     'Higher Level at a 5 or better. Accepted where CLEP and DSST are refused \u2014 ' +
@@ -137,7 +133,7 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
   const {
     institution, framework, system, route, areas, profile,
     optionsFor, pathways, choiceFor, onChoose,
-    onOpenDetail, onShareWithGuardian, onStartOver, onBack,
+    onOpenDetail, freeClep, onShareWithGuardian, onStartOver, onBack,
   } = props;
 
   const [open, setOpen] = useState<string | null>(null);
@@ -248,6 +244,33 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
                   </View>
                 );
               })}
+            </View>
+          )}
+
+          {/* The detail the onboarding promised. It said "you can take them for
+              free" in one line and pointed here; this is the how. Never shown at a
+              campus that refuses CLEP — a free exam is still worth nothing there. */}
+          {freeClep !== null && !institution.refuses.includes('clep') && (
+            <View style={styles.freeCard}>
+              <Text style={styles.freeKicker}>💡  CLEP EXAMS, FOR FREE</Text>
+              <Text style={styles.freeTitle}>Modern States pays the CLEP exam fee.</Text>
+              <Text style={styles.freeText}>
+                Take one of their free online prep courses and they give you a voucher that
+                covers the College Board exam fee. The credit still arrives as an ordinary
+                CLEP score, so {institution.name} judges it by its CLEP policy — the same one
+                this plan already uses.
+              </Text>
+              <Text style={styles.freeNote}>
+                The voucher covers the exam fee only. A test centre or remote-proctoring fee may
+                still apply — check before you book.
+              </Text>
+              <Pressable
+                onPress={() => { void Linking.openURL(freeClep.provenance.source_url).catch(() => undefined); }}
+                accessibilityRole="link"
+                style={styles.freeLink}
+              >
+                <Badge p={freeClep.provenance} />
+              </Pressable>
             </View>
           )}
 
@@ -424,6 +447,16 @@ const styles = StyleSheet.create({
   title: { ...theme.font.title, color: theme.color.text, marginTop: theme.space.xs },
   sub: { ...theme.font.body, color: theme.color.textMuted, marginTop: theme.space.xs, lineHeight: 21 },
 
+  freeCard: {
+    marginTop: theme.space.lg, padding: theme.space.md, gap: theme.space.sm,
+    borderRadius: theme.radius.md, borderWidth: 1,
+    borderColor: theme.color.border, backgroundColor: theme.color.surface,
+  },
+  freeKicker: { ...theme.font.small, color: theme.color.accent, letterSpacing: 1, fontWeight: '700' },
+  freeTitle: { ...theme.font.heading, color: theme.color.text },
+  freeText: { ...theme.font.body, color: theme.color.text, lineHeight: 21 },
+  freeNote: { ...theme.font.small, color: theme.color.textMuted, lineHeight: 18 },
+  freeLink: { alignSelf: 'flex-start' },
   pathsCard: {
     marginTop: theme.space.lg, padding: theme.space.md,
     borderRadius: theme.radius.md, borderWidth: 1,

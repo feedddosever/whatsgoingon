@@ -61,7 +61,7 @@ check('Icon is not the Expo template',
   has('assets/icon.png') && statSync(join(ROOT, 'assets/icon.png')).size > 50_000
     && has('scripts/art/icon.html'),
   'the template icon reads as abandoned on a listing');
-const shots = ['01-questions', '02-state-guarantee', '03-routes', '04-plan-map',
+const shots = ['01-welcome', '01b-one-question', '02-state-guarantee', '03-routes', '04-plan-map',
   '05-breakdown', '06-any-state'];
 check(`${shots.length} store screenshots`,
   shots.every(s => has(`docs/store/screenshots/${s}.png`)),

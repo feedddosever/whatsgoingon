@@ -1,5 +1,5 @@
 import type { Dataset } from './engine.ts';
-import type { StateCode } from './types.ts';
+import type { StateCode, SystemId, TransferPolicy } from './types.ts';
 
 import { frameworks } from '../data/us/frameworks.ts';
 import { systems } from '../data/us/systems.ts';
@@ -11,16 +11,19 @@ import { institutions as caInstitutions } from '../data/ca/institutions.ts';
 import { calGetcAreas } from '../data/ca/cal-getc.ts';
 import { cccCourses } from '../data/ca/credit-sources.ts';
 import { acceptanceRules as caRules } from '../data/ca/acceptance-rules.ts';
+import { californiaTransferPolicies } from '../data/ca/transfer-policy.ts';
 
 import { texasInstitutions } from '../data/tx/institutions.ts';
 import { texasCoreAreas } from '../data/tx/core.ts';
 import { texasCourses } from '../data/tx/courses.ts';
 import { texasRules } from '../data/tx/acceptance-rules.ts';
+import { texasTransferPolicies } from '../data/tx/transfer-policy.ts';
 
 import { floridaInstitutions } from '../data/fl/institutions.ts';
 import { floridaCoreAreas } from '../data/fl/core.ts';
 import { floridaCourses } from '../data/fl/courses.ts';
 import { floridaRules } from '../data/fl/acceptance-rules.ts';
+import { floridaTransferPolicies } from '../data/fl/transfer-policy.ts';
 
 /**
  * The dataset, as typed modules rather than JSON: Metro and Node disagree about
@@ -74,8 +77,8 @@ export function forState(ds: Dataset, state: StateCode): Dataset {
     areas: ds.areas.filter(a => a.applies_to.some(s => systemIds.has(s))),
     // Three reasons to keep a source the rules do not reach.
     //
-    // A family some campus here REFUSES: the whole reason to list UExcel is to
-    // tell a UC-bound student UC will not look at it, and a source the student
+    // A family some campus here REFUSES: the whole reason to list DSST in California
+    // is to tell a UC-bound student UC will not look at it, and a source the student
     // cannot tick is a warning that can never fire.
     //
     // And `alt_provider` ALWAYS, regardless of state. Keeping it only where a
@@ -90,6 +93,19 @@ export function forState(ds: Dataset, state: StateCode): Dataset {
     rules,
   };
 }
+
+/**
+ * What each system publishes about credit from ANOTHER college. Outside the
+ * engine's Dataset on purpose: nothing here is priced or planned with, it is
+ * read to the student verbatim, with its sources, and the engine has no
+ * business with it.
+ */
+export const transferPolicies: TransferPolicy[] = [
+  ...californiaTransferPolicies, ...texasTransferPolicies, ...floridaTransferPolicies,
+];
+
+export const transferPolicyFor = (system: SystemId): TransferPolicy | null =>
+  transferPolicies.find(p => p.system === system) ?? null;
 
 /** The California slice, kept as a named export because the demo and the tests use it. */
 export const california: Dataset = forState(unitedStates, 'CA');

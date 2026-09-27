@@ -25,7 +25,7 @@ const UC_EXAM_POLICY: Provenance = {
   note:
     'UC accepts only AP, IB and A-Level exams \u2014 and for general-education credit an '
     + 'A Level must be Cambridge International, taken 2013 or later. It awards no credit '
-    + 'for CLEP, DSST, DLPT or UExcel, and ' +
+    + 'for CLEP, DSST or DLPT, and ' +
     'does not honour credit posted to a third-party transcript (Sophia, Study.com, ' +
     'StraighterLine, Saylor). Build a UC plan on AP/IB only.',
 };
@@ -54,12 +54,14 @@ const UC_RESIDENCY: Provenance = {
 };
 
 const UC_TRANSFER_CAP: Provenance = {
-  source_url: '',
-  as_of: '',
-  confidence: 'needs_check',
+  source_url:
+    'https://admission.universityofcalifornia.edu/admission-requirements/transfer-requirements/preparing-to-transfer/transfer-credit.html',
+  as_of: '2026-09-27',
+  confidence: 'published',
   note:
-    'UC is widely reported to cap community-college transfer at 70 semester units, but this ' +
-    'is unconfirmed, as is how it interacts with exam credit.',
+    'UC accepts up to 70 semester (105 quarter) units for lower-division coursework ' +
+    'completed at any non-UC school. How exam credit interacts with that limit is not ' +
+    'confirmed here.',
 };
 
 const CSU_RESIDENCY: Provenance = {
@@ -70,10 +72,12 @@ const CSU_RESIDENCY: Provenance = {
 };
 
 const CSU_TRANSFER_CAP: Provenance = {
-  source_url: '',
-  as_of: '',
-  confidence: 'needs_check',
-  note: 'Transfer-unit cap unconfirmed against a CSU source.',
+  source_url: 'https://www.calstate.edu/apply',
+  as_of: '2026-09-27',
+  confidence: 'published',
+  note:
+    'The CSU can accept a maximum of 70 transferable semester (105 quarter) units from ' +
+    'community colleges.',
 };
 
 
@@ -113,7 +117,7 @@ const uc = (id: string, name: string, tag: boolean): Institution => ({
   // for CLEP, nothing for DSST, and nothing posted to a third-party transcript.
   // From UC's own sentence, quoted below: it accepts AP, IB and A-Level and
   // nothing else. Everything outside that list is a refusal we can point at.
-  refuses: ['clep', 'dsst', 'dlpt', 'uexcel', 'alt_provider'],
+  refuses: ['clep', 'dsst', 'dlpt', 'alt_provider'],
   exam_policy_provenance: {
     ...UC_EXAM_POLICY,
     note: UC_EXAM_POLICY.note + ' ' + (tag ? TAG : NO_TAG(name)),

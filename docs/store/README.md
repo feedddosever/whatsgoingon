@@ -43,7 +43,8 @@ amber — which is the thing about this app worth photographing.
 
 | File | Screen |
 |---|---|
-| `01-questions.png` | The four questions. No account, no transcript. |
+| `01-welcome.png` | The greeting. No account, nothing leaves the phone. |
+| `01b-one-question.png` | One question per screen, answered with a tap. |
 | `02-state-guarantee.png` | State picker with the statewide rule under it. |
 | `03-routes.png` | Three routes, the saving, and what binds them. |
 | `04-plan-map.png` | The plan map — every requirement and how it is cleared. |

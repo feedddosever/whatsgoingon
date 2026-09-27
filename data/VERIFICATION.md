@@ -101,9 +101,10 @@ Three arrived with conditions that needed a new concept, `CreditAvailability`:
 - **DLPT** — `availability: 'restricted'`. Administered by the Defense Language
   Institute to service members and government-sponsored personnel; there is no
   civilian route in.
-- **UExcel** — `availability: 'retired'`. Excelsior stopped offering it after
-  **21 August 2022** and takes no new registrations. Scores already earned still
-  transfer, and Florida's statute still names it.
+- **UExcel** — was carried as `availability: 'retired'` (Excelsior stopped
+  offering it after **21 August 2022**). **Removed from the dataset on
+  2026-09-27** as legacy: its five exams and five Florida rules are gone, and
+  `engine.test.ts` asserts no row or rule names it.
 
 Anything not `open` is **declarable but never recommended**. The gate sits in
 `candidatesFor`, not in `unmetAreas`, so credit a student already holds still
@@ -112,7 +113,8 @@ discontinued exam or one they cannot sit.
 
 UC's refusal list grew to match its own quoted sentence — it accepts "AP, IB and
 A-Level" and nothing else, so `refuses` is now
-`['clep', 'dsst', 'dlpt', 'uexcel', 'alt_provider']`. And `forState()` now keeps
+`['clep', 'dsst', 'dlpt', 'alt_provider']` (it named `uexcel` too until the
+family was removed). And `forState()` now keeps
 any family a campus in that state refuses, generalising what had been a special
 case for third-party providers: a source filtered out for having no acceptance
 rule is a source the student cannot tick, so the refusal can never be shown.
@@ -222,7 +224,7 @@ Also corrected:
 - The table we cite is the **August 2026** edition, not 2024, and it caps
   guaranteed credit-by-exam transfer at **45 credits**.
 
-The IB, A Level, DSST, DLPT and UExcel rows for Florida have **not** been
+The IB, A Level, DSST and DLPT rows for Florida have **not** been
 audited the same way and carry a provenance note saying so.
 
 ## The statewide layer, rebuilt from research (2026-09-20)

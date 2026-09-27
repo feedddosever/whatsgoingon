@@ -56,12 +56,10 @@ and CLEP, and no Florida public university gets a vote.
 
 ## Exams that cannot be bought
 
-Two families in the dataset are real, carry credit, and cannot be purchased:
+One family in the dataset is real, carries credit, and cannot be purchased by
+a civilian. (UExcel, retired by Excelsior in August 2022, used to be a second;
+it was removed from the dataset on 2026-09-27 as legacy.)
 
-- **UExcel** is **retired**. Excelsior stopped offering the exams after 21
-  August 2022 and accepts no new registrations. Scores already earned still
-  transfer, and Florida's statute still names UExcel — so the app lets a student
-  declare one and will never suggest sitting one.
 - **DLPT** is **restricted**. The Defense Language Institute administers it to
   service members and government-sponsored personnel; there is no civilian route
   in. Free to those eligible, and worth real credit in Florida.

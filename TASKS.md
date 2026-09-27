@@ -59,7 +59,7 @@ cannot drift between screens:
       cannot tell a student whether they actually qualify. The *state* half is
       now right — a waiver-eligible Texan is no longer given a Californian
       discount — but the *student* half is still a yes/no question.
-- [ ] **Florida's credit-by-exam list: AP and CLEP audited, the rest not.** The August 2026 table corrected eleven rows (see VERIFICATION.md). IB, A Level, DSST, DLPT and UExcel rows are still unaudited.
+- [ ] **Florida's credit-by-exam list: AP and CLEP audited, the rest not.** The August 2026 table corrected eleven rows (see VERIFICATION.md). IB, A Level, DSST and DLPT rows are still unaudited.
 - [ ] **Texas per-campus core lists and designated tuition.** The 42-hour block
       transfer is statute and solid; which exam clears which component area is
       set campus by campus, and designated tuition ranges from $213/SCH (Texas

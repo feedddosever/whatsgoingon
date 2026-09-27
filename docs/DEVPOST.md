@@ -49,8 +49,9 @@ $1,002. Same exams. Same scores. Same week.
 
 ### What it does
 
-You answer four questions — year in school, rough field, what you can spend,
-whether you qualify for a fee waiver — pick a state, then a campus. Degree Route
+You answer a few quick questions, one per screen — year in school, rough field,
+what you can spend, whether you qualify for a fee waiver — pick a state and a
+campus, and say which credit you already hold. Degree Route
 then prices **the requirements you still have to clear**, at that campus's own
 per-unit rate, and shows three ways to clear them:
 
@@ -95,10 +96,10 @@ are priced back in so a plan that clears less can never *look* cheaper than it i
 
 The dataset is typed TypeScript modules rather than JSON, so a malformed row is a
 compile error. It currently holds **79 public campuses across three states**, 25 requirement
-areas, 118 credit sources across **nine credit families** — AP, IB, Cambridge A
-Level (what Florida calls AICE), CLEP, DSST, DLPT, UExcel, community-college
-courses and third-party providers — and over **5,000 acceptance rules**. That is
-all seven families named in Florida's credit-by-exam statute, plus the two that
+areas, 113 credit sources across **eight credit families** — AP, IB, Cambridge A
+Level (what Florida calls AICE), CLEP, DSST, DLPT, community-college courses and
+third-party providers — and over **5,000 acceptance rules**. That is every
+family in Florida's credit-by-exam statute still being sat today, plus the two that
 are not exams at all.
 
 Coverage is deliberately two-tiered and the app never blurs them. Campus-level

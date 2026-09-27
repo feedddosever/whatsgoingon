@@ -569,7 +569,7 @@ export function pathwayCosts(ds: Dataset, input: StudentInput): PathwayCost[] {
   const required = unmetAreas(ds, inst, input.held_credit_ids);
   const candidates = candidatesFor(ds, inst, input.profile);
   const kinds: CreditKind[] = [
-    'ap', 'ib', 'a_level', 'cc_course', 'clep', 'dsst', 'dlpt', 'uexcel', 'alt_provider',
+    'ap', 'ib', 'a_level', 'cc_course', 'clep', 'dsst', 'dlpt', 'alt_provider',
   ];
 
   return kinds.map(kind => {

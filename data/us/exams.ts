@@ -87,17 +87,6 @@ const DLPT_FEE = {
     'binding statewide table as AP and CLEP.',
 };
 
-const UEXCEL_FEE = {
-  source_url: 'https://www.excelsior.edu/start-with-more-credit/transfer-your-uexcel-credit/',
-  as_of: '2026-09-19',
-  confidence: 'needs_check' as const,
-  note:
-    'RETIRED. Excelsior stopped offering UExcel exams after 21 August 2022 and accepts no ' +
-    'new registrations, so this can never be bought \u2014 it is here because scores already ' +
-    'earned still transfer, and Florida\u2019s statute still names UExcel. Colleges are not ' +
-    'obliged to award the full credit Excelsior did.',
-};
-
 export const examSources: CreditSource[] = [
   // ---- AP: accepted in some form almost everywhere, including at UC ----
   { id: 'ap-english-lang', kind: 'ap', name: 'AP English Language & Composition (score 3+)', cost_usd: 99, provenance: AP_FEE },
@@ -207,15 +196,4 @@ export const examSources: CreditSource[] = [
   { id: 'dlpt-chinese-mandarin', kind: 'dlpt', name: 'DLPT Chinese Mandarin (listening and reading)', cost_usd: 0,
     availability: 'restricted', provenance: DLPT_FEE },
 
-  // ---- UExcel: retired in 2022, still on Florida's statute ----
-  { id: 'uexcel-english-composition', kind: 'uexcel', name: 'UExcel English Composition (retired exam)', cost_usd: 0,
-    availability: 'retired', provenance: UEXCEL_FEE },
-  { id: 'uexcel-college-algebra', kind: 'uexcel', name: 'UExcel College Algebra (retired exam)', cost_usd: 0,
-    availability: 'retired', provenance: UEXCEL_FEE },
-  { id: 'uexcel-introduction-to-psychology', kind: 'uexcel', name: 'UExcel Introduction to Psychology (retired exam)', cost_usd: 0,
-    availability: 'retired', provenance: UEXCEL_FEE },
-  { id: 'uexcel-introduction-to-sociology', kind: 'uexcel', name: 'UExcel Introduction to Sociology (retired exam)', cost_usd: 0,
-    availability: 'retired', provenance: UEXCEL_FEE },
-  { id: 'uexcel-world-population', kind: 'uexcel', name: 'UExcel World Population (retired exam)', cost_usd: 0,
-    availability: 'retired', provenance: UEXCEL_FEE },
 ];

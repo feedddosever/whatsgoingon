@@ -279,17 +279,18 @@ export interface GeArea {
  * decides whether a student's whole plan is worth anything.
  */
 export type CreditKind =
-  | 'ap' | 'ib' | 'a_level' | 'clep' | 'dsst' | 'dlpt' | 'uexcel'
+  | 'ap' | 'ib' | 'a_level' | 'clep' | 'dsst' | 'dlpt'
   | 'cc_course' | 'alt_provider';
 
 /**
  * Whether a student can actually go and obtain this credit today.
  *
  * Not the same question as whether a campus will accept it, and the app has to
- * answer both. UExcel was retired in August 2022 — the credit still transfers,
- * and nobody can sit one — while the DLPT is administered by the Defense
- * Language Institute to service members and is not something a civilian can
- * register for.
+ * answer both. The DLPT is administered by the Defense Language Institute to
+ * service members and is not something a civilian can register for; `retired`
+ * is kept for the next exam family that closes its doors. (UExcel, retired in
+ * 2022, was dropped from the dataset outright as legacy rather than carried as
+ * a `retired` family nobody new can hold.)
  *
  * Anything not `open` is declarable but never RECOMMENDED: the planner exists
  * to tell a student what to go and do next, and sending them to buy a
@@ -482,4 +483,24 @@ export interface Route {
   areas_skipped: string[];
   /** Hard constraints that bind this route — shown to the student verbatim. */
   warnings: RouteWarning[];
+}
+
+/**
+ * One published rule about how a system treats credit earned at ANOTHER
+ * college — a community college, another university — as opposed to exam credit.
+ *
+ * Kept as sentences with their own provenance rather than folded into numbers the
+ * engine uses, because most of what matters here is not a number: "the Texas core
+ * transfers as a block", "a denial can be appealed to the Commissioner". Each
+ * point carries the row that backs it, the same as every other claim.
+ */
+export interface TransferPolicyPoint {
+  text: string;
+  provenance: Provenance;
+}
+
+export interface TransferPolicy {
+  /** The system these points apply to. Every campus in it shares them. */
+  system: SystemId;
+  points: TransferPolicyPoint[];
 }

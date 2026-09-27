@@ -8,10 +8,10 @@ import {
   baselineCost, frameworkFor, optionsForArea, pathwayCosts, planAllRoutes, routeSaving,
   systemFor,
 } from './src/engine.ts';
-import { forState, unitedStates } from './src/dataset.ts';
+import { forState, transferPolicyFor, unitedStates } from './src/dataset.ts';
 import { theme } from './src/ui/theme.ts';
-import { ProfileScreen } from './src/screens/ProfileScreen.tsx';
-import { InputScreen } from './src/screens/InputScreen.tsx';
+import { OnboardingScreen } from './src/screens/OnboardingScreen.tsx';
+import type { OnboardingNav } from './src/ui/contracts.ts';
 import { RoutesScreen } from './src/screens/RoutesScreen.tsx';
 import { RouteDetailScreen } from './src/screens/RouteDetailScreen.tsx';
 import { PlanMapScreen } from './src/screens/PlanMapScreen.tsx';
@@ -33,7 +33,7 @@ import {
 /** Public SDK key for this platform. Web Billing and the stores use different ones. */
 const RC_KEY = Platform.OS === 'web' ? WEB_API_KEY : NATIVE_API_KEY;
 
-type Screen = 'profile' | 'input' | 'routes' | 'map' | 'detail';
+type Screen = 'onboarding' | 'routes' | 'map' | 'detail';
 
 /**
  * Only the states we actually hold campuses for. Every state has a row in the
@@ -55,6 +55,16 @@ const STATES_WITH_CAMPUSES = unitedStates.jurisdictions.filter(j => hasCampuses(
 const STATES_WITHOUT_CAMPUSES = unitedStates.jurisdictions.filter(j => !hasCampuses(j.code));
 
 const DEFAULT_STATE: StateCode = 'CA';
+
+const START: OnboardingNav = { step: 'welcome', gates: {} };
+
+/**
+ * The free-CLEP voucher. Listed in the dataset beside the third-party providers
+ * because that is where its provenance lives, but it is not credit anyone
+ * holds: the onboarding keeps it out of the provider question and mentions it
+ * in one line, and the plan map carries the detail.
+ */
+const FREE_CLEP = unitedStates.creditSources.find(s => s.id === 'alt-modern-states') ?? null;
 
 const EMPTY_INPUT: StudentInput = {
   profile: {
@@ -81,7 +91,8 @@ const EMPTY_INPUT: StudentInput = {
  * reports that purchases are unavailable. Nothing crashes and nothing is hidden.
  */
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('profile');
+  const [screen, setScreen] = useState<Screen>('onboarding');
+  const [nav, setNav] = useState<OnboardingNav>(START);
   const [input, setInput] = useState<StudentInput>(EMPTY_INPUT);
   /**
    * Which state's campuses the picker is showing. Derived from the chosen
@@ -114,6 +125,8 @@ export default function App() {
         // They already built a plan. Drop them back into it rather than making
         // them answer four questions again to reach the thing they came for.
         setInput(saved);
+        // Back from the routes should land on the last question, not the greeting.
+        setNav({ step: 'name', gates: {} });
         setSelectedKind('cheapest');
         setScreen('map');
       }
@@ -135,7 +148,8 @@ export default function App() {
     void clearPlan();
     setInput(EMPTY_INPUT);
     setSelectedKind(null);
-    setScreen('profile');
+    setNav(START);
+    setScreen('onboarding');
   }, []);
 
   useEffect(() => {
@@ -168,10 +182,11 @@ export default function App() {
    */
   useEffect(() => {
     if (Platform.OS !== 'android') return;
+    // The onboarding walks back through its own questions (it registers its own
+    // listener), so from here it is the first screen and back leaves the app.
     const PREVIOUS: Record<Screen, Screen | null> = {
-      profile: null,
-      input: 'profile',
-      routes: 'input',
+      onboarding: null,
+      routes: 'onboarding',
       map: 'routes',
       detail: 'map',
     };
@@ -352,6 +367,7 @@ export default function App() {
         choiceFor={(areaId) => input.plan_overrides?.[areaId]}
         onChoose={setOverride}
         onOpenDetail={() => setScreen('detail')}
+        freeClep={FREE_CLEP}
         onShareWithGuardian={handleShareGuardian}
         onStartOver={startOver}
         onBack={() => setScreen('routes')}
@@ -385,13 +401,14 @@ export default function App() {
         areas={unitedStates.areas}
         baselineCostUsd={baseline}
         onSelectRoute={(r) => { setSelectedKind(r.kind); setScreen('map'); }}
-        onBack={() => setScreen('input')}
+        onBack={() => setScreen('onboarding')}
       />
     );
-  } else if (screen === 'input') {
+  } else {
     body = (
-      <InputScreen
-        onBack={() => setScreen('profile')}
+      <OnboardingScreen
+        nav={nav}
+        onNav={setNav}
         states={STATES_WITH_CAMPUSES}
         unmappedStates={STATES_WITHOUT_CAMPUSES}
         selectedState={browseState}
@@ -399,17 +416,11 @@ export default function App() {
         systems={unitedStates.systems}
         institutions={visible.institutions}
         creditSources={visible.creditSources}
+        freeClep={FREE_CLEP}
+        transferPolicy={institution === null ? null : transferPolicyFor(institution.system)}
         value={input}
         onChange={setInput}
         onSubmit={() => { if (institution) setScreen('routes'); }}
-      />
-    );
-  } else {
-    body = (
-      <ProfileScreen
-        value={input.profile}
-        onChange={(profile) => setInput(prev => ({ ...prev, profile }))}
-        onSubmit={() => setScreen('input')}
       />
     );
   }
