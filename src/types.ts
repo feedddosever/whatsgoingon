@@ -412,6 +412,12 @@ export interface StudentInput {
   plan_overrides?: Record<string, AreaChoice>;
   /** Printed on the advisor packet so the advisor knows who is asking. */
   student_name?: string;
+  /**
+   * The "planning a minor?" switch on the degree screen. It prices nothing —
+   * the engine plans general education only — but it changes how the degree is
+   * drawn, and a student who set it should find it set next week.
+   */
+  wants_minor?: boolean;
   target_institution_id: string;
   /** Credit source ids the student already holds. */
   held_credit_ids: string[];
@@ -503,4 +509,90 @@ export interface TransferPolicy {
   /** The system these points apply to. Every campus in it shares them. */
   system: SystemId;
   points: TransferPolicyPoint[];
+}
+
+/**
+ * What a bachelor's degree is made of, per system — the rules a student is held
+ * to on top of the general-education framework the engine plans against.
+ *
+ * Deliberately sentences with provenance, like TransferPolicy, not numbers the
+ * engine computes with: "24 of your final 30 units at the campus" and "6 hours of
+ * American history, 3 of which may be Texas history" are rules to be read and
+ * checked, not quantities to be optimised. The degree screen reads them to the
+ * student, each with the page it came from.
+ */
+export type DegreeBlock = 'total' | 'ge' | 'residency' | 'upper_division' | 'major' | 'graduation';
+
+export interface DegreeRule {
+  id: string;
+  block: DegreeBlock;
+  /** Short name: "American History and Institutions". */
+  title: string;
+  /** One or two sentences saying what the rule requires. */
+  text: string;
+  provenance: Provenance;
+}
+
+export interface SystemDegree {
+  system: SystemId;
+  /**
+   * Semester units to the degree, or null where each campus sets its own (UC).
+   * Drawn as the length of the degree bar; a null bar is drawn at 120 and
+   * labelled as typical rather than as this system's figure.
+   */
+  total_units: number | null;
+  /**
+   * General-education units, where the system's own figure differs from the
+   * sum of the framework areas the engine plans against — Florida's statewide
+   * core is 15 hours of a 36-hour requirement, and the CSU's 43 includes 9
+   * upper-division units no community college can certify. Absent means the
+   * framework sum is the whole of it.
+   */
+  ge_units?: number;
+  rules: DegreeRule[];
+}
+
+/**
+ * The lower-division courses a state publishes as preparation for a major —
+ * UC Transfer Pathways, Texas Fields of Study, Florida's common prerequisites.
+ *
+ * Statewide by design: these exist so a student can prepare for a major before
+ * knowing which campus will admit them. Where the source also publishes what a
+ * particular campus adds (Texas "directed electives"), that is kept per campus
+ * rather than folded into the statewide list.
+ */
+export interface MajorPrep {
+  id: string;
+  /** Systems whose campuses this applies to. */
+  systems: SystemId[];
+  /** The app's broad field this is shown under. One major can serve two fields. */
+  fields: FieldOfStudy[];
+  /** The major as the source names it. */
+  major: string;
+  /** What the state calls this kind of list. */
+  programme: string;
+  /** The courses, as the source words them. */
+  courses: string[];
+  /**
+   * Courses a specific campus adds, keyed by institution id. Absent for a campus
+   * means the source names nothing for it — not that it adds nothing.
+   */
+  campus_extras?: Record<string, string[]>;
+  /** Campuses the source says will take any course for their extra slots. */
+  campus_any?: string[];
+  /** What could bite: gaps, pending revisions, what the list is not. */
+  note?: string;
+  provenance: Provenance;
+}
+
+/**
+ * A major the state has NOT published statewide preparation for, stated as a
+ * finding rather than left as a silence — "Texas has no Field of Study for
+ * computer science yet" is something a student can act on.
+ */
+export interface MajorPrepGap {
+  systems: SystemId[];
+  fields: FieldOfStudy[];
+  text: string;
+  provenance: Provenance;
 }

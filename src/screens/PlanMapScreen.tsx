@@ -133,7 +133,7 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
   const {
     institution, framework, system, route, areas, profile,
     optionsFor, pathways, choiceFor, onChoose,
-    onOpenDetail, freeClep, onShareWithGuardian, onStartOver, onBack,
+    onOpenDetail, freeClep, onShareWithGuardian, onOpenDegree, onStartOver, onBack,
   } = props;
 
   const [open, setOpen] = useState<string | null>(null);
@@ -210,6 +210,14 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
             Tap any branch to see what else this campus accepts, or to say you are
             handling it yourself. This is your plan — change it.
           </Text>
+
+          <Pressable
+            onPress={onOpenDegree}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.degreeLink, pressed && { opacity: 0.7 }]}
+          >
+            <Text style={styles.degreeLinkText}>What’s a degree made of? Major prep, minors, residency  ›</Text>
+          </Pressable>
 
           {/* Permanent, not a one-time modal. The app tells students how to spend
               money on credit that might not transfer; the limit of what it knows
@@ -447,6 +455,8 @@ const styles = StyleSheet.create({
   title: { ...theme.font.title, color: theme.color.text, marginTop: theme.space.xs },
   sub: { ...theme.font.body, color: theme.color.textMuted, marginTop: theme.space.xs, lineHeight: 21 },
 
+  degreeLink: { paddingVertical: theme.space.sm },
+  degreeLinkText: { ...theme.font.body, color: theme.color.accent },
   freeCard: {
     marginTop: theme.space.lg, padding: theme.space.md, gap: theme.space.sm,
     borderRadius: theme.radius.md, borderWidth: 1,

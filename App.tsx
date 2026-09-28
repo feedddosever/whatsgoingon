@@ -8,10 +8,13 @@ import {
   baselineCost, frameworkFor, optionsForArea, pathwayCosts, planAllRoutes, routeSaving,
   systemFor,
 } from './src/engine.ts';
-import { forState, transferPolicyFor, unitedStates } from './src/dataset.ts';
+import {
+  degreeFor, forState, majorPrepFor, majorPrepGapsFor, transferPolicyFor, unitedStates,
+} from './src/dataset.ts';
 import { theme } from './src/ui/theme.ts';
 import { OnboardingScreen } from './src/screens/OnboardingScreen.tsx';
 import { PreparingScreen } from './src/screens/PreparingScreen.tsx';
+import { DegreeScreen } from './src/screens/DegreeScreen.tsx';
 import { SALAD_VARIANTS } from './src/ui/SaladScene.tsx';
 import type { SaladVariant } from './src/ui/SaladScene.tsx';
 import type { OnboardingNav } from './src/ui/contracts.ts';
@@ -36,7 +39,7 @@ import {
 /** Public SDK key for this platform. Web Billing and the stores use different ones. */
 const RC_KEY = Platform.OS === 'web' ? WEB_API_KEY : NATIVE_API_KEY;
 
-type Screen = 'onboarding' | 'preparing' | 'routes' | 'map' | 'detail';
+type Screen = 'onboarding' | 'preparing' | 'routes' | 'map' | 'detail' | 'degree';
 
 /**
  * Only the states we actually hold campuses for. Every state has a row in the
@@ -98,6 +101,9 @@ export default function App() {
   const [nav, setNav] = useState<OnboardingNav>(START);
   /** Which salad the preparing screen shows. A fresh coin toss every time. */
   const [salad, setSalad] = useState<SaladVariant>('garden');
+  /** Where the degree screen was opened from, so "back" returns there. */
+  const [degreeFrom, setDegreeFrom] = useState<Screen>('onboarding');
+  const openDegree = useCallback((from: Screen) => { setDegreeFrom(from); setScreen('degree'); }, []);
   const [input, setInput] = useState<StudentInput>(EMPTY_INPUT);
   /**
    * Which state's campuses the picker is showing. Derived from the chosen
@@ -193,6 +199,7 @@ export default function App() {
       onboarding: null,
       preparing: 'onboarding',
       routes: 'onboarding',
+      degree: degreeFrom,
       map: 'routes',
       detail: 'map',
     };
@@ -203,7 +210,7 @@ export default function App() {
       return true;
     });
     return () => sub.remove();
-  }, [screen]);
+  }, [screen, degreeFrom]);
 
   const institution = useMemo(
     () => unitedStates.institutions.find(i => i.id === input.target_institution_id) ?? null,
@@ -380,6 +387,7 @@ export default function App() {
         onOpenDetail={() => setScreen('detail')}
         freeClep={FREE_CLEP}
         onShareWithGuardian={handleShareGuardian}
+        onOpenDegree={() => openDegree('map')}
         onStartOver={startOver}
         onBack={() => setScreen('routes')}
       />
@@ -400,6 +408,31 @@ export default function App() {
         onExportPacket={handleExport}
         onShareWithGuardian={handleShareGuardian}
         onBack={() => setScreen('map')}
+      />
+    );
+  } else if (screen === 'degree') {
+    // From the greeting there is no campus yet; the screen explains the shape
+    // of any degree and says it will get specific once there is one.
+    const sys = degreeFrom === 'onboarding' ? null : system;
+    const inst = degreeFrom === 'onboarding' ? null : institution;
+    body = (
+      <DegreeScreen
+        institution={inst}
+        system={sys}
+        framework={sys === null ? null : framework}
+        frameworkUnits={sys === null ? null : unitedStates.areas
+          .filter(a => a.applies_to.includes(sys.id))
+          .reduce((n, a) => n + a.required_units, 0)}
+        degree={sys === null ? null : degreeFor(sys.id)}
+        prep={sys === null ? [] : majorPrepFor(sys.id, input.profile.field)}
+        gaps={sys === null ? [] : majorPrepGapsFor(sys.id, input.profile.field)}
+        field={input.profile.field}
+        unitsInResidence={input.units_in_residence}
+        wantsMinor={input.wants_minor === true}
+        onToggleMinor={(on) => setInput(prev => ({ ...prev, wants_minor: on }))}
+        backLabel={degreeFrom === 'map' ? 'Your plan' : 'Back'}
+        onBack={() => setScreen(degreeFrom)}
+        onOpenPlan={degreeFrom === 'map' ? () => setScreen('map') : null}
       />
     );
   } else if (screen === 'preparing' && institution) {
@@ -428,6 +461,7 @@ export default function App() {
       <OnboardingScreen
         nav={nav}
         onNav={setNav}
+        onOpenDegree={() => openDegree('onboarding')}
         states={STATES_WITH_CAMPUSES}
         unmappedStates={STATES_WITHOUT_CAMPUSES}
         selectedState={browseState}

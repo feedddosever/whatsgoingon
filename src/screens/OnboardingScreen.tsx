@@ -20,7 +20,6 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactElement, ReactNode } from 'react';
 import {
   BackHandler,
-  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -37,7 +36,6 @@ import type {
   FieldOfStudy,
   Institution,
   Jurisdiction,
-  Provenance,
   SchoolYear,
   StateCode,
   StudentInput,
@@ -49,15 +47,11 @@ import type {
 } from '../ui/contracts.ts';
 // Shared, not local: "is this claim backed?" has to mean the same thing on every
 // screen and in the packet, or one of them quietly disagrees with the rest.
-import { checkedOn, isBacked, linkable, noteText } from '../ui/provenance.ts';
-import { confidenceColor, confidenceLabel, money, theme } from '../ui/theme.ts';
+import { isBacked, noteText } from '../ui/provenance.ts';
+import { confidenceColor, money, theme } from '../ui/theme.ts';
 import { PressScale, ProgressBar, Stagger, StepTransition, Wave } from '../ui/motion.tsx';
+import { openSource, SourceBadge } from '../ui/SourceBadge.tsx';
 import { hasContact, waitlistMailto } from '../contact.ts';
-
-/** A dead or unopenable source URL must never take the screen down with it. */
-const openSource = (url: string): void => {
-  void Linking.openURL(url).catch(() => undefined);
-};
 
 /**
  * The residency sentence, written to match how far the figure behind it is
@@ -94,49 +88,6 @@ function residencySentence(inst: Institution, unitsInResidence: number): string 
     (shortBy > 0
       ? ` You are ${shortBy} short — transferring in more credit does not reduce this.`
       : ' You have met that minimum.')
-  );
-}
-
-/**
- * Provenance, never decoration: the badge states how far we trust the claim it
- * sits next to, and opens the source that backs it. Anything short of a
- * confirmed source is drawn dashed and dim so it cannot be mistaken for fact,
- * and a row with no usable URL stays flat rather than pretending to be a link.
- */
-function SourceBadge({ p, compact }: { p: Provenance; compact?: boolean }): ReactElement {
-  const color = confidenceColor(p.confidence);
-  // Anything a human has not confirmed against its source is drawn as a sketch.
-  const shaky = !isBacked(p);
-  const label = confidenceLabel(p.confidence);
-
-  if (!linkable(p.source_url)) {
-    return (
-      <View style={[styles.badge, styles.badgeDead, { borderColor: color }]}>
-        <Text style={[styles.badgeText, { color }]} numberOfLines={1}>
-          {label} · no source on file
-        </Text>
-      </View>
-    );
-  }
-
-  return (
-    <Pressable
-      onPress={() => openSource(p.source_url)}
-      hitSlop={8}
-      accessibilityRole="link"
-      accessibilityLabel={`${label}, last checked ${checkedOn(p)}. Open source.`}
-      style={({ pressed }) => [
-        styles.badge,
-        { borderColor: color },
-        shaky && styles.badgeShaky,
-        pressed && styles.pressed,
-      ]}
-    >
-      <Text style={[styles.badgeText, { color }]} numberOfLines={1}>
-        {label}
-        {compact === true ? '' : ` · ${checkedOn(p)}`} ↗
-      </Text>
-    </Pressable>
   );
 }
 
@@ -761,7 +712,7 @@ const ADVANCE_MS = 260;
 
 export function OnboardingScreen(
   {
-    nav, onNav, states, unmappedStates, selectedState, onSelectState, systems,
+    nav, onNav, onOpenDegree, states, unmappedStates, selectedState, onSelectState, systems,
     institutions, creditSources, freeClep, transferPolicy, value, onChange, onSubmit,
   }: OnboardingScreenProps,
 ): ReactElement {
@@ -961,6 +912,14 @@ export function OnboardingScreen(
                 </View>
               ))}
             </View>,
+            <Pressable
+              key="d"
+              onPress={onOpenDegree}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.more, pressed && styles.pressed]}
+            >
+              <Text style={styles.moreText}>New to this? See what a degree is made of  ›</Text>
+            </Pressable>,
           ]}
         </Stagger>
       </View>
@@ -1573,19 +1532,6 @@ const styles = StyleSheet.create({
   },
   guaranteeText: { ...theme.font.body, color: theme.color.text, marginBottom: theme.space.sm },
 
-  badge: {
-    borderWidth: 1,
-    borderRadius: theme.radius.sm,
-    paddingHorizontal: theme.space.sm,
-    paddingVertical: 2,
-    alignSelf: 'flex-start',
-    flexShrink: 1,
-  },
-  // Unconfirmed data is drawn as a sketch, not a statement.
-  badgeShaky: { borderStyle: 'dashed', opacity: 0.85 },
-  // Nothing to open: flat, dotted, and it says so rather than baiting a tap.
-  badgeDead: { borderStyle: 'dotted', opacity: 0.7 },
-  badgeText: { fontSize: 11, fontWeight: '600' },
 
   alert: {
     marginTop: theme.space.lg,

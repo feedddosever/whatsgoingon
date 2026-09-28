@@ -4,7 +4,9 @@ import {
   planRoute, planAllRoutes, baselineCost, routeSaving, optionsForArea, pathwayCosts,
   effectiveCost, frameworkFor, jurisdictionFor, systemFor,
 } from './engine.ts';
-import { california, forState, transferPolicies, unitedStates } from './dataset.ts';
+import {
+  california, forState, majorPrep, majorPrepGaps, systemDegrees, transferPolicies, unitedStates,
+} from './dataset.ts';
 import type { StudentProfile } from './types.ts';
 
 const ds = california;
@@ -326,8 +328,18 @@ test('a warning cites the row it actually rests on, not the row next to it', () 
 
   const residency = route.warnings.find(w => w.kind === 'residency');
   assert.equal(residency?.provenance, inst.residency_provenance);
-  assert.equal(residency?.provenance?.confidence, 'needs_check',
-    'the residency figure is unconfirmed and must not claim otherwise');
+  // Since 2026-09-28 the UC figure is confirmed — from Senate Regulation 630, a
+  // different page from the exam policy. Both are now "published", so what
+  // proves the warning cites its own row is its own source, not its badge.
+  assert.notEqual(residency?.provenance?.source_url, inst.exam_policy_provenance.source_url,
+    'the residency warning borrowed the exam policy\u2019s source');
+
+  // And where the figure is still unconfirmed, it must still say so.
+  const tx = planRoute(unitedStates, { profile: PLAIN, target_institution_id: 'ut-austin',
+    held_credit_ids: [], units_in_residence: 0 }, 'cheapest');
+  const txResidency = tx.warnings.find(w => w.kind === 'residency');
+  assert.equal(txResidency?.provenance?.confidence, 'needs_check',
+    'an unconfirmed residency figure must not claim otherwise');
 });
 
 test('CLEP held against a CSU warns that it clears no Cal-GETC requirement', () => {
@@ -1346,5 +1358,55 @@ test('every system with campuses says how it treats credit from another college'
       assert.match(pt.provenance.source_url, /^https:\/\//, `${p.system}: "${pt.text}" has no source`);
       assert.match(pt.provenance.as_of, /^\d{4}-\d{2}-\d{2}$/, `${p.system}: "${pt.text}" is undated`);
     }
+  }
+});
+
+test('every system with campuses says what its degree is made of', () => {
+  // The degree screen reads these to a student. A system with campuses and no
+  // rules would show "we have nothing" under a campus we otherwise price.
+  const withCampuses = unitedStates.systems.filter(sys =>
+    unitedStates.institutions.some(i => i.system === sys.id));
+  for (const sys of withCampuses) {
+    const d = systemDegrees.find(x => x.system === sys.id);
+    assert.ok(d, `${sys.id} has no degree rules`);
+    for (const block of ['total', 'residency', 'graduation'] as const) {
+      assert.ok(d.rules.some(r => r.block === block), `${sys.id} has no ${block} rule`);
+    }
+  }
+  const ids = new Set<string>();
+  for (const d of systemDegrees) {
+    for (const r of d.rules) {
+      assert.ok(!ids.has(r.id), `duplicate degree rule id ${r.id}`);
+      ids.add(r.id);
+      assert.match(r.provenance.source_url, /^https?:\/\//, `${r.id} has no source`);
+      assert.match(r.provenance.as_of, /^\d{4}-\d{2}-\d{2}$/, `${r.id} is undated`);
+    }
+  }
+});
+
+test('major prep names only real campuses, and never one twice', () => {
+  // A campus key that matches no institution is a list nobody will ever see —
+  // which is how a typo in a hand-transcribed table hides.
+  const ids = new Set<string>();
+  for (const m of majorPrep) {
+    assert.ok(!ids.has(m.id), `duplicate major prep id ${m.id}`);
+    ids.add(m.id);
+    assert.ok(m.courses.length > 0, `${m.id} lists no courses`);
+    assert.match(m.provenance.source_url, /^https?:\/\//, `${m.id} has no source`);
+    for (const sys of m.systems) {
+      assert.ok(unitedStates.systems.some(s => s.id === sys), `${m.id}: unknown system ${sys}`);
+    }
+    const inSystems = (id: string): boolean => unitedStates.institutions.some(i =>
+      i.id === id && m.systems.includes(i.system));
+    for (const id of Object.keys(m.campus_extras ?? {})) {
+      assert.ok(inSystems(id), `${m.id}: campus_extras names ${id}, not a campus in ${m.systems}`);
+    }
+    for (const id of m.campus_any ?? []) {
+      assert.ok(inSystems(id), `${m.id}: campus_any names ${id}, not a campus in ${m.systems}`);
+      assert.ok(!(id in (m.campus_extras ?? {})), `${m.id}: ${id} is both "any course" and a list`);
+    }
+  }
+  for (const g of majorPrepGaps) {
+    assert.match(g.provenance.source_url, /^https?:\/\//);
   }
 });

@@ -45,12 +45,14 @@ const CSU_EXAM_POLICY: Provenance = {
  * resting on them cannot borrow the exam policy's credibility.
  */
 const UC_RESIDENCY: Provenance = {
-  // Deliberately blank: the exam-policy page does not cover residency, and
-  // linking it would send a student to a page that cannot answer their question.
-  source_url: '',
-  as_of: '',
-  confidence: 'needs_check',
-  note: 'Minimum units earned on campus. Unconfirmed — ask the campus registrar.',
+  // Senate Regulation 630, read 2026-09-28. Not the exam-policy page: that one
+  // does not cover residency, and linking it would answer a different question.
+  source_url: 'https://senate.universityofcalifornia.edu/bylaws-regulations/regulations/rpart3.html',
+  as_of: '2026-09-28',
+  confidence: 'published',
+  note:
+    'UC Senate Regulation 630: 24 of your final 30 semester units (35 of the final 45 quarter ' +
+    'units) must be earned in residence in the UC college that awards the degree.',
 };
 
 const UC_TRANSFER_CAP: Provenance = {
@@ -65,10 +67,12 @@ const UC_TRANSFER_CAP: Provenance = {
 };
 
 const CSU_RESIDENCY: Provenance = {
-  source_url: '',
-  as_of: '',
-  confidence: 'needs_check',
-  note: 'Minimum units earned on campus. Unconfirmed — ask the campus registrar.',
+  source_url: 'https://www.law.cornell.edu/regulations/california/5-CCR-40403',
+  as_of: '2026-09-28',
+  confidence: 'statute',
+  note:
+    'Title 5 \u00a7 40403: 30 semester units at the campus granting the degree, 24 of them ' +
+    'upper-division and 12 in the major.',
 };
 
 const CSU_TRANSFER_CAP: Provenance = {

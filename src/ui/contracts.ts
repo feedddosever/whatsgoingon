@@ -6,6 +6,7 @@
 import type {
   Institution, Route, StudentInput, CreditSource, GeArea, GeFramework,
   Jurisdiction, StateCode, StudentProfile, System, AreaChoice, PlanItem, TransferPolicy,
+  FieldOfStudy, MajorPrep, MajorPrepGap, SystemDegree,
 } from '../types.ts';
 import type { PathwayCost } from '../engine.ts';
 import type { SaladVariant } from './SaladScene.tsx';
@@ -41,6 +42,8 @@ export interface OnboardingNav {
 export interface OnboardingScreenProps {
   nav: OnboardingNav;
   onNav: (next: OnboardingNav) => void;
+  /** "What's a degree made of?" from the greeting, before any campus is chosen. */
+  onOpenDegree: () => void;
   /**
    * The states we hold campuses for, each with its statewide guarantee.
    *
@@ -81,6 +84,33 @@ export interface OnboardingScreenProps {
   value: StudentInput;
   onChange: (next: StudentInput) => void;
   onSubmit: () => void;
+}
+
+/**
+ * "What's a bachelor's degree made of?" — the degree as blocks, each explained
+ * on tap. Every campus-specific figure is optional: opened from the greeting,
+ * before a campus is chosen, the screen explains the shape of any degree and
+ * says it will get specific once there is a campus.
+ */
+export interface DegreeScreenProps {
+  institution: Institution | null;
+  system: System | null;
+  framework: GeFramework | null;
+  /** General-education units the engine plans against for this system. */
+  frameworkUnits: number | null;
+  degree: SystemDegree | null;
+  /** Already narrowed to the system and the student's field. */
+  prep: MajorPrep[];
+  gaps: MajorPrepGap[];
+  field: FieldOfStudy;
+  unitsInResidence: number;
+  wantsMinor: boolean;
+  onToggleMinor: (on: boolean) => void;
+  /** Where "back" goes, named: "Your plan" or "Back". */
+  backLabel: string;
+  onBack: () => void;
+  /** "See how your plan clears it" — null when there is no plan to open. */
+  onOpenPlan: (() => void) | null;
 }
 
 export interface PreparingScreenProps {
@@ -133,6 +163,8 @@ export interface PlanMapScreenProps {
   freeClep: CreditSource | null;
   /** Sends the plan to a parent or guardian, framed for them rather than an advisor. */
   onShareWithGuardian: () => void;
+  /** "What's a degree made of?" */
+  onOpenDegree: () => void;
   /** Clears the saved plan and returns to the first question. */
   onStartOver: () => void;
   onBack: () => void;

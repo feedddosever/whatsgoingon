@@ -21,6 +21,8 @@ export function isStudentInput(v: unknown): v is StudentInput {
   if (typeof prof.waiver !== 'string') return false;
   if (prof.budget_usd !== null && typeof prof.budget_usd !== 'number') return false;
 
+  if (o.wants_minor !== undefined && typeof o.wants_minor !== 'boolean') return false;
+
   if (o.plan_overrides !== undefined) {
     if (typeof o.plan_overrides !== 'object' || o.plan_overrides === null) return false;
     for (const choice of Object.values(o.plan_overrides as Record<string, unknown>)) {

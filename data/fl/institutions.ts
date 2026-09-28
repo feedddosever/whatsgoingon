@@ -51,10 +51,12 @@ const FL_EXAM_POLICY: Provenance = {
 };
 
 const FL_RESIDENCY: Provenance = {
-  source_url: '',
-  as_of: '',
+  source_url: 'https://sacscoc.org/app/uploads/2024/01/2024PrinciplesOfAccreditation.pdf',
+  as_of: '2026-09-28',
   confidence: 'needs_check',
-  note: 'Minimum hours earned at the university. Unconfirmed — ask the registrar.',
+  note:
+    '30 is the accreditor\u2019s floor — SACSCOC requires at least 25 percent of a degree\u2019s ' +
+    'hours from the awarding university. A campus may require more. Confirm with the registrar.',
 };
 
 const FL_TRANSFER_CAP: Provenance = {

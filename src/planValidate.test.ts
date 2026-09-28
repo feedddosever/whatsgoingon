@@ -47,3 +47,13 @@ test('a budget of null is allowed but a missing profile is not', () => {
   const { profile, ...noProfile } = VALID;
   assert.equal(isStudentInput(noProfile), false);
 });
+
+test('the minor switch is optional, and must be a boolean when present', () => {
+  const base = {
+    profile: { year: 'grade_12', field: 'stem', budget_usd: null, waiver: 'unsure' },
+    target_institution_id: 'ucla', held_credit_ids: [], units_in_residence: 0,
+  };
+  assert.equal(isStudentInput(base), true);
+  assert.equal(isStudentInput({ ...base, wants_minor: true }), true);
+  assert.equal(isStudentInput({ ...base, wants_minor: 'yes' }), false);
+});

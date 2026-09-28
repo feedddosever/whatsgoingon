@@ -1,5 +1,7 @@
 import type { Dataset } from './engine.ts';
-import type { StateCode, SystemId, TransferPolicy } from './types.ts';
+import type {
+  FieldOfStudy, MajorPrep, MajorPrepGap, StateCode, SystemDegree, SystemId, TransferPolicy,
+} from './types.ts';
 
 import { frameworks } from '../data/us/frameworks.ts';
 import { systems } from '../data/us/systems.ts';
@@ -12,18 +14,21 @@ import { calGetcAreas } from '../data/ca/cal-getc.ts';
 import { cccCourses } from '../data/ca/credit-sources.ts';
 import { acceptanceRules as caRules } from '../data/ca/acceptance-rules.ts';
 import { californiaTransferPolicies } from '../data/ca/transfer-policy.ts';
+import { californiaDegrees, californiaMajorPrep } from '../data/ca/degree.ts';
 
 import { texasInstitutions } from '../data/tx/institutions.ts';
 import { texasCoreAreas } from '../data/tx/core.ts';
 import { texasCourses } from '../data/tx/courses.ts';
 import { texasRules } from '../data/tx/acceptance-rules.ts';
 import { texasTransferPolicies } from '../data/tx/transfer-policy.ts';
+import { texasDegrees, texasMajorPrep, texasMajorPrepGaps } from '../data/tx/degree.ts';
 
 import { floridaInstitutions } from '../data/fl/institutions.ts';
 import { floridaCoreAreas } from '../data/fl/core.ts';
 import { floridaCourses } from '../data/fl/courses.ts';
 import { floridaRules } from '../data/fl/acceptance-rules.ts';
 import { floridaTransferPolicies } from '../data/fl/transfer-policy.ts';
+import { floridaDegrees, floridaMajorPrep, floridaMajorPrepGaps } from '../data/fl/degree.ts';
 
 /**
  * The dataset, as typed modules rather than JSON: Metro and Node disagree about
@@ -106,6 +111,25 @@ export const transferPolicies: TransferPolicy[] = [
 
 export const transferPolicyFor = (system: SystemId): TransferPolicy | null =>
   transferPolicies.find(p => p.system === system) ?? null;
+
+/**
+ * What each system's bachelor's degree is made of, and the statewide major prep
+ * each state publishes. Also outside the engine: read to the student on the
+ * degree screen, never planned with.
+ */
+export const systemDegrees: SystemDegree[] = [...californiaDegrees, ...texasDegrees, ...floridaDegrees];
+export const majorPrep: MajorPrep[] = [...californiaMajorPrep, ...texasMajorPrep, ...floridaMajorPrep];
+export const majorPrepGaps: MajorPrepGap[] = [...texasMajorPrepGaps, ...floridaMajorPrepGaps];
+
+export const degreeFor = (system: SystemId): SystemDegree | null =>
+  systemDegrees.find(d => d.system === system) ?? null;
+
+/** Major prep for a system, narrowed to a field unless the student is undecided. */
+export const majorPrepFor = (system: SystemId, field: FieldOfStudy): MajorPrep[] =>
+  majorPrep.filter(m => m.systems.includes(system) && (field === 'undecided' || m.fields.includes(field)));
+
+export const majorPrepGapsFor = (system: SystemId, field: FieldOfStudy): MajorPrepGap[] =>
+  majorPrepGaps.filter(g => g.systems.includes(system) && (field === 'undecided' || g.fields.includes(field)));
 
 /** The California slice, kept as a named export because the demo and the tests use it. */
 export const california: Dataset = forState(unitedStates, 'CA');

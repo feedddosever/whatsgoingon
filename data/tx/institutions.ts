@@ -38,12 +38,13 @@ const TX_EXAM_POLICY: Provenance = {
 };
 
 const TX_RESIDENCY: Provenance = {
-  source_url: '',
-  as_of: '',
+  source_url: 'https://sacscoc.org/app/uploads/2024/01/2024PrinciplesOfAccreditation.pdf',
+  as_of: '2026-09-28',
   confidence: 'needs_check',
   note:
-    'Texas public universities commonly require the last 30 semester credit hours in ' +
-    'residence. Unconfirmed per campus — ask the registrar.',
+    '30 is the accreditor\u2019s floor — SACSCOC requires at least 25 percent of a degree\u2019s ' +
+    'hours from the awarding university. A campus may require more, and many ask for the last ' +
+    '30 hours in residence. Confirm with the registrar.',
 };
 
 const TX_TRANSFER_CAP: Provenance = {

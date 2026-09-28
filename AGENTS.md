@@ -45,7 +45,10 @@ To add a state you write four files and touch three shared ones:
    shorthand worth printing; "Cal-GETC 1A" is what a Californian catalogue
    says, while `tx-comm` is our key and printing a key at a student is worse
    than printing nothing.
-2. `data/<st>/institutions.ts`, `courses.ts`, `acceptance-rules.ts`.
+2. `data/<st>/institutions.ts`, `courses.ts`, `acceptance-rules.ts`, and
+   `degree.ts` — the degree rules (units, residency, graduation requirements) and
+   the statewide major prep the degree screen reads. Research of record for those
+   is `data/research/DEGREE-REQUIREMENTS.md`.
 3. Add the framework to `data/us/frameworks.ts`, the system(s) to
    `data/us/systems.ts`, and the state's real entry to `MAPPED` in
    `data/us/states.ts` (it already has a row; every state does).
