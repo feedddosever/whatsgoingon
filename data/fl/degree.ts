@@ -159,6 +159,52 @@ export const floridaMajorPrep: MajorPrep[] = [
     provenance: cpm('3527', 'University of Florida'),
   },
   {
+    id: 'fl-cpm-nursing',
+    systems: ['FL-SUS'],
+    fields: ['health'],
+    major: 'Nursing (pre-licensure BSN)',
+    programme: CPM,
+    courses: [
+      'BSC x085C Anatomy & Physiology I (also general-education core)',
+      'BSC x086C Anatomy & Physiology II',
+      'CHM x020 General Chemistry for Liberal Studies I (also general-education core)',
+      'DEP x004 Developmental Psychology across the Life Span',
+      'STA x023 Statistical Methods I (also general-education core)',
+      'PSY x012 Introduction to Psychology (also general-education core)',
+      'MCB x010C Introductory Microbiology',
+      'HUN x201 Human Nutrition',
+    ],
+    note:
+      'Listed for FAMU, FAU, FGCU, FIU, FSU, UCF, UF, UNF, USF and UWF. The manual adds that a ' +
+      'course requiring one of these as a direct prerequisite may count as an alternative.',
+    provenance: cpm('3620', 'University of Florida'),
+  },
+  {
+    id: 'fl-cpm-biology',
+    systems: ['FL-SUS'],
+    fields: ['stem', 'health'],
+    major: 'Biology',
+    programme: CPM,
+    courses: [
+      'General biology I and II with labs (BSC x010 / x011, or botany and zoology alternatives)',
+      'General chemistry I and II with labs (CHM x045 / x046)',
+      'Organic chemistry I and II with labs (CHM x210 / x211)',
+      'Physics I and II — algebra-based (PHY x053 / x054) or calculus-based (PHY x048 / x049)',
+      'Calculus I — any of several versions (MAC x311, x241 life-science, x233 business, and others)',
+      'A second math or statistics course (for example MAC x312, MAC x234 or STA x023)',
+    ],
+    note:
+      'Listed for FAMU, FAU, FGCU, FIU, FSU, UCF, UF, UNF, USF and UWF. The manual notes that ' +
+      'the University of Florida does not require organic chemistry or physics before transfer.',
+    provenance: {
+      ...cpm('3459', 'University of Florida'),
+      confidence: 'needs_check',
+      note:
+        'The manual lists alternative courses within each block; this is our summary of those ' +
+        'blocks, read through an automated browser. Check the exact options with the university.',
+    },
+  },
+  {
     id: 'fl-cpm-cs',
     systems: ['FL-SUS'],
     fields: ['stem'],

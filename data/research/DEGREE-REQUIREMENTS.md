@@ -52,7 +52,15 @@ built from the older documents are `needs_check` and say why.
 | Common prerequisites offered and accepted by all (s. 1007.25(7)) | same | A |
 | ≥ half the degree achievable lower-division (s. 1007.25(12)) | same | A |
 | Writing (6 English + 6 writing-intensive) and 6 math ≥ college algebra, C or higher, before upper division (Rule 6A-10.030) | flrules.elaws.us (unofficial compilation) | B |
-| Common Prerequisites Manual per program | cpm.flvc.org (JavaScript app) | see below |
+| Business administration & management common prerequisites (program 3654, UF entry) | cpm.flvc.org/programs/year/2026/3654 | A (automated browser) |
+| Psychology (3527) | cpm.flvc.org/programs/year/2026/3527 | A (automated browser) |
+| Nursing, pre-licensure (3620) | cpm.flvc.org/programs/year/2026/3620 | A (automated browser) |
+| Biology (3459) — alternatives per block, summarised by us | cpm.flvc.org/programs/year/2026/3459 | B |
+| Computer science — only the Florida Poly / UNF / UWF track (3344); one course untitled | cpm.flvc.org/programs/year/2026/3344 | B |
+
+The manual is a JavaScript single-page app: a plain fetch returns only its
+header. It was read with a TinyFish browser run per program — a five-program
+run timed out after 118 steps; one program per run finished in 8–12 steps.
 
 ## Both Texas and Florida
 
