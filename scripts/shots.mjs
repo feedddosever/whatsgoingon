@@ -33,6 +33,8 @@ for (let i = 0; i < 20; i++) {
   await btn(/None of these|^Next$|^Skip$/);
 }
 await btn(/^Price my route to/);
+// The salad plays once before the routes; let it finish.
+await page.waitForTimeout(3000);
 await shot('03-routes');
 await page.getByText('See the plan, row by row →').first().click();
 await page.waitForTimeout(600);

@@ -11,6 +11,9 @@ import {
 import { forState, transferPolicyFor, unitedStates } from './src/dataset.ts';
 import { theme } from './src/ui/theme.ts';
 import { OnboardingScreen } from './src/screens/OnboardingScreen.tsx';
+import { PreparingScreen } from './src/screens/PreparingScreen.tsx';
+import { SALAD_VARIANTS } from './src/ui/SaladScene.tsx';
+import type { SaladVariant } from './src/ui/SaladScene.tsx';
 import type { OnboardingNav } from './src/ui/contracts.ts';
 import { RoutesScreen } from './src/screens/RoutesScreen.tsx';
 import { RouteDetailScreen } from './src/screens/RouteDetailScreen.tsx';
@@ -33,7 +36,7 @@ import {
 /** Public SDK key for this platform. Web Billing and the stores use different ones. */
 const RC_KEY = Platform.OS === 'web' ? WEB_API_KEY : NATIVE_API_KEY;
 
-type Screen = 'onboarding' | 'routes' | 'map' | 'detail';
+type Screen = 'onboarding' | 'preparing' | 'routes' | 'map' | 'detail';
 
 /**
  * Only the states we actually hold campuses for. Every state has a row in the
@@ -93,6 +96,8 @@ const EMPTY_INPUT: StudentInput = {
 export default function App() {
   const [screen, setScreen] = useState<Screen>('onboarding');
   const [nav, setNav] = useState<OnboardingNav>(START);
+  /** Which salad the preparing screen shows. A fresh coin toss every time. */
+  const [salad, setSalad] = useState<SaladVariant>('garden');
   const [input, setInput] = useState<StudentInput>(EMPTY_INPUT);
   /**
    * Which state's campuses the picker is showing. Derived from the chosen
@@ -186,6 +191,7 @@ export default function App() {
     // listener), so from here it is the first screen and back leaves the app.
     const PREVIOUS: Record<Screen, Screen | null> = {
       onboarding: null,
+      preparing: 'onboarding',
       routes: 'onboarding',
       map: 'routes',
       detail: 'map',
@@ -396,6 +402,14 @@ export default function App() {
         onBack={() => setScreen('map')}
       />
     );
+  } else if (screen === 'preparing' && institution) {
+    body = (
+      <PreparingScreen
+        variant={salad}
+        campusName={institution.name}
+        onDone={() => setScreen('routes')}
+      />
+    );
   } else if (screen === 'routes' && institution && framework && system) {
     body = (
       <RoutesScreen
@@ -425,7 +439,11 @@ export default function App() {
         transferPolicy={institution === null ? null : transferPolicyFor(institution.system)}
         value={input}
         onChange={setInput}
-        onSubmit={() => { if (institution) setScreen('routes'); }}
+        onSubmit={() => {
+          if (!institution) return;
+          setSalad(SALAD_VARIANTS[Math.floor(Math.random() * SALAD_VARIANTS.length)] ?? 'garden');
+          setScreen('preparing');
+        }}
       />
     );
   }

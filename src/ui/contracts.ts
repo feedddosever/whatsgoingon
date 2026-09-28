@@ -8,6 +8,7 @@ import type {
   Jurisdiction, StateCode, StudentProfile, System, AreaChoice, PlanItem, TransferPolicy,
 } from '../types.ts';
 import type { PathwayCost } from '../engine.ts';
+import type { SaladVariant } from './SaladScene.tsx';
 
 /**
  * The onboarding, one question at a time. Order is fixed; which questions appear
@@ -80,6 +81,15 @@ export interface OnboardingScreenProps {
   value: StudentInput;
   onChange: (next: StudentInput) => void;
   onSubmit: () => void;
+}
+
+export interface PreparingScreenProps {
+  /** Which salad. Picked at random by the caller, so the screen stays pure. */
+  variant: SaladVariant;
+  /** Named in the first status line: "Reading UCLA's policies". */
+  campusName: string;
+  /** Called once, when the animation ends or the student taps to skip. */
+  onDone: () => void;
 }
 
 export interface RoutesScreenProps {
