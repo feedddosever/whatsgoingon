@@ -1250,8 +1250,9 @@ export function OnboardingScreen(
     cta = institutions.length > 0
       ? { label: 'Next', enabled: true, onPress: next }
       // "Next" is unanswerable in a state with no campuses in it, and reads as
-      // the student's fault. Name the actual next move instead.
-      : { label: 'Pick a state we have mapped', enabled: false, onPress: next };
+      // the student's fault. Say what is true: this state is on its way. The
+      // button stays grey and inert, and the waitlist link above is the action.
+      : { label: 'Coming soon', enabled: false, onPress: next };
   } else if (step === 'campus') {
     cta = { label: target === undefined ? 'Pick a campus to continue' : 'Next', enabled: target !== undefined, onPress: next };
   } else if (step === 'name') {
