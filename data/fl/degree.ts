@@ -103,6 +103,44 @@ export const floridaDegrees: SystemDegree[] = [
   },
 ];
 
-export const floridaMajorPrep: MajorPrep[] = [];
+/**
+ * Florida's Common Prerequisites Manual, 2026-27 edition. The manual is a
+ * JavaScript app, so it was read through an automated browser rather than a
+ * plain fetch; each row names the page and the university entry it came from.
+ * Common prerequisites are the same at every state university by law
+ * (s. 1007.25(7)) unless the Board of Governors approved an exception.
+ *
+ * Course numbers keep the manual's "x": it stands for the level digit, which
+ * varies by college — ACG x021 is ACG 2021 at most of them.
+ */
+const cpm = (programId: string, university: string): Provenance => ({
+  source_url: `https://cpm.flvc.org/programs/year/2026/${programId}`,
+  as_of: '2026-09-28',
+  confidence: 'published',
+  note: `Read from the ${university} entry in the 2026-27 manual.`,
+});
+
+const CPM = 'Florida common prerequisites';
+
+export const floridaMajorPrep: MajorPrep[] = [
+  {
+    id: 'fl-cpm-business',
+    systems: ['FL-SUS'],
+    fields: ['business'],
+    major: 'Business administration and management',
+    programme: CPM,
+    courses: [
+      'MAC x233 Calculus for Business & Social Sciences I',
+      'ECO x023 Principles of Microeconomics',
+      'ECO x013 Principles of Macroeconomics (also general-education core)',
+      'ACG x071 Managerial Accounting I',
+      'ACG x021 Accounting Principles',
+      'STA x023 Statistical Methods I (also general-education core)',
+      'CGS x100 Applications for Business',
+    ],
+    note: 'Two of these also count toward your general-education core.',
+    provenance: cpm('3654', 'University of Florida'),
+  },
+];
 
 export const floridaMajorPrepGaps: MajorPrepGap[] = [];
