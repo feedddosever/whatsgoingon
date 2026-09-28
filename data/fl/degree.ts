@@ -141,6 +141,53 @@ export const floridaMajorPrep: MajorPrep[] = [
     note: 'Two of these also count toward your general-education core.',
     provenance: cpm('3654', 'University of Florida'),
   },
+  {
+    id: 'fl-cpm-psychology',
+    systems: ['FL-SUS'],
+    fields: ['social_sciences'],
+    major: 'Psychology',
+    programme: CPM,
+    courses: [
+      'PSY x012 Introduction to Psychology (also general-education core)',
+      'STA x023 Statistical Methods I (also general-education core)',
+      'BSC x005 General Biology (also general-education core)',
+      'One more psychology course (any PSY number)',
+    ],
+    note:
+      'Listed for FAMU, FGCU, FSU, UF, USF, FAU, FIU, UCF, UNF and UWF. Three of the four ' +
+      'also count toward your general-education core.',
+    provenance: cpm('3527', 'University of Florida'),
+  },
+  {
+    id: 'fl-cpm-cs',
+    systems: ['FL-SUS'],
+    fields: ['stem'],
+    major: 'Computer science (one track of several)',
+    programme: CPM,
+    courses: [
+      'MAC x311 Calculus I (also general-education core)',
+      'MAC x312 Calculus with Analytic Geometry II',
+      'MAD x104 Discrete Mathematics',
+      'COP x001 Introduction to Computer Programming II',
+      'COP x271C (title not shown in the manual)',
+      'COP x710 Database Design / Architecture',
+      'CDA x201 Sequential Circuits',
+      'QMB x100 Basic Business Statistics',
+      'PHY x048C General Physics with Calculus I (also general-education core)',
+      'PHY x049C General Physics with Calculus II',
+      'BSC x010C General Biology (also general-education core)',
+    ],
+    note:
+      'This is the track listed for Florida Polytechnic, UNF and UWF. The manual lists other ' +
+      'computer science tracks for other universities, which we have not read — check yours.',
+    provenance: {
+      ...cpm('3344', 'Florida Polytechnic / UNF / UWF'),
+      confidence: 'needs_check',
+      note:
+        'Read from the 2026-27 manual\u2019s track shared by Florida Polytechnic, UNF and UWF; ' +
+        'one course showed no title. Other universities\u2019 tracks were not read.',
+    },
+  },
 ];
 
 export const floridaMajorPrepGaps: MajorPrepGap[] = [];
