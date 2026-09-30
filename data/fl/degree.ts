@@ -205,6 +205,21 @@ export const floridaMajorPrep: MajorPrep[] = [
     },
   },
   {
+    id: 'fl-cpm-english',
+    systems: ['FL-SUS'],
+    fields: ['arts_humanities'],
+    major: 'English language and literature',
+    programme: CPM,
+    courses: [
+      'ENC x101 English Composition (also general-education core)',
+      'ENC x102 Composition II',
+    ],
+    note:
+      'Listed for FAMU, FAU, FGCU, FIU, FSU, UCF, UF, UNF, USF and UWF. These two are the ' +
+      'only common prerequisites the manual names for the major.',
+    provenance: cpm('3444', 'University of Florida'),
+  },
+  {
     id: 'fl-cpm-cs',
     systems: ['FL-SUS'],
     fields: ['stem'],
