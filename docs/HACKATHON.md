@@ -72,8 +72,10 @@ his competition had given up. **Attrition is the opponent.**
 
 ### Design Award — live
 
-The dark plan map, the amber provenance badges, and the empty-state screen are
-the case. Motion is the weak spot; nothing here animates.
+The dark plan map, the amber provenance badges, the one-question-at-a-time
+onboarding with its step transitions, and the salad-and-salt "preparing your
+plan" scene are the case. Every animation respects the system reduce-motion
+setting — say so in the video, judges notice.
 
 ### Grand Prize and HAMM — skip
 
