@@ -713,7 +713,7 @@ const ADVANCE_MS = 260;
 export function OnboardingScreen(
   {
     nav, onNav, onOpenDegree, states, unmappedStates, selectedState, onSelectState, systems,
-    institutions, creditSources, freeClep, transferPolicy, value, onChange, onSubmit,
+    institutions, creditSources, freeClep, transferPolicy, clearsNothingIds, value, onChange, onSubmit,
   }: OnboardingScreenProps,
 ): ReactElement {
   const target = institutions.find(i => i.id === value.target_institution_id);
@@ -858,13 +858,15 @@ export function OnboardingScreen(
   const heldIn = (k: CreditKind): number =>
     rowsOf(k).filter(s => value.held_credit_ids.includes(s.id)).length;
 
-  // Both CLEP consequences rest on the campus's exam policy and nothing else.
-  // Exactly one can apply: stranded needs a published refusal, the other needs
-  // the absence of one.
+  // Stranded rests on the campus's published refusal. "Clears nothing" is decided
+  // per exam by the engine: a campus that accepts CLEP may map some exams to a
+  // requirement and others to none.
   const heldClep = rowsOf('clep').filter(s => value.held_credit_ids.includes(s.id));
   const refusesClep = target !== undefined && target.refuses.includes('clep');
   const stranded = refusesClep ? heldClep : [];
-  const notTowardGe = target !== undefined && !refusesClep ? heldClep : [];
+  const notTowardGe = target !== undefined && !refusesClep
+    ? heldClep.filter(s => clearsNothingIds.includes(s.id))
+    : [];
 
   /* ---- the body of each question ---- */
 

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   planRoute, planAllRoutes, baselineCost, routeSaving, optionsForArea, pathwayCosts,
-  effectiveCost, frameworkFor, jurisdictionFor, systemFor,
+  effectiveCost, frameworkFor, heldCreditClearingNothing, jurisdictionFor, systemFor,
 } from './engine.ts';
 import {
   california, forState, majorPrep, majorPrepGaps, systemDegrees, transferPolicies, unitedStates,
@@ -357,6 +357,20 @@ test('CLEP held against a CSU warns that it clears no Cal-GETC requirement', () 
 
   // And it must NOT be reported as stranded — CSU does count it toward the degree.
   assert.equal(route.warnings.some(x => x.kind === 'stranded_credit'), false);
+});
+
+test('"clears no requirement" is decided per exam, not per exam family', () => {
+  // The onboarding once flagged every CLEP at any campus that accepts CLEP — right
+  // at a CSU, wrong in Florida, where it told a student their College Composition
+  // cleared nothing while the plan below priced it as clearing Communication.
+  const held = ['clep-college-composition', 'clep-college-algebra',
+    'clep-intro-psychology', 'clep-intro-sociology'];
+  const uf = us.institutions.find(i => i.id === 'u-florida');
+  const csu = us.institutions.find(i => i.id === 'csu-long-beach');
+  assert.ok(uf && csu);
+  assert.deepEqual(heldCreditClearingNothing(us, uf, held), ['clep-intro-sociology']);
+  // CSU has no row for Sociology at all — that is "no record", a different sentence.
+  assert.deepEqual(heldCreditClearingNothing(us, csu, held), held.slice(0, 3));
 });
 
 test('AP held against a CSU raises no credit warning at all', () => {

@@ -280,6 +280,21 @@ function unmetAreas(ds: Dataset, inst: Institution, held: string[]): string[] {
 }
 
 /**
+ * The held credit this campus awards that clears no requirement — by id. The same
+ * test `heldCreditWarnings` uses for `credit_not_toward_ge`, so a screen can name
+ * exactly those exams rather than assuming every CLEP falls in the case. It does
+ * not: CLEP clears nothing at a CSU, but Florida's table maps College Composition
+ * to the Communication core.
+ */
+export function heldCreditClearingNothing(ds: Dataset, inst: Institution, held: string[]): string[] {
+  return held.filter(id => {
+    if (!byId(ds.creditSources, id)) return false;
+    const rules = ds.rules.filter(r => r.institution_id === inst.id && r.credit_source_id === id);
+    return rules.length > 0 && !rules.some(r => r.satisfies_areas.length > 0);
+  });
+}
+
+/**
  * What the credit a student already holds is actually worth here.
  *
  * Two distinct failures, and the second one is the easier to miss:

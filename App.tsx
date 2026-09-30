@@ -5,7 +5,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 import type { AreaChoice, Route, RouteKind, StateCode, StudentInput } from './src/types.ts';
 import {
-  baselineCost, frameworkFor, optionsForArea, pathwayCosts, planAllRoutes, routeSaving,
+  baselineCost, frameworkFor, heldCreditClearingNothing, optionsForArea, pathwayCosts, planAllRoutes, routeSaving,
   systemFor,
 } from './src/engine.ts';
 import {
@@ -471,6 +471,9 @@ export default function App() {
         creditSources={visible.creditSources}
         freeClep={FREE_CLEP}
         transferPolicy={institution === null ? null : transferPolicyFor(institution.system)}
+        clearsNothingIds={institution === null
+          ? []
+          : heldCreditClearingNothing(unitedStates, institution, input.held_credit_ids)}
         value={input}
         onChange={setInput}
         onSubmit={() => {

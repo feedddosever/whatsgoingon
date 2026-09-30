@@ -81,6 +81,11 @@ export interface OnboardingScreenProps {
   freeClep: CreditSource | null;
   /** What the chosen campus's system publishes about credit from other colleges. */
   transferPolicy: TransferPolicy | null;
+  /**
+   * Held credit ids the chosen campus awards but that clear no requirement there,
+   * from the engine. The CLEP notice names these and only these.
+   */
+  clearsNothingIds: string[];
   value: StudentInput;
   onChange: (next: StudentInput) => void;
   onSubmit: () => void;
