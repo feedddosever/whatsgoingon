@@ -220,6 +220,30 @@ export const floridaMajorPrep: MajorPrep[] = [
     provenance: cpm('3444', 'University of Florida'),
   },
   {
+    id: 'fl-cpm-history',
+    systems: ['FL-SUS'],
+    fields: ['arts_humanities', 'social_sciences'],
+    major: 'History',
+    programme: CPM,
+    courses: [
+      'AMH x010 Introductory Survey to 1877 (also general-education core)',
+      'One history course (any AMH, AFH, ASH, EUH, HIS, LAH or WOH number)',
+      'A second history course from the same list, not a repeat of the first',
+    ],
+    note:
+      'Listed for FAMU, FAU, FGCU, FIU, FSU, UCF, UF, UNF, USF and UWF. The manual suggests ' +
+      'WOH x012 World History I or AMH x091 African American History for the two open ' +
+      'choices, and UWF recommends AMH 2010, AMH 2020, EUH 1000, EUH 1001 or HIS 2050.',
+    provenance: {
+      ...cpm('3704', 'University of Florida'),
+      confidence: 'needs_check',
+      note:
+        'Track 1 of the 2026-27 manual, read through an automated browser. The two open ' +
+        'choices are our summary of the alternatives listed — check the exact options with ' +
+        'the university.',
+    },
+  },
+  {
     id: 'fl-cpm-cs',
     systems: ['FL-SUS'],
     fields: ['stem'],

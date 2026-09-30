@@ -57,6 +57,8 @@ built from the older documents are `needs_check` and say why.
 | Nursing, pre-licensure (3620) | cpm.flvc.org/programs/year/2026/3620 | A (automated browser) |
 | Biology (3459) — alternatives per block, summarised by us | cpm.flvc.org/programs/year/2026/3459 | B |
 | Computer science — only the Florida Poly / UNF / UWF track (3344); one course untitled | cpm.flvc.org/programs/year/2026/3344 | B |
+| English language and literature (3444) — ENC x101 and ENC x102 only | cpm.flvc.org/programs/year/2026/3444 | A (automated browser) |
+| History, track 1 (3704) — AMH x010 plus two history courses, alternatives summarised by us | cpm.flvc.org/programs/year/2026/3704 | B |
 
 The manual is a JavaScript single-page app: a plain fetch returns only its
 header. It was read with a TinyFish browser run per program — a five-program
