@@ -30,7 +30,13 @@ jobs:
       # a secret added after a build needs a new build. Unset ones are not an
       # error: the app runs, the paywall reports purchases unavailable, and the
       # waitlist button does not render. See AGENTS.md.
-      EXPO_PUBLIC_REVENUECAT_KEY: ${{ secrets.EXPO_PUBLIC_REVENUECAT_KEY }}
+      #
+      # With no store key in secrets, the RevenueCat Test Store key is used. It
+      # simulates purchases — nothing is charged — and the Android SDK accepts it
+      # only in a debuggable build, so a test key builds a DEBUG APK (see
+      # scripts/debug-apk.mjs and the README). A real store key in secrets
+      # builds the release APK as before.
+      EXPO_PUBLIC_REVENUECAT_KEY: ${{ secrets.EXPO_PUBLIC_REVENUECAT_KEY || 'test_ieLLyTgPUYgQTHpkkFhhxwPbVQx' }}
       EXPO_PUBLIC_SUPPORT_EMAIL: ${{ secrets.EXPO_PUBLIC_SUPPORT_EMAIL }}
       EXPO_PUBLIC_APP_URL: ${{ secrets.EXPO_PUBLIC_APP_URL }}
 
@@ -91,9 +97,22 @@ jobs:
       - name: Generate the android project
         run: npx expo prebuild --platform android --no-install
 
-      - name: Build release APK
+      - name: Choose the build type
+        id: variant
+        run: |
+          if [[ "$EXPO_PUBLIC_REVENUECAT_KEY" == test_* ]]; then
+            node scripts/debug-apk.mjs android
+            echo "task=assembleDebug" >> "$GITHUB_OUTPUT"
+            echo "dir=debug" >> "$GITHUB_OUTPUT"
+            echo '- **Debug build** with the RevenueCat Test Store key: purchases are simulated, nothing is charged. Not for a store upload.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "task=assembleRelease" >> "$GITHUB_OUTPUT"
+            echo "dir=release" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build APK
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew ${{ steps.variant.outputs.task }} --no-daemon
 
       # The Expo template signs `release` with the DEBUG keystore
       # (android/app/build.gradle: `release { signingConfig signingConfigs.debug }`),
@@ -103,9 +122,9 @@ jobs:
       - name: Name the file
         id: name
         run: |
-          SRC=android/app/build/outputs/apk/release/app-release.apk
+          SRC=android/app/build/outputs/apk/${{ steps.variant.outputs.dir }}/app-${{ steps.variant.outputs.dir }}.apk
           test -f "$SRC" || { echo "no APK at $SRC"; find android -name '*.apk'; exit 1; }
-          OUT="degree-route-${GITHUB_SHA::7}.apk"
+          OUT="degree-route-${GITHUB_SHA::7}-${{ steps.variant.outputs.dir }}.apk"
           cp "$SRC" "$OUT"
           echo "path=$OUT" >> "$GITHUB_OUTPUT"
           ls -lh "$OUT"

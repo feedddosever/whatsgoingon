@@ -3,6 +3,30 @@
 Working notes for picking and shipping hackathon entries.
 Kept in git so the context survives between sessions.
 
+## The Android APK is a debug build — on purpose
+
+The APK that `.github/workflows/android-apk.yml` builds for Degree Route is a
+**debug** build, and its purchases are **simulated**. That is deliberate:
+
+- It is configured with a RevenueCat **Test Store** key (`test_…`). The Test
+  Store fakes the purchase flow against the products and offering in the
+  RevenueCat dashboard (`lifetime`, `monthly`, entitlement `collegemaps_pro`),
+  so the paywall, the unlock, restore and Customer Center can all be tried on a
+  phone. **No money moves.**
+- The RevenueCat Android SDK only accepts a Test Store key in a **debuggable**
+  build. In a release build it shows an error and closes the app — a guard so a
+  test key can never reach a store by accident. A debug build is the setup
+  RevenueCat intends for Test Store; we do not switch the guard off.
+- A React Native debug build normally waits for a developer's Metro server.
+  `scripts/debug-apk.mjs` makes this one self-contained: the JavaScript is
+  bundled in exactly as for release, and the developer menu and overlays are
+  off. To a user it behaves like the release app.
+
+**Not for a store upload.** For the Galaxy Store or Google Play, put that
+store's own key (`galx_…` / `goog_…`) in the `EXPO_PUBLIC_REVENUECAT_KEY` secret:
+the same workflow then builds a normal release APK. Details in
+[`docs/BUILD-APK.md`](docs/BUILD-APK.md).
+
 ## Contents
 
 | File | What's in it |

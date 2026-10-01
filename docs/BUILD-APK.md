@@ -76,30 +76,30 @@ eas secret:create --scope project --name EXPO_PUBLIC_APP_URL          --value "h
 Metro inlines `EXPO_PUBLIC_*` at transform time, so a secret added after a build
 needs a **new** build — it is not a runtime setting.
 
-### 2 · Your RevenueCat key is the wrong kind
+### 2 · A `test_…` key means a debug build
 
-The key you have (`test_…`) is a **Web Billing** key. It drives
-`@revenuecat/purchases-js` on the web build and **will not work on Android.**
+The `test_…` key is a RevenueCat **Test Store** key: it simulates purchases on
+any platform, nothing is charged. The Android SDK accepts it **only in a
+debuggable build** — in a release build it shows "Test Store API key used in
+release build" and closes the app when the dialog is dismissed (purchases-android
+`PurchasesFactory`), so a test key can never ship to a store by mistake.
 
-An Android build needs a key from a native app in the RevenueCat dashboard —
-Google Play, or Amazon/Samsung if you are targeting the Galaxy Store. Those are
-different keys for different stores, and the Galaxy Store one is not the Play
-one.
+So the workflow builds a **debug** APK whenever the key starts with `test_`, and
+runs `scripts/debug-apk.mjs` first so that debug build carries its own
+JavaScript and has the developer tools off — no Metro needed. It installs and
+runs like the release app, and its paywall completes simulated purchases.
 
-Without it the app still runs end to end and the paywall says so honestly. With
-the wrong one, it fails at purchase time instead, which is worse. If the
-dashboard has no Android app yet, create one before you build.
+A store build needs that store's own key — Google Play (`goog_…`), or the
+Galaxy Store one (`galx_…`), which is not the Play one. Put it in the
+`EXPO_PUBLIC_REVENUECAT_KEY` secret and the same workflow builds a release APK.
 
-### 3 · In-app purchases only work through the store
+### 3 · Real purchases only work through the store
 
-A sideloaded APK cannot complete a real purchase — the billing client needs the
-app to be installed from the store it was signed for. To test the paywall and
-Customer Center properly you need the build uploaded to Galaxy Store's internal
-testing track and installed from there.
-
-This matters for the demo video: a sandbox purchase on camera is the single most
-valuable five seconds you can show a RevenueCat judge, and a sideloaded build
-cannot produce one.
+A sideloaded APK cannot complete a *real* purchase — the billing client needs the
+app installed from the store it was signed for. The Test Store build above
+exercises the whole flow with simulated purchases; to test against real store
+billing you need the release build on Galaxy Store's (or Play's) internal
+testing track, installed from there.
 
 ---
 
