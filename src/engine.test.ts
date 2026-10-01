@@ -835,7 +835,18 @@ test('every institution resolves to a system, a framework and a jurisdiction', (
     const jur = jurisdictionFor(us, inst);
     assert.equal(fw.state, sys.state, `${inst.id}: framework and system disagree on state`);
     assert.equal(jur.code, sys.state, `${inst.id}: jurisdiction and system disagree on state`);
-    assert.equal(jur.framework_id, fw.id, `${inst.id}: jurisdiction points at another framework`);
+    // A state may run more than one framework — New York has SUNY's and CUNY's —
+    // so the jurisdiction names its headline one and every campus's framework
+    // must at least belong to the same state's set.
+    const statesFrameworks = us.frameworks.filter(f => f.state === jur.code).map(f => f.id);
+    assert.ok(
+      jur.framework_id !== null && statesFrameworks.includes(jur.framework_id),
+      `${jur.code}: jurisdiction points at a framework outside its own state`,
+    );
+    assert.ok(statesFrameworks.includes(fw.id), `${inst.id}: framework is not one of ${jur.code}'s`);
+    if (statesFrameworks.length === 1) {
+      assert.equal(jur.framework_id, fw.id, `${inst.id}: jurisdiction points at another framework`);
+    }
   }
 });
 
