@@ -313,7 +313,12 @@ export type CreditAvailability =
  * great many decide no. A student who reads "ACE recommended" as "counts
  * everywhere" is making the most expensive mistake in this whole category.
  */
-export type CreditRecognition = 'ace' | 'nccrs' | 'ace_and_nccrs';
+/**
+ * Who recommends the credit. 'none' is a finding, not a gap: Modern States
+ * issues no credit of its own — it pays for a CLEP exam — and claiming an ACE
+ * recommendation for it, as this field once did, was unsupported.
+ */
+export type CreditRecognition = 'ace' | 'nccrs' | 'ace_and_nccrs' | 'none';
 
 export interface CreditSource {
   id: string;

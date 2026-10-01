@@ -168,6 +168,7 @@ const RECOGNITION_LABEL: Record<CreditRecognition, string> = {
   ace: 'ACE recommends credit',
   nccrs: 'NCCRS recommends credit',
   ace_and_nccrs: 'ACE and NCCRS both recommend credit',
+  none: 'Issues no credit of its own',
 };
 
 function CreditRow(
@@ -201,7 +202,8 @@ function CreditRow(
         )}
         {src.recognition !== undefined && (
           <Text style={styles.recognition}>
-            {RECOGNITION_LABEL[src.recognition]} — a recommendation, not a guarantee.
+            {RECOGNITION_LABEL[src.recognition]}
+            {src.recognition === 'none' ? '.' : ' — a recommendation, not a guarantee.'}
             {src.transcript_provider !== undefined && src.transcript_provider !== '' &&
               ` Credit arrives on: ${src.transcript_provider}.`}
           </Text>

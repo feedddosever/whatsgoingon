@@ -17,73 +17,73 @@ import type { CreditSource } from '../../src/types.ts';
 
 const AP_FEE = {
   source_url: 'https://apstudents.collegeboard.org/exam-policies-guidelines/exam-fees',
-  as_of: '2026-09-19',
-  confidence: 'needs_check' as const,
+  as_of: '2026-10-01',
+  confidence: 'published' as const,
   note:
-    'The standard school-ordered fee in the US, held at $99 for 2026-27. It excludes late ' +
-    'and cancellation fees. Reductions exist for low-income students and many high schools ' +
-    'pay outright — ask before budgeting for it.',
+    'The standard school-ordered fee in the US for 2026-27. With the College Board fee ' +
+    'reduction it is $53, and many high schools pay outright \u2014 ask before budgeting for it. ' +
+    'Late-order, unused and some late-testing fees are $40 each.',
 };
 
 const CLEP_FEE = {
-  source_url: 'https://clep.collegeboard.org/clep-exam-policy',
-  as_of: '2026-09-18',
+  source_url: 'https://clep.collegeboard.org/register-for-an-exam',
+  as_of: '2026-10-01',
   confidence: 'published' as const,
   note:
-    '$97 to College Board as of the 2025-26 cycle \u2014 it was $95 \u2014 plus a test-centre or ' +
-    'remote-proctoring administration fee that is not included here. A Modern States ' +
-    'voucher can take the College Board half to $0. What the credit is WORTH depends ' +
-    'entirely on the state: it clears general-education requirements in Florida by rule, ' +
-    'cannot satisfy Cal-GETC at all, and UC awards no CLEP credit whatsoever.',
+    '$97 to College Board for 2026-27, plus a test-centre administration fee, or $30 for ' +
+    'remote proctoring, neither included here. A Modern States voucher covers the $97 and ' +
+    'the $30. What the credit is WORTH depends entirely on the state: it clears ' +
+    'general-education requirements in Florida by rule, cannot satisfy Cal-GETC at all, and ' +
+    'UC awards no CLEP credit whatsoever.',
 };
 
 const IB_FEE = {
   source_url: 'https://huron.a2schools.org/ib/11th-and-12th-grade-dp-and-cp/dp-exam-fees-class-of-2026-and-beyond',
-  as_of: '2026-09-19',
+  as_of: '2026-10-01',
   confidence: 'needs_check' as const,
   note:
-    'Per-subject fee for the May 2026 session, around $124-$133 depending on the school\u2019s ' +
-    'published scale. The source is a school\u2019s fee schedule rather than IB itself: IB bills ' +
-    'the school and the school bills the family, so there is no candidate-facing price list ' +
-    'to read. A full diploma candidate also pays a one-off registration fee of roughly $172 ' +
-    'on top of six subject fees, which is NOT included here \u2014 this is the marginal cost of ' +
-    'one more subject.',
+    'Per-subject fee: $130 for the May 2026 session at one Michigan school; another school ' +
+    'quotes $135 for 2027. IB bills the school and the school bills the family, and IB\u2019s ' +
+    'US fee schedule is not public, so this is a school\u2019s figure, not IB\u2019s. Diploma ' +
+    'candidates also pay extended-essay, TOK and CAS fees, not included here.',
 };
 
 const DSST_FEE = {
   source_url: 'https://getcollegecredit.com/about-dsst/',
-  as_of: '2026-09-19',
+  as_of: '2026-10-01',
   confidence: 'needs_check' as const,
   note:
-    '$100 to DSST, plus a test-centre administration fee that is commonly $25-$50 and is ' +
-    'not included here. **Free for eligible active-duty service members** at a ' +
-    'DANTES-funded site, which waives both \u2014 first attempt only. What the credit is ' +
-    'WORTH varies more than any other family here: a CSU will award it toward a degree, ' +
-    'and the University of California awards nothing for it at all.',
+    '$100 to DSST, plus a test-centre administration fee that is not included here. **Free ' +
+    'for actively serving members** \u2014 including the Guard, Reserve and Coast Guard, and ' +
+    'Coast Guard spouses \u2014 through DANTES; both fees are waived only at a Fully-Funded ' +
+    'centre, and a funded retest needs a three-month wait. Veterans are not DANTES-funded. ' +
+    'What the credit is WORTH varies more than any other family here: the University of ' +
+    'California awards nothing for it at all.',
 };
 
 const ALEVEL_FEE = {
-  source_url: 'https://admission.universityofcalifornia.edu/admission-requirements/ap-exam-credits/a-levels.html',
-  as_of: '2026-09-19',
+  source_url: 'https://ciecambridge.net/testing/',
+  as_of: '2026-10-01',
   confidence: 'needs_check' as const,
   note:
-    'Cambridge International A Level. Entry fees are set by the exam series and collected ' +
-    'by the school or the centre, not by the candidate, so the figure here is indicative ' +
-    'only. UC grants credit at grade A, B or C, up to 12 quarter (8 semester) units per ' +
-    'exam toward the degree; A Levels clear no Cal-GETC general-education area. Florida calls ' +
-    'this family AICE, after the Cambridge diploma built from these same exams.',
+    'Cambridge International A Level. Cambridge does not publish fees to students: the ' +
+    'school sets what the family pays. $202 is one US school\u2019s 2025-26 figure for a full A ' +
+    'Level (an AS Level is about $125). UC grants credit at grade A, B or C, up to 12 quarter ' +
+    '(8 semester) units per exam toward the degree; A Levels clear no Cal-GETC ' +
+    'general-education area. Florida calls this family AICE, after the Cambridge diploma ' +
+    'built from these same exams.',
 };
 
 const DLPT_FEE = {
-  source_url: 'https://www.acenet.edu/National-Guide/Pages/Course.aspx?org=Defense+Language+Institute',
-  as_of: '2026-09-19',
+  source_url: 'https://www.dliflc.edu/administration/registrar/transcripts-records/',
+  as_of: '2026-10-01',
   confidence: 'needs_check' as const,
   note:
-    'Administered by the Defense Language Institute Foreign Language Center to service ' +
-    'members and government-sponsored personnel. There is no fee to the candidate and no ' +
-    'route for a civilian to register, which is why the app will never suggest one \u2014 but ' +
-    'if you hold a rating, it is worth real credit, and Florida names DLPT in the same ' +
-    'binding statewide table as AP and CLEP.',
+    'Administered by the Defense Language Institute to service members and other ' +
+    'government-sponsored personnel, with no route for a civilian to register \u2014 which is ' +
+    'why the app will never suggest one. ACE credit recommendations go to U.S. military ' +
+    'members only: the DLI says civilians, faculty, contractors and staff are not eligible. ' +
+    'Florida names DLPT in the same binding statewide table as AP and CLEP.',
 };
 
 export const examSources: CreditSource[] = [
@@ -133,18 +133,18 @@ export const examSources: CreditSource[] = [
   // The cost is the per-subject exam fee. A student sitting the full diploma
   // pays a registration fee on top, and their school usually handles both, so
   // this is the marginal cost of one more subject rather than a bill.
-  { id: 'ib-biology-hl', kind: 'ib', name: 'IB Biology, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
-  { id: 'ib-chemistry-hl', kind: 'ib', name: 'IB Chemistry, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
-  { id: 'ib-physics-hl', kind: 'ib', name: 'IB Physics, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
-  { id: 'ib-mathematics-aa-hl', kind: 'ib', name: 'IB Mathematics: Analysis & Approaches, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
-  { id: 'ib-mathematics-ai-hl', kind: 'ib', name: 'IB Mathematics: Applications & Interpretation, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
-  { id: 'ib-english-a-hl', kind: 'ib', name: 'IB Language A: Literature, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
-  { id: 'ib-history-hl', kind: 'ib', name: 'IB History, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
-  { id: 'ib-economics-hl', kind: 'ib', name: 'IB Economics, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
-  { id: 'ib-psychology-hl', kind: 'ib', name: 'IB Psychology, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
-  { id: 'ib-geography-hl', kind: 'ib', name: 'IB Geography, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
-  { id: 'ib-visual-arts-hl', kind: 'ib', name: 'IB Visual Arts, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
-  { id: 'ib-spanish-b-hl', kind: 'ib', name: 'IB Spanish B, Higher Level (score 5+)', cost_usd: 128, provenance: IB_FEE },
+  { id: 'ib-biology-hl', kind: 'ib', name: 'IB Biology, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-chemistry-hl', kind: 'ib', name: 'IB Chemistry, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-physics-hl', kind: 'ib', name: 'IB Physics, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-mathematics-aa-hl', kind: 'ib', name: 'IB Mathematics: Analysis & Approaches, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-mathematics-ai-hl', kind: 'ib', name: 'IB Mathematics: Applications & Interpretation, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-english-a-hl', kind: 'ib', name: 'IB Language A: Literature, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-history-hl', kind: 'ib', name: 'IB History, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-economics-hl', kind: 'ib', name: 'IB Economics, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-psychology-hl', kind: 'ib', name: 'IB Psychology, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-geography-hl', kind: 'ib', name: 'IB Geography, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-visual-arts-hl', kind: 'ib', name: 'IB Visual Arts, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
+  { id: 'ib-spanish-b-hl', kind: 'ib', name: 'IB Spanish B, Higher Level (score 5+)', cost_usd: 130, provenance: IB_FEE },
 
   // ---- DSST: worthless at a UC, real money at a CSU, free if you serve ----
   //
@@ -171,17 +171,17 @@ export const examSources: CreditSource[] = [
   // AS Level is deliberately absent: it is half an A Level and carries its own
   // credit rules, and guessing them here would be the same mistake as pricing
   // IB Standard Level.
-  { id: 'alevel-biology', kind: 'a_level', name: 'Cambridge International A Level Biology (grade A–C)', cost_usd: 125, provenance: ALEVEL_FEE },
-  { id: 'alevel-chemistry', kind: 'a_level', name: 'Cambridge International A Level Chemistry (grade A–C)', cost_usd: 125, provenance: ALEVEL_FEE },
-  { id: 'alevel-physics', kind: 'a_level', name: 'Cambridge International A Level Physics (grade A–C)', cost_usd: 125, provenance: ALEVEL_FEE },
-  { id: 'alevel-mathematics', kind: 'a_level', name: 'Cambridge International A Level Mathematics (grade A–C)', cost_usd: 125, provenance: ALEVEL_FEE },
-  { id: 'alevel-english-literature', kind: 'a_level', name: 'Cambridge International A Level English Literature (grade A–C)', cost_usd: 125, provenance: ALEVEL_FEE },
-  { id: 'alevel-history', kind: 'a_level', name: 'Cambridge International A Level History (grade A–C)', cost_usd: 125, provenance: ALEVEL_FEE },
-  { id: 'alevel-economics', kind: 'a_level', name: 'Cambridge International A Level Economics (grade A–C)', cost_usd: 125, provenance: ALEVEL_FEE },
-  { id: 'alevel-psychology', kind: 'a_level', name: 'Cambridge International A Level Psychology (grade A–C)', cost_usd: 125, provenance: ALEVEL_FEE },
-  { id: 'alevel-geography', kind: 'a_level', name: 'Cambridge International A Level Geography (grade A–C)', cost_usd: 125, provenance: ALEVEL_FEE },
-  { id: 'alevel-art-design', kind: 'a_level', name: 'Cambridge International A Level Art & Design (grade A–C)', cost_usd: 125, provenance: ALEVEL_FEE },
-  { id: 'alevel-spanish', kind: 'a_level', name: 'Cambridge International A Level Spanish (grade A–C)', cost_usd: 125, provenance: ALEVEL_FEE },
+  { id: 'alevel-biology', kind: 'a_level', name: 'Cambridge International A Level Biology (grade A–C)', cost_usd: 202, provenance: ALEVEL_FEE },
+  { id: 'alevel-chemistry', kind: 'a_level', name: 'Cambridge International A Level Chemistry (grade A–C)', cost_usd: 202, provenance: ALEVEL_FEE },
+  { id: 'alevel-physics', kind: 'a_level', name: 'Cambridge International A Level Physics (grade A–C)', cost_usd: 202, provenance: ALEVEL_FEE },
+  { id: 'alevel-mathematics', kind: 'a_level', name: 'Cambridge International A Level Mathematics (grade A–C)', cost_usd: 202, provenance: ALEVEL_FEE },
+  { id: 'alevel-english-literature', kind: 'a_level', name: 'Cambridge International A Level English Literature (grade A–C)', cost_usd: 202, provenance: ALEVEL_FEE },
+  { id: 'alevel-history', kind: 'a_level', name: 'Cambridge International A Level History (grade A–C)', cost_usd: 202, provenance: ALEVEL_FEE },
+  { id: 'alevel-economics', kind: 'a_level', name: 'Cambridge International A Level Economics (grade A–C)', cost_usd: 202, provenance: ALEVEL_FEE },
+  { id: 'alevel-psychology', kind: 'a_level', name: 'Cambridge International A Level Psychology (grade A–C)', cost_usd: 202, provenance: ALEVEL_FEE },
+  { id: 'alevel-geography', kind: 'a_level', name: 'Cambridge International A Level Geography (grade A–C)', cost_usd: 202, provenance: ALEVEL_FEE },
+  { id: 'alevel-art-design', kind: 'a_level', name: 'Cambridge International A Level Art & Design (grade A–C)', cost_usd: 202, provenance: ALEVEL_FEE },
+  { id: 'alevel-spanish', kind: 'a_level', name: 'Cambridge International A Level Spanish (grade A–C)', cost_usd: 202, provenance: ALEVEL_FEE },
 
   // ---- DLPT: free, valuable, and impossible for a civilian to sit ----
   { id: 'dlpt-spanish', kind: 'dlpt', name: 'DLPT Spanish (listening and reading)', cost_usd: 0,
