@@ -4,7 +4,7 @@
 > Do not edit by hand — re-run it. A gap list that can drift from the data
 > is the same failure this app exists to prevent.
 
-Counted 51 jurisdictions, 119 campuses, 6866 acceptance rules.
+Counted 51 jurisdictions, 119 campuses, 6057 acceptance rules.
 
 ## Gaps that need a type change, not research
 
@@ -80,8 +80,8 @@ things up helps until the field exists.
 
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **A need-based community-college fee waiver**, if the state has one. Absent, a waiver-eligible student here is quoted full price — correct today, but only because we assume none exists.
-- [ ] Confirm, for campuses we already price: per-credit cost, residency minimum, transfer-credit cap.
-- [ ] Confirm **2695 of 2695 acceptance rules** still marked `needs_check` — these are what the conservative route refuses to use.
+- [ ] Confirm, for campuses we already price: per-credit cost, residency minimum.
+- [ ] Confirm **1840 of 1886 acceptance rules** still marked `needs_check` — these are what the conservative route refuses to use.
 
 
 ## Tier 2 — statewide rule only

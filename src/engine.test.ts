@@ -335,7 +335,7 @@ test('a warning cites the row it actually rests on, not the row next to it', () 
     'the residency warning borrowed the exam policy\u2019s source');
 
   // And where the figure is still unconfirmed, it must still say so.
-  const tx = planRoute(unitedStates, { profile: PLAIN, target_institution_id: 'ut-austin',
+  const tx = planRoute(unitedStates, { profile: PLAIN, target_institution_id: 'ut-arlington',
     held_credit_ids: [], units_in_residence: 0 }, 'cheapest');
   const txResidency = tx.warnings.find(w => w.kind === 'residency');
   assert.equal(txResidency?.provenance?.confidence, 'needs_check',
@@ -955,8 +955,8 @@ test('a Texas plan is priced in Texas and built from Texas requirements', () => 
   for (const a of [...route.areas_cleared, ...route.areas_unmet]) {
     assert.ok(a.startsWith('tx-'), `${a} is not a Texas component area`);
   }
-  // 42 SCH at $300 is the whole core priced at UT Austin's own rate.
-  assert.equal(baselineCost(us, input), 42 * 300);
+  // 42 SCH at $400 is the whole core priced at the Texas rate.
+  assert.equal(baselineCost(us, input), 42 * 400);
   assert.ok(routeSaving(us, input, route) > 0);
 });
 
@@ -1505,4 +1505,30 @@ test('third-party providers survive the New York and Pennsylvania slices too', (
   for (const code of ['NY', 'PA'] as const) {
     assert.ok(forState(us, code).creditSources.some(c => c.kind === 'alt_provider'), code);
   }
+});
+
+test('Texas: a six-hour component area takes two courses, not one exam', () => {
+  // Until 2026-10-01 one 3-hour AP English cleared all six hours of Communication.
+  const comm = us.areas.filter(a => a.id.startsWith('tx-comm'));
+  assert.equal(comm.reduce((n, a) => n + a.required_units, 0), 6);
+  const route = planRoute(us, { profile: PLAIN, target_institution_id: 'ut-arlington',
+    held_credit_ids: ['ap-english-lang'], units_in_residence: 0 }, 'cheapest');
+  const touched = new Set([...route.areas_cleared, ...route.areas_unmet, ...route.areas_skipped]);
+  assert.ok(touched.has('tx-comm-2'), 'Communication II should still be owed');
+});
+
+test('Texas: the three campuses whose charts were read carry their own rules', () => {
+  const rule = (inst: string, src: string) =>
+    us.rules.find(r => r.institution_id === inst && r.credit_source_id === src);
+  // UT Austin: 60 hours in residence, and no credit at all for AP Comparative Government.
+  assert.equal(us.institutions.find(i => i.id === 'ut-austin')?.residency_min_units, 60);
+  assert.equal(rule('ut-austin', 'ap-comparative-government'), undefined);
+  // CLEP College Algebra earns M 301 at UT, which cannot be applied to the core.
+  assert.deepEqual(rule('ut-austin', 'clep-college-algebra')?.satisfies_areas, []);
+  // AP U.S. History is six hours at Texas A&M and Texas Tech.
+  assert.deepEqual(rule('texas-am', 'ap-us-history')?.satisfies_areas, ['tx-us-history-1', 'tx-us-history-2']);
+  // Texas Tech takes 80 hours from two-year colleges; the state default is 66.
+  assert.equal(us.institutions.find(i => i.id === 'texas-tech')?.max_transfer_units, 80);
+  // No checked chart credits DSST, so no campus is given a DSST rule.
+  assert.equal(us.rules.some(r => r.institution_id.startsWith('ut-') && r.credit_source_id.startsWith('dsst-')), false);
 });

@@ -10,14 +10,15 @@ import type { CreditSource, Provenance } from '../../src/types.ts';
  * is what lets one row stand for the whole state.
  */
 const TX_CC_COST: Provenance = {
-  source_url: 'https://reportcenter.highered.texas.gov/reports/data/tuition-and-fees-data-community-colleges/',
-  as_of: '2026-09-19',
+  source_url: 'https://reportcenter.highered.texas.gov/reports/data/tuition-and-fees-data-community-colleges-2018-2025/',
+  as_of: '2026-10-01',
   confidence: 'needs_check',
   note:
-    'In-district tuition varies more in Texas than anywhere else in this dataset — $77/SCH ' +
-    'at College of the Mainland, $164/SCH at South Texas College. $124/SCH is a statewide ' +
-    'middle, so treat the price as a range. Out-of-district rates are higher again. If you ' +
-    'are still in high school, FAST may make this $0 (see the Texas page).',
+    'Coordinating Board figures for a resident taking 15 hours, Fall 2025: from $67 a credit ' +
+    'hour (Collin) to $248 (Clarendon), median $131, average $140. Those figures mix in some ' +
+    'out-of-district charges — Austin CC shows $118 there but charges $85 in-district — so ' +
+    'your in-district price may be lower. Treat this as a range. If you are still in high ' +
+    'school, FAST may make it $0 (see the Texas page).'
 };
 
 const TCCNS: Provenance = {
@@ -30,7 +31,7 @@ const TCCNS: Provenance = {
     'that college’s own core list.',
 };
 
-const PER_SCH = 124;
+const PER_SCH = 131;
 
 const course = (id: string, name: string, hours: number): CreditSource => ({
   id,

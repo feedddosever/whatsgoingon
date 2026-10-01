@@ -1,28 +1,24 @@
 import type { Institution, Provenance } from '../../src/types.ts';
 
 /**
- * cost_per_unit_usd is DERIVED, and Texas derives more honestly than California
- * does: Texas public universities genuinely DO charge per semester credit hour,
- * so a per-unit figure is the right shape of number here rather than an
- * artefact of dividing a flat rate.
+ * cost_per_unit_usd is a statewide middle, and Texas universities genuinely do
+ * charge by the semester credit hour, so it is the right shape of number here.
  *
- * What it is not is uniform. Statutory tuition is fixed at $50/SCH statewide;
- * board-designated tuition is set campus by campus and was $213/SCH at Texas
- * Tech and $230.11/SCH at UNT for 2025-26, before mandatory fees. $300 is the
- * middle of that range with fees, and it is an estimate until each campus is
- * read individually.
+ * It was $300 until 2026-10-01, built from designated tuition alone. Read with
+ * mandatory fees, a resident taking 15 hours pays about $360–$455 a credit
+ * hour in 2026-27: Texas State $408.63, UNT about $403, Texas Tech about $395,
+ * UH $396–$455, UT Austin $362–$453 on its flat rate.
  */
-const TX_PER_UNIT = 300;
+const TX_PER_UNIT = 400;
 
 const TX_COST: Provenance = {
-  source_url: 'https://www.depts.ttu.edu/studentbusinessservices/feeInfo/documents/tuition-fees/2024-2026/2024-2026-Undergraduate-and-Graduate-Schedule.pdf',
-  as_of: '2026-09-19',
+  source_url: 'https://www.sbs.txst.edu/sbs-policies/tuition-and-fee-definitions.html',
+  as_of: '2026-10-01',
   confidence: 'needs_check',
   note:
-    'Derived: $50/SCH statutory tuition (fixed statewide) plus board-designated tuition ' +
-    'of roughly $213-$230/SCH at Texas Tech and UNT for 2025-26, plus mandatory fees. ' +
-    'Designated tuition is set per campus, so this is a statewide middle rather than ' +
-    'your price. Check your campus before you trust the saving.',
+    'A statewide middle for 2026-27 tuition and mandatory fees at 15 hours: Texas State ' +
+    '$408.63 a credit hour, UNT about $403, Texas Tech about $395, UH $396\u2013$455 by college, ' +
+    'UT Austin $362\u2013$453 on its flat rate. Your campus and college set the real figure.',
 };
 
 const TX_EXAM_POLICY: Provenance = {
@@ -34,7 +30,7 @@ const TX_EXAM_POLICY: Provenance = {
     'courses to adopt an AP credit policy, and 51.968(c-1) bars it from demanding a ' +
     'score above 3 unless its chief academic officer has evidence a higher score is ' +
     'needed. That is a floor on the SCORE. Which course the credit maps to is still the ' +
-    'campus’s decision, and CLEP is not covered by this statute at all.',
+    'campus\u2019s decision, and CLEP is not covered by this statute at all.',
 };
 
 const TX_RESIDENCY: Provenance = {
@@ -42,20 +38,63 @@ const TX_RESIDENCY: Provenance = {
   as_of: '2026-09-28',
   confidence: 'needs_check',
   note:
-    '30 is the accreditor\u2019s floor — SACSCOC requires at least 25 percent of a degree\u2019s ' +
-    'hours from the awarding university. A campus may require more, and many ask for the last ' +
-    '30 hours in residence. Confirm with the registrar.',
+    '30 is the accreditor\u2019s floor \u2014 SACSCOC requires at least 25 percent of a degree\u2019s ' +
+    'hours from the awarding university. Several Texas universities ask for more, often as ' +
+    'upper-division hours in residence. Confirm with the registrar.',
 };
 
+/** 19 TAC \u00a7 4.25(f): the most a university is obliged to accept. */
 const TX_TRANSFER_CAP: Provenance = {
-  source_url: '',
-  as_of: '',
-  confidence: 'needs_check',
+  source_url: 'https://www.law.cornell.edu/regulations/texas/19-Tex-Admin-Code-SS-4-25',
+  as_of: '2026-10-01',
+  confidence: 'statute',
   note:
-    'A 66-SCH ceiling on community-college credit is widely applied in Texas but is not ' +
-    'confirmed here, and it is not the same thing as the core-curriculum block transfer, ' +
-    'which is statutory. We found no statewide cap in the Coordinating ' +
-    'Board\u2019s transfer rules, so any limit is set campus by campus \u2014 ask yours.',
+    '19 TAC \u00a7 4.25(f): a university is not required to accept more than 66 semester credit ' +
+    'hours of lower-division credit, though it may choose to accept more. So 66 is the most ' +
+    'you can count on; your university may take more \u2014 ask.',
+};
+
+const page = (source_url: string, note: string): Provenance => ({
+  source_url, as_of: '2026-10-01', confidence: 'published', note,
+});
+
+interface Known { residency?: [number, Provenance]; cap?: [number, Provenance] }
+
+const KNOWN: Record<string, Known> = {
+  'ut-austin': {
+    residency: [60, page('https://catalog.utexas.edu/undergraduate/programs/astronomy-ba/',
+      'At least 60 hours, including 21 upper-division hours, must be completed in residence at ' +
+      'UT Austin, and at least 24 of the last 30. Read on a College of Natural Sciences degree ' +
+      'page; Liberal Arts degrees state the same 60.')],
+  },
+  'texas-am': {
+    residency: [36, page('https://catalog.tamu.edu/undergraduate/general-information/degree-information/',
+      'At least 36 hours of 300- and 400-level coursework in residence at Texas A&M, 12 of them ' +
+      'in the major, and at least 25% of the degree.')],
+  },
+  'u-houston': {
+    residency: [30, page('https://www.uh.edu/undergraduate-admissions/apply/transfer/transferring-credit/',
+      'At least 30 hours in residence at UH, and 18 of the 36 required advanced hours must be UH ' +
+      'courses.')],
+    cap: [66, page('https://www.uh.edu/undergraduate-admissions/apply/transfer/transferring-credit/',
+      'At most 66 lower-division hours transfer as course credit; there is no limit on ' +
+      'upper-division hours.')],
+  },
+  'ut-san-antonio': {
+    residency: [30, page('https://catalog.utsa.edu/undergraduate/bachelorsdegreeregulations/degreerequirements/minimumutsaresidencerequirements/',
+      'At least 25% of the degree at UTSA, and 18 of the 39 upper-division hours in UTSA courses.')],
+    cap: [66, page('https://catalog.utsa.edu/undergraduate/bachelorsdegreeregulations/transferringcourses/',
+      'Transfer credit for community-college work may not exceed 66 hours.')],
+  },
+  'unt': {
+    residency: [30, page('https://vpaa.unt.edu/advising/degrees/requirements.html',
+      '30 hours in residence at UNT, and 24 of the 36 advanced hours.')],
+  },
+  'texas-tech': {
+    cap: [80, page('https://www.depts.ttu.edu/registrar/teo/teo_transferGuidelines.php',
+      'Up to 80 hours from two-year colleges count toward a degree \u2014 90 if at least 10 ' +
+      'upper-division hours come from a four-year institution.')],
+  },
 };
 
 const tx = (id: string, name: string): Institution => ({
@@ -63,12 +102,12 @@ const tx = (id: string, name: string): Institution => ({
   name,
   system: 'TX-PUBLIC',
   cost_per_unit_usd: TX_PER_UNIT,
-  residency_min_units: 30,
-  max_transfer_units: 66,
+  residency_min_units: KNOWN[id]?.residency?.[0] ?? 30,
+  max_transfer_units: KNOWN[id]?.cap?.[0] ?? 66,
   refuses: [],
   exam_policy_provenance: TX_EXAM_POLICY,
-  residency_provenance: TX_RESIDENCY,
-  transfer_cap_provenance: TX_TRANSFER_CAP,
+  residency_provenance: KNOWN[id]?.residency?.[1] ?? TX_RESIDENCY,
+  transfer_cap_provenance: KNOWN[id]?.cap?.[1] ?? TX_TRANSFER_CAP,
   cost_provenance: TX_COST,
 });
 

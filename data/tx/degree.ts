@@ -81,7 +81,8 @@ export const texasDegrees: SystemDegree[] = [
         title: 'Credit earned at the university',
         text:
           'At least 25 percent of the hours for your degree must come from instruction at the ' +
-          'university awarding it — 30 hours of a 120-hour degree.',
+          'university awarding it — 30 hours of a 120-hour degree. That is the floor: UT Austin ' +
+          'asks 60, and Texas A&M 36 upper-division hours.',
         provenance: SACSCOC,
       },
       {

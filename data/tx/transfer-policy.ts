@@ -6,9 +6,9 @@ import type { Provenance, TransferPolicy } from '../../src/types.ts';
  * quotes the statute and rules verbatim; `published` rather than `statute`
  * because the statute itself was not the page opened.
  *
- * What is deliberately NOT here: a statewide cap on transferred hours. The
- * repo has long carried 66 as the Texas figure, and nothing we read supports
- * it as a state rule — see TX_TRANSFER_CAP in institutions.ts.
+ * The 66-hour figure is a state rule after all — 19 TAC § 4.25(f), read on
+ * 2026-10-01 — but a permissive one: the most a university is OBLIGED to accept,
+ * not a ban on accepting more. It lives with each campus in institutions.ts.
  */
 const THECB_DISPUTE: Provenance = {
   source_url: 'https://www.highered.texas.gov/transfer-dispute/',

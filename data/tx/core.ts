@@ -21,22 +21,26 @@ const TX_CORE: Provenance = {
 };
 
 /**
- * Hours per component area are the standard Texas Core allocation. The statute
- * fixes the 42-hour total; the split across component areas comes from the
- * Coordinating Board's core curriculum rules, which we have read in summary
- * rather than in the rule text, so the split carries a lower confidence than
- * the total does.
+ * Hours per component area, read in the rule itself: 19 TAC § 4.28, amended
+ * effective 11 February 2026 with the split unchanged.
+ *
+ * The engine treats an area as cleared or not, with no partial credit, so a
+ * six-hour area is TWO three-hour halves here. Left whole, one 3-hour exam
+ * cleared all six hours of Communication — a plan that looked cheaper than it
+ * was, which is the one error this app exists to prevent. A credit worth six
+ * hours (AP U.S. History at Texas A&M or Texas Tech) clears both halves.
  */
 const TX_SPLIT: Provenance = {
-  source_url: 'http://board.thecb.state.tx.us/apps/tcc/',
-  as_of: '2026-09-19',
-  confidence: 'needs_check',
+  source_url: 'https://www.law.cornell.edu/regulations/texas/19-Tex-Admin-Code-SS-4-28',
+  as_of: '2026-10-01',
+  confidence: 'statute',
   note:
-    'Communication 6, Mathematics 3, Life & Physical Sciences 6, Language/Philosophy/' +
-    'Culture 3, Creative Arts 3, American History 6, Government/Political Science 6, ' +
-    'Social & Behavioural Sciences 3, Component Area Option 6. Confirm your own ' +
-    'campus’s core list on the Coordinating Board’s Texas Core Curriculum WebCenter ' +
-    '— institutions choose which courses fill each area.',
+    '19 TAC § 4.28: Communication 6, Mathematics 3, Life & Physical Sciences 6, Language, ' +
+    'Philosophy & Culture 3, Creative Arts 3, American History 6, Government/Political Science ' +
+    '6, Social & Behavioral Sciences 3, and a Component Area Option of 6 — 42 in all. Each ' +
+    'university chooses which courses fill each area, and some lay the option hours out ' +
+    'differently. The Coordinating Board will recommend a new statewide core to the ' +
+    'Legislature in January 2027.',
 };
 
 const area = (id: string, name: string, units: number): GeArea => ({
@@ -47,13 +51,18 @@ const area = (id: string, name: string, units: number): GeArea => ({
 });
 
 export const texasCoreAreas: GeArea[] = [
-  { ...area('tx-comm', 'Communication', 6), provenance: TX_CORE },
+  { ...area('tx-comm-1', 'Communication (1 of 2)', 3), provenance: TX_CORE },
+  area('tx-comm-2', 'Communication (2 of 2)', 3),
   area('tx-math', 'Mathematics', 3),
-  area('tx-life-phys', 'Life & Physical Sciences', 6),
+  area('tx-life-phys-1', 'Life & Physical Sciences (1 of 2)', 3),
+  area('tx-life-phys-2', 'Life & Physical Sciences (2 of 2)', 3),
   area('tx-lang-phil', 'Language, Philosophy & Culture', 3),
   area('tx-arts', 'Creative Arts', 3),
-  area('tx-us-history', 'American History', 6),
-  area('tx-govt', 'Government / Political Science', 6),
+  area('tx-us-history-1', 'American History (1 of 2)', 3),
+  area('tx-us-history-2', 'American History (2 of 2)', 3),
+  area('tx-govt-1', 'Government / Political Science (1 of 2)', 3),
+  area('tx-govt-2', 'Government / Political Science (2 of 2)', 3),
   area('tx-social', 'Social & Behavioral Sciences', 3),
-  area('tx-option', 'Component Area Option', 6),
+  area('tx-option-1', 'Component Area Option (1 of 2)', 3),
+  area('tx-option-2', 'Component Area Option (2 of 2)', 3),
 ];
