@@ -388,3 +388,453 @@ The engine auto-subtracts only `need_waiver` and `universal_promise` (src/types.
 ## Not opened (time budget)
 
 IN 21st Century Scholars, KS Promise, KY Work Ready, LA MJ Foster, ME Free College, MD CC Promise, MI CC Guarantee and MS HELP were not opened. They stay needs_check. All carry show-only kinds, so the engine does not subtract them.
+
+---
+
+# Statewide-layer verification, batch B (23 states)
+
+All documents were read on **2026-10-01** through TinyFish `fetch_content`. Nothing below is from memory. Where a page could not be reached, the entry says so.
+
+Confidence levels follow the project rule:
+- `statute` means the statute or regulation text itself was read.
+- `published` means an official board, agency or system policy page or document was read.
+- Otherwise the row stays `needs_check`.
+
+Note on Cornell LII: for NM, WV and WY the regulation text was read on Cornell LII (law.cornell.edu), which mirrors the state register. That counts as reading the regulation text, but the official state URL is better for `source_url` where one is given.
+
+Engine context (src/types.ts): only `need_waiver` and `universal_promise` are subtracted from prices (`AUTO_APPLIED_AID`). Each AID verdict below says whether the current `kind` is safe on that basis.
+
+---
+
+## Summary
+
+| State | Guarantee verdict | Max confidence | AID fee_waiver verdict |
+|---|---|---|---|
+| MO | CONFIRMED | published | A+ confirmed show-only (merit plus recent grad) |
+| MT | CONFIRMED (one clause clarified) | published | **CORRECTED: should not be `need_waiver`** |
+| NE | **CORRECTED** | published | (no fee_waiver) |
+| NV | CONFIRMED (authority re-cited) | needs_check (published only if a Board agenda doc counts) | Nevada Promise not opened |
+| NH | **CORRECTED** | published | (no fee_waiver) |
+| NJ | CONFIRMED (drop "recalled") | statute | CCOG CONFIRMED need-based |
+| NM | CONFIRMED | statute | Opportunity CONFIRMED universal, with caveats |
+| NC | **CORRECTED** | published | Next NC CONFIRMED need-based (Pell double-count caveat) |
+| ND | CONFIRMED (authority re-cited) | published | (no fee_waiver) |
+| OH | **CORRECTED** | published | (no fee_waiver) |
+| OK | CONFIRMED | published | **CORRECTED: should not be `need_waiver`** |
+| OR | CONFIRMED | published | Oregon Promise confirmed recent_grad |
+| RI | **CORRECTED** | published | RI Promise confirmed recent_grad |
+| SC | CONFIRMED (core); audit clause UNVERIFIED | published | LTA not opened |
+| SD | CONFIRMED | published | Build Dakota not opened |
+| TN | CONFIRMED | published | TN Promise confirmed recent_grad |
+| UT | **CORRECTED** | published | **CORRECTED: Utah Promise should not be `need_waiver`** |
+| VT | **CORRECTED** (minor) | published | 802Opportunity CONFIRMED need-based |
+| VA | **CORRECTED** | statute (credit sizes); C grade and 3-year window still needs_check | G3 confirmed field_restricted |
+| WA | CONFIRMED (authority re-cited) | published | WA College Grant CONFIRMED |
+| WV | CONFIRMED | statute | WV Invests confirmed field_restricted |
+| WI | CONFIRMED | statute | Tuition Promise 2026-27 status UNVERIFIABLE |
+| WY | **CORRECTED** | published | Hathaway confirmed merit |
+
+Counts: 14 CONFIRMED, 9 CORRECTED, 0 UNVERIFIABLE (guarantee sentences).
+
+---
+
+## MO: Missouri
+
+- **Current claim:** CORE 42. 42 sem (Soc/Behavioral 9 · Written 6 · Oral 3 · Natural Sci 7 · Math 3 · Humanities & Fine Arts 9 · electives 5). Transfers as a block. Each MOTR course transfers one-to-one. Independents may join.
+- **Verdict:** CONFIRMED.
+  - Optional additions:
+    - Social/Behavioral 9 must include one Civics-designated MOTR course.
+    - Natural Sciences 7 must cover two disciplines and include a lab.
+    - PERF (performance) credit is capped at 3.
+- **Confidence achievable:** `published`. MDHEWD's official page was read. 6 CSR 10-3.020 is quoted there, but the regulation itself was not opened.
+- **source_url:** https://dhewd.mo.gov/higher-education/academic-affairs/core-42
+- **Quotes:**
+  - "“CORE 42 Complete” transfers as a block, which means lower-division general education is complete."
+  - "MOTR Equivalent Course credits are guaranteed to transfer one-to-one…"
+- **AID: A+ Scholarship** (kind `recent_grad`). Exists, and is SHOW-ONLY under either label.
+  - MDHEWD calls it "a merit-based scholarship".
+  - Eligibility: A+ designated high school, 2.5 HS GPA, 95% attendance, 50 hours tutoring.
+  - Eligibility expires 48 months after HS graduation.
+  - It is last-dollar after Pell. The 2026-27 cap is $240 per credit hour.
+  - URL: https://dhewd.mo.gov/ppc/grants-scholarships/a-plus
+  - "Fast Track" was not opened.
+
+## MT: Montana
+
+- **Current claim:** MUS Transferable Core. 30 sem (natural sci 6 · social sci/history 6 · math 3 · communication 6 · humanities/fine arts 6 · cultural diversity 3). Minimum C– per course. ≥ 20 credits may roll as a partial block. Covers MUS, 3 community colleges, 7 tribal colleges.
+- **Verdict:** CONFIRMED, with one clarification.
+  - The policy does not let ≥ 20 credits "roll as a block". It lets the student choose between finishing the MUS Core and finishing the receiving campus's GE program.
+  - Suggested wording: "≥ 20 MUS Core credits: student may choose to finish the MUS Core or the receiving campus's GE program."
+  - Coverage detail: the three community colleges are covered by the policy. Tribal colleges and private colleges "may elect to participate" (§ II.H).
+  - A completed AA/AS also clears lower-division GE (§ II.D).
+- **Confidence achievable:** `published` (Board of Regents policy PDF read).
+- **source_url:** https://www.mus.edu/borpol/bor300/301-10.pdf
+  - Authority should read "BoR Policy 301.10". 301.5.3 and 301.5.5 are not needed for this sentence.
+- **Quotes:**
+  - "If the student has completed the entire 30-credit MUS core … cannot be required to take additional general education courses at the lower division level."
+  - "a grade of 'C -' or better in each of the classes"
+- **AID: American Indian tuition waiver** (kind `need_waiver`). **CORRECTED: reclassify to `other` (show only).**
+  - Eligibility is gated on tribal status: "an enrolled member or a tribally certified descendent of a federally recognized Indian tribe located within the boundaries of the State of Montana".
+  - It also requires financial need and Montana residency.
+  - Blood quantum has been dropped (Policy 940.13).
+  - It waives **tuition only**: "Fees, program fees and other charges are not waived by this policy."
+  - Subtracting it as a fee waiver would under-price for almost every student.
+  - URL: https://applymontana.mus.edu/resources/for-native-american-students/tuition-waiver.html
+
+## NE: Nebraska
+
+- **Current claim:** `exists: false`. "No statewide general-education transfer instrument. per agreement". Programme is "none statutory — Nebraska Transfer Initiative".
+- **Verdict:** CORRECTED. A voluntary statewide signatory agreement does exist.
+  - Corrected sentence: "No statutory instrument. The voluntary Nebraska Transfer Initiative (signed 1995, revised 2013) has signatories accept a 30-hour AA general-education common core (the attachment lists 34 hours), passed with C or above, for direct application to degree requirements. Receivers may still require institution-wide GE outside the core. No admission guarantee."
+  - Signatories: six community colleges, the state colleges, the University of Nebraska campuses, two tribal colleges and several privates.
+  - Keeping `framework_id: null` is still correct: it is a voluntary course core, not a block GE waiver.
+- **Confidence achievable:** `published` (agreement text read). It is hosted by the community-college consortium site, not a state agency.
+- **source_url:** https://neb-cc.statewidecourses.org/docs/NebraskaTransferInitiativeDocument.pdf
+- **Quotes:**
+  - "A 30 semester-hour core has been established as the basis for the common core of general education by the participating institutions."
+  - "Signatory institutions may require admitted transfer students to complete institution-wide general education requirements not included in the transferable core."
+
+## NV: Nevada
+
+- **Current claim:** NSHE transfer rules: AA/AS/AB satisfies lower-division GE. Includes the statutory US/Nevada constitutions requirement (NRS 396.500, recalled). Authority: NSHE Handbook Title 4 ch. 14 (recalled).
+- **Verdict:** CONFIRMED. The authority can be pinned and "recalled" dropped.
+  - The guarantee is Title 4, Ch. 14, **§ 16.1a**.
+  - The constitutions instruction is Title 4, Ch. 14, **§ 20(2)**, "pursuant to Nevada Revised Statutes 396.500".
+  - Optional addition: the System GE minimum is 21–24 credits (§ 20(1)).
+- **Confidence achievable:** stays `needs_check`, or `published` at a stretch.
+  - The Handbook chapter PDF on nshe.nevada.edu was unreachable.
+  - What was read:
+    - An official NSHE Board of Regents agenda item (ARSA-7, 29 Feb 2024) that reproduces § 20.
+    - Nevada State University's 2026-27 catalog quoting § 16.1a.
+  - Open the Handbook chapter itself before promoting.
+- **source_url (proposed):** https://nshe.nevada.edu/regents/policies/ (Handbook, Title 4 Ch. 14 § 16)
+- **Supporting:**
+  - https://nsc.smartcatalogiq.com/en/2026-2027/undergraduate-catalog/admissions-information/nevada-system-of-higher-education-transfer-rights-and-responsibilities-for-students-and-institution
+  - https://nshe.nevada.edu/wp-content/uploads/file/BoardOfRegents/Agendas/2024/03-mar-mtgs/refs/arsa/ARSA-7.pdf
+- **Quotes:**
+  - "The completion of the associate of arts, associate of science, and associate of business degree at a community college automatically fulfills the lower-division general education requirements at any other NSHE institution. (Title 4, Ch. 14, Section 16.1a)"
+  - "Instruction must be given in the essentials of the Constitution of the United States and the Constitution of the State of Nevada … pursuant to Nevada Revised Statutes 396.500"
+- **AID: Nevada Promise** (kind `recent_grad`). NOT OPENED. The guessed URL was invalid and there was no time to search. Stays `needs_check`. The kind is show-only, so there is no pricing risk.
+
+## NH: New Hampshire
+
+- **Current claim:** `exists: false`. "No statewide general-education transfer instrument exists."
+- **Verdict:** CORRECTED. There is a voluntary statewide admission guarantee. GE block transfer is optional per receiver.
+  - Corrected sentence: "New Hampshire Transfer Guarantee (NEBHE/CCSNH memorandum of agreement, January 2024). A CCSNH associate degree plus a GPA of 2.0, 2.5 or 3.0 (set by each receiver) gives guaranteed admission, a waived application fee and transfer of associate-degree credits at participating four-year colleges, subject to capacity in the major. Block transfer of the 34-credit CCSNH GE core is optional per institution; receivers that take it may require at most 12 more GE credits. No statutory GE instrument."
+  - Participants: Keene State, Plymouth State, UNH (main, Manchester, CPS Online), Colby-Sawyer, Franklin Pierce, New England College.
+  - UNH's appendix marks "Not accepting block".
+  - Keeping `framework_id: null` is right, because the GE block is optional.
+- **Confidence achievable:** `published` (CCSNH official page and the signed MOA PDF read).
+- **source_url:** https://www.ccsnh.edu/transfer-guarantee-search/
+  - MOA: https://cdn.prod.website-files.com/6761c434ca757ccb9ac4d8f8/679128b4aeb262161dea3d3d_New_Hampshire_Guarantee_MOA_UNH-compressed.pdf
+- **Quotes:**
+  - "will ensure acceptance at participating four-year institutions for associate-degree-bearing students, regardless of degree type, who have met a minimum grade point average (GPA) of 2.0, 2.5 or 3.0."
+  - "institutions may elect to receive the general education core as a block"
+
+## NJ: New Jersey
+
+- **Current claim:** Comprehensive State-Wide Transfer Agreement (Lampitt Law). 60–64 sem block (AA 45 / AS 30 GE, recalled). AA/AS transfers whole as the first half of the bachelor's. AAS/AFA generally excluded.
+- **Verdict:** CONFIRMED. The "recalled" figures are now read: AA 45 and AS 30 GE are in the agreement's § D table.
+  - Optional additions from the agreement:
+    - "Such students will have Junior status."
+    - No admission guarantee: "Admission … will depend … on the four-year institution's assessment".
+  - The statute's guarantee runs to "the four-year public institution … to which a student is admitted".
+  - Pending legislation: S3178/A4220 (2024–25 session) would amend the agreement and create a Transfer Ombudsperson. Whether it was enacted was not confirmed.
+- **Confidence achievable:** `statute`. P.L. 2007, c. 175 (A3968, first-reprint enacted text) was read in the NJ State Law Library legislative-history file. The NJPC agreement was also read.
+- **source_url:** https://www.state.nj.us/highereducation/PDFs/XferAgreementOct08.pdf
+  - Statute text: https://repo.njstatelib.org/bitstreams/5fd660ac-7a08-4055-9592-1e7e79076a58/download
+- **Quotes:**
+  - Statute: "a guarantee that an associate of arts degree or an associate of science degree awarded by a county college … shall be fully transferable and credited as the first two years of a baccalaureate degree program at the four-year public institution of higher education in the State to which a student is admitted"
+  - Agreement: "The Associate in Arts (AA) program requires 45 semester credits hours of general education … The Associate in Science (AS) program requires a minimum of 30"
+- **AID: Community College Opportunity Grant** (kind `need_waiver`). CONFIRMED. The kind is safe; drop "(recalled)".
+  - NJ resident, AGI $0–$65,000, FAFSA/NJ Alternative application by the state deadline.
+  - At least 6 credits per semester, no prior college degree, satisfactory academic progress.
+  - Covers remaining tuition (up to 18 credits per term) plus approved fees **at in-county rates only**.
+  - URL: https://www.hesaa.org/pages/ccog.aspx
+  - Quote: "Be a New Jersey resident with an Adjusted Gross Income (AGI) between $0 - $65,000"
+
+## NM: New Mexico
+
+- **Current claim:** NM General Education Curriculum. 31 sem = 22 fixed + 9 flexible (AAS 15). Fixed-22 courses transfer to the same area. Improperly forced repeats must be reimbursed by the receiving institution.
+- **Verdict:** CONFIRMED, with one precision. Reimbursement applies when a department-upheld complaint involves commonly numbered courses or courses in a meta-major or transfer module.
+  - Optional addition: a completed 31 means all GE is accepted (5.55.6.13(B)).
+- **Confidence achievable:** `statute` (NMAC 5.55.6 regulation text read).
+- **source_url:** https://www.law.cornell.edu/regulations/new-mexico/N-M-Admin-Code-SS-5.55.6.10
+  - Also read: NM Register filing https://nmsrca-cf.rtscustomer.com/wp-content/uploads/attachments/5.55.6.pdf
+- **Quotes:**
+  - "Courses that have been taken within the fixed 22 credit hours will transfer as fulfilling the content area for which they are approved."
+  - "the receiving institution shall reimburse the student the complete cost, including tuition, books and fees, of each course the student was required to repeat" (5.55.6.14(G))
+- **AID: Opportunity Scholarship** (kind `universal_promise`). CONFIRMED as broadly universal, with caveats worth a note:
+  - Established NM resident, at least 6 credit hours, public NM college.
+  - Covers "up to 100% of tuition and required fees".
+  - Credit caps: under 90 hours toward an associate, under 160 toward a bachelor's.
+  - Former Lottery recipients need a 2.5 GPA going forward.
+  - No application is needed.
+  - URL: https://hed.nm.gov/free-college-for-new-mexico
+
+## NC: North Carolina
+
+- **Current claim:** CAA — UGETC. UGETC ≥ 30 within a 60–61 sem AA/AS. C or better each course. 2.0 GPA. Completed AA/AS gives junior status. TAAP guarantees one of 16 campuses, not a named one.
+- **Verdict:** CORRECTED. A revised CAA took effect Spring 2026.
+  - The grade floor is **C−**, not C.
+  - The agreement text grants a "General Education Waiver". It does not use the word "junior". NCCCS's summary page lists "junior-level transfer" as a protection.
+  - Corrected sentence: "Comprehensive Articulation Agreement (revised, effective Spring 2026). UGETC ≥ 30 within a 60–61 sem AA/AS. C− or better per course; AA/AS + 2.0 GPA gives a General Education Waiver at any UNC campus that admits the student, and TAAP assured admission to one of the 16 UNC institutions (not a specific campus, program or major)."
+- **Confidence achievable:** `published` (full CAA PDF read, plus the NCCCS page).
+- **source_url:** https://wordpress.nccommunitycolleges.edu/wp-content/uploads/2025/10/2025-CAA-Final_Oct-2025.pdf
+  - The current row's URL is the NCCCS landing page. It works, but the PDF is better.
+- **Quotes:**
+  - "Students who graduate from a NCCCS institution with an AA or AS degree and have an overall GPA of at least 2.0 … are guaranteed … A General Education Waiver at any UNC System institution to which a student is admitted"
+  - "Admission is not assured to a specific campus, program, or major"
+- **AID: Next NC Scholarship** (kind `need_waiver`). CONFIRMED need-based.
+  - NC in-state resident, HS diploma or equivalent, AGI ≤ $80,000, SAI ≤ 7,500.
+  - At least 6 credit hours; part-time students get a partial award. At least $3,000 at a community college.
+  - **Caveat:** "combines the federal Pell Grant with the state-funded financial aid program". If the engine also subtracts Pell anywhere, that double counts.
+  - The page still cites the 2024-25 year, so the 2026-27 terms are not confirmed on the page read.
+  - URL: https://www.nccommunitycolleges.edu/students/paying-for-college/options-for-paying-for-college/scholarships/nc-scholarship/
+
+## ND: North Dakota
+
+- **Current claim:** GERTA. ≥ 36 sem (ND: category codes). Completed lower-division GE or AA/AS = GE-complete at any signatory. NDUS + 5 tribal colleges + 1 private.
+- **Verdict:** CONFIRMED. **Authority correction:** the current SBHE index lists GERTA as **NDUS Procedure 460.1** under SBHE Policy 460 ("Transfer and Test Credit Agreements"), not 403.7 / 403.7.1.
+  - Precision: the 36 must span every GE area AND complete the sending institution's GE.
+- **Confidence achievable:** `published` (2026 GERTA Guide PDF read, plus the NDUS page).
+- **source_url:** https://s3.cdn.ndus.edu/ndus-web/media/GERTA-Guide-2026-1.pdf
+  - Landing page: https://ndus.edu/students/academic-life/transfer-to-a-different-campus/gerta
+- **Quote:** "If the general education coursework includes courses from each of these General Education Areas (GEA) totaling at least 36 semester hours and completes the general education requirements of the institution from which the student transfers, then the student is deemed to have completed the lower division general education requirements of the institution to which the courses are transferred."
+
+## OH: Ohio
+
+- **Current claim:** Ohio Transfer 36. 36–40 sem. Ohio Guaranteed Transfer Pathways: associate → junior standing.
+- **Verdict:** CORRECTED. The policy text read does not say "junior standing". The OGTP clause says an associate degree applies to a bachelor's in an equivalent field "without unnecessary duplication", and that the bachelor's is "typically completed in four semesters".
+  - Corrected sentence: "Ohio Transfer 36. 36–40 sem. A completed OT36, or an AA/AS containing an identifiable OT36, meets the receiving institution's OT36 requirements; individual approved courses also transfer. Ohio Guaranteed Transfer Pathways apply an associate degree to a bachelor's in an equivalent field."
+- **Confidence achievable:** `published` (ODHE Articulation & Transfer Policy page read). ORC 3333.16 is cited there but was not opened.
+- **source_url:** https://transfercredit.ohio.gov/educational-partners/educational-partner-initiatives/articulation-transfer-policy-policy/articulation-transfer-policy-policy
+- **Quotes:**
+  - "The Ohio Transfer 36 contains 36-40 semester of course credit…"
+  - "Transfer students with an earned AA or AS degree which includes an identifiable Ohio Transfer 36 will have met the Ohio Transfer 36 requirements of the receiving institution."
+
+## OK: Oklahoma
+
+- **Current claim:** State Regents GE minimum + AA/AS guarantee. 37 sem minimum. An AA/AS from a state-system college satisfies all lower-division GE at any state-system university.
+- **Verdict:** CONFIRMED. The section is § 3.11.2.D in Chapter 3 "As of September 4, 2025".
+- **Confidence achievable:** `published` (OSRHE Chapter 3 policy PDF and the OSRHE student page read).
+- **source_url:** https://okhighered.org/wp-content/uploads/2025/09/Chapter-3-2025.pdf
+- **Quotes:**
+  - "If a student has completed an AA or AS degree, the lower-division general education requirement of the baccalaureate degree shall be the responsibility of the institution awarding the associate degree"
+  - Student page: "State Regents' policy guarantees that your associate degree will satisfy all freshman and sophomore general education requirements" and "a minimum of 37 hours"
+- **AID: Oklahoma's Promise** (kind `need_waiver`). **CORRECTED: reclassify to `recent_grad` (show only), and fix the name.**
+  - Students must apply in grades 8–12, by Dec. 31 of the senior year and before HS graduation. "enrol by grade 11" is out of date.
+  - AGI limit: $60k (1–2 dependents), $70k (3–4), $80k (5+).
+  - GPA and conduct requirements apply.
+  - An adult or transfer student cannot qualify after the fact, so subtracting it is unsafe.
+  - URL: https://okpromise.org/
+  - Quote: "apply any time from grades 8-11 through Dec. 31 of your senior year"
+
+## OR: Oregon
+
+- **Current claim:** CTM / OTM / AAOT / MTMs. 30 / 45 / 90 QUARTER. CTM transfers as a block if public-university admission requirements are met.
+- **Verdict:** CONFIRMED. The page confirms CTM ≥ 30 and OTM 45. The AAOT's 90 credits are not stated on this page.
+  - Optional addition: "a transfer degree does NOT guarantee admittance to a university or to a program".
+- **Confidence achievable:** `published` (HECC page read). SB 233 and the ORS sections were not opened.
+- **source_url:** https://www.oregon.gov/highered/about/transfer/pages/transfer-compass.aspx
+- **Quote:** "If you complete the full set courses at an Oregon community college and meet public university admissions requirements, you are guaranteed the courses will transfer as a block to any Oregon public university"
+- **AID: Oregon Promise** (kind `recent_grad`). CONFIRMED.
+  - Students apply in the senior year or right after the GED.
+  - SAI limit 27,000 for the class of 2026.
+  - 2026-27 awards $2,280–$4,716.
+  - URL: https://oregonstudentaid.gov/grants/oregon-promise-grant/
+
+## RI: Rhode Island
+
+- **Current claim:** Joint Admissions Agreement (three institutions). ≥ 32 GE credits apply. 2.4 GPA guaranteed admission. Up to 30% tuition discount at 3.0+.
+- **Verdict:** CORRECTED (discount tiers, plus conditions).
+  - Corrected sentence: "Joint Admissions Agreement (CCRI → RIC/URI). Enrol in JAA before earning 30 credits and finish the AA within five years; ≥ 32 GE credits transfer, ≥ 60 total; a 2.4 GPA guarantees admission. Tuition reduction (tuition only) at RIC is 10% at 3.0, 20% at 3.25 and 30% at 3.5+."
+- **Confidence achievable:** `published` (RIOPC policy S-12 read, plus the RIC JA-AAA page).
+- **source_url:** https://riopc.edu/wp-content/uploads/2023/02/S12_jaapolicy.pdf
+  - Discount: https://www.ric.edu/admissions-financial-aid/undergraduate-admissions/transfer-student-admission/partnerships-other-colleges/joint-admissions-agreement/jaa-gpa-based-tuition-reduction
+- **Quotes:**
+  - "To be guaranteed admission to RIC or URI under the JAA, a CCRI student must: (1) enroll under the JAA prior to earning 30 credits … (3) have a cumulative grade point average of 2.40 or higher"
+  - "3.0 | 10% … 3.25 | 20% … 3.5 or above | 30%"
+- **AID: RI Promise** (kind `recent_grad`). CONFIRMED.
+  - RI resident, HS/GED, age 18 or under (19–21 by appeal).
+  - Must enrol in the term right after HS. CCRI associate programmes only.
+  - URL: https://www.ccri.edu/ripromise/
+  - The Hope Scholarship at RIC was not opened.
+
+## SC: South Carolina
+
+- **Current claim:** CHE Statewide Articulation Agreement ("list of 86") + Transfer Blocks. AA/AS = ≥ 60 hrs and junior status. CHE audit: only 31 of the 86 code as direct equivalents; a new statewide AA/AS GE agreement is being negotiated.
+- **Verdict:** CONFIRMED for the core: the 86 courses, the Transfer Blocks, and AA/AS → ≥ 60 hours plus junior status.
+  - The audit clause ("31 of 86"; new agreement being negotiated) is **UNVERIFIED**. Drop it, or mark it separately as needs_check.
+  - Optional addition: coursework must be completed with a grade of C.
+- **Confidence achievable:** `published` (CHE Transfer Policy, Commission agenda item 6.02.A, May 2022, read).
+- **source_url:** https://che.sc.gov/sites/che/files/Documents/Meetings/2022/Commissioner%20Meetings/May/6.02.A.Transfer_Policy.pdf
+- **Quote:** "Students who have earned an Associate of Arts or Associate of Science degree from a public two-year institution of higher learning shall receive a minimum of sixty transfer credit hours at a public four-year college or university and shall be given a junior status"
+- **AID: Lottery Tuition Assistance** (kind `field_restricted`). NOT OPENED. The kind is show-only.
+
+## SD: South Dakota
+
+- **Current claim:** System General Education Requirements (six goals). 30 sem (written 6 · oral 3 · social sci 6 · arts & humanities 6 · math 3 · natural sci 6). Completed at one regental campus = complete at all. Technical colleges sit under a separate board.
+- **Verdict:** CONFIRMED.
+  - The transfer guarantee itself is in BOR Policy **2.2.2.2** (§ C.1.1).
+  - Optional additions:
+    - "The System General Education Requirements shall incorporate civics proficiency, effective with the summer 2025 academic catalog".
+    - The associate-degree version is 24 credits.
+  - Guideline 2.3.7.A was not opened.
+- **Confidence achievable:** `published` (SDBOR Policy 2.3.7 and 2.2.2.2 read on PowerDMS).
+- **source_url:** https://public.powerdms.com/SDRegents/documents/1761658
+  - Also: https://public.powerdms.com/SDRegents/documents/1587452
+- **Quote:** "Students who complete the System General Education Requirements (BOR Policy 2.3.7) at any Regental institution will have fulfilled the System General Education Requirements for their degree program."
+- **AID: Build Dakota; Freedom Scholarship** (kind `field_restricted`). NOT OPENED. The kind is show-only.
+
+## TN: Tennessee
+
+- **Current claim:** 41-hour GE core + Tennessee Transfer Pathways. 41 core / 60 pathway sem. A completed pathway = all lower-division GE and pre-major met.
+- **Verdict:** CONFIRMED.
+  - Optional additions:
+    - The Pathways do not guarantee admission to UT Knoxville.
+    - A BA may add intermediate foreign language.
+- **Confidence achievable:** `published`. THEC's page and the official TTP site were read. T.C.A. § 49-7-202(r) is cited by THEC but was not opened.
+- **source_url:** https://www.tn.gov/thec/for-institutions/articulation-and-transfer/tn-transfer-pathway.html
+  - Also: https://www.tntransferpathway.org/transfer-admission-guarantee
+- **Quotes:**
+  - THEC: "TN Code 49-7-202 (r) … stipulates that a transfer pathway will consist of 60 hours of instruction with 41 of those hours designated to the general education core and the remaining 19 credits to pre-major or elective courses."
+  - TTP site: "The student is guaranteed that all the community college courses taken will be accepted at the college/university and the courses will count toward completion of the particular major."
+- **AID: Tennessee Promise** (kind `recent_grad`). CONFIRMED.
+  - Last-dollar. Students apply as HS seniors (by Nov 2).
+  - Mandatory meeting, 16 hours of community service, full-time enrolment.
+  - URL: https://www.collegefortn.org/tnpromise/
+  - Tennessee Reconnect was not opened.
+
+## UT: Utah
+
+- **Current claim:** USHE General Education. 30–39 sem (recalled). If the sender certifies an area satisfied, the receiver may not require more.
+- **Verdict:** CORRECTED (credit size).
+  - Corrected sentence: "USHE General Education (Board Policy R470). 27–30 sem (12 core: written comm 6, quantitative literacy 3, American Institutions 3; plus breadth). If the sending USHE institution certifies a core or breadth area satisfied, the receiver may not require more in that area. An AA/AS from a USHE institution meets GE at all USHE institutions (R471 § 5.1.2)."
+  - R470 was repealed and replaced in Dec 2023 and last amended June 11, 2026.
+- **Confidence achievable:** `published` (R470 and R471 policy texts read on PowerDMS).
+- **source_url:** https://public.powerdms.com/Uta7295/documents/1826311
+  - R471: https://public.powerdms.com/Uta7295/documents/2729836
+- **Quotes:**
+  - "each institutional general education program shall require 27-30 semester credits"
+  - "if the sending USHE institution determines that the core and breadth general education area is satisfied, the receiving USHE institution shall also consider the core and breadth general education area satisfied and may not require additional general education coursework in that core and breadth area."
+- **AID: Utah Promise Grant** (kind `need_waiver`). **CORRECTED: reclassify to `other` (show only).**
+  - It is need-based, but the award "Varies based on available funding". It is a grant up to cost of attendance, not a fee waiver.
+  - The amount cannot be safely subtracted.
+  - URL: https://ushe.edu/utah-promise-grant/
+
+## VT: Vermont
+
+- **Current claim:** Vermont Transfer Guarantee (CCV associate → partner colleges) + VSCS transfer policy. CCV GE accepted as a block. CCV associate + GPA 2.0 / 2.5 / 3.0 by receiver; Vermont State University 2.0, min C–. Guaranteed admission, junior status, no application fee. Includes Champlain, Norwich, Saint Michael's.
+- **Verdict:** CORRECTED (minor).
+  - "CCV GE accepted as a block" is not universal. VTSU, Champlain, Champlain Online and Norwich list it. Saint Michael's (GPA 2.5, min C−) does not list block acceptance.
+  - Minimum course grade differs by partner: Champlain and Norwich require C; VTSU, Saint Michael's and Champlain Online accept C−.
+  - Everything else is confirmed, including VTSU 2.0 and C−.
+  - VSCS Policy 108 was not opened.
+- **Confidence achievable:** `published` (CCV's official guarantee page and the VTSU page read).
+- **source_url:** https://ccv.edu/academics/transfer-from-ccv/vermont-transfer-guarantee/
+- **Quote:** "Eligibility: 1. An associate degree from the Community College of Vermont 2. A GPA of 2.0, 2.5 or 3.0 (guaranteed admission based on GPA varies by college) … Junior status upon enrollment"
+- **AID: 802Opportunity** (kind `need_waiver`). CONFIRMED need-based.
+  - Vermont resident, family AGI ≤ $100,000, no bachelor's degree.
+  - CCV associate or certificate only.
+  - Covers tuition and the $125 admin fee when combined with Pell and state grants. Course fees and books are not covered.
+  - Safe as `need_waiver` for CCV tuition only.
+  - URL: https://www.vsac.org/free-tuition-community-college-vermont
+  - "Free Degree Promise" was not opened.
+
+## VA: Virginia
+
+- **Current claim:** Passport and Uniform Certificate of General Studies. 16 / 30–32 sem. C or better. 3-year completion window. Guaranteed Admission Agreements set different GPA floors per university.
+- **Verdict:** CORRECTED (credit sizes per statute).
+  - § 23.1-907(B) fixes the Passport at **15** credit hours and the UCGS at **30**.
+  - VCCS and colleges describe them as 16 and 30–32.
+  - The statute also says every course "shall be transferable and shall satisfy a lower division general education requirement at any public institution". Waivers are course- and pathway-specific only.
+  - Corrected sentence: "Passport (15 cr by statute; VCCS offers 16) and UCGS (30 cr by statute; 30–32 at VCCS). Each course transfers and satisfies a lower-division GE requirement at any Virginia public institution, subject only to course-specific SCHEV waivers. Guaranteed Admission Agreements set per-university GPA floors."
+  - "C or better" is supported only by a campus page (Virginia Tech registrar). The "3-year completion window" was NOT verified. Keep both as needs_check.
+- **Confidence achievable:** `statute` for the credit sizes and transfer guarantee (Code of Va. § 23.1-907 read on LIS). The C grade and 3-year window stay needs_check. The transfervirginia.org page currently in source_url returned **403**.
+- **source_url:** https://law.lis.virginia.gov/vacode/title23.1/chapter9/section23.1-907/
+- **Quote:** "The Passport Program shall consist of 15 course credit hours and shall be a component of the 30-credit-hour Uniform Certificate of General Studies Program. Each Uniform Certificate of General Studies Program and Passport Program course shall be transferable and shall satisfy a lower division general education requirement at any public institution of higher education."
+- **AID: G3** (kind `field_restricted`). CONFIRMED.
+  - Six in-demand fields; household income roughly $120,000 or less.
+  - URL: https://virginiag3.com/
+
+## WA: Washington
+
+- **Current claim:** DTA associate. 90 QUARTER credits. 2.0 GPA (recalled). ≤ 15 quarter credits restricted electives. Authority: ICRC Handbook; RCW 28B.10.054.
+- **Verdict:** CONFIRMED. The 2.0 GPA is now read, not recalled.
+  - **Authority correction:** the DTA Guidelines cite **RCW 28B.10.696**, not .054. The statute itself was not opened.
+  - Optional addition: the guidelines "in no way alter admission criteria", so there is no admission guarantee.
+  - The 2026 Guidelines were approved May 2026 and take effect September 2026.
+- **Confidence achievable:** `published` (WSAC-hosted DTA Associate Degree Guidelines 2026 read, plus the ICRC provisos page).
+- **source_url:** https://wsac.wa.gov/sites/default/files/DTA-AssociateDegreeGuidelines.pdf
+- **Quotes:**
+  - "Be issued only to students who have earned a cumulative college-level grade point average of at least 2.00 … Be based on 90 quarter hours of transferable credit"
+  - "A maximum of 15 credits may be in college-level courses as defined by the community college."
+  - Quoting RCW 28B.10.696: "A graduate who has earned the direct transfer associate of arts degree will be deemed to have met the lower division general education requirements of the receiving four-year institution of higher education."
+- **AID: Washington College Grant** (kind `need_waiver`). CONFIRMED.
+  - 2026-27: full award (free public tuition) at income ≤ $83,500 for a family of 4. Partial awards up to $139,500.
+  - Community-college full award is $5,095.
+  - Only the column-A full award equals a tuition waiver. Partial tiers must not be subtracted as full.
+  - URL: https://wsac.wa.gov/wcg-awards
+
+## WV: West Virginia
+
+- **Current claim:** Core Coursework Transfer Agreement. ≤ 35 sem general-studies hours transfer by area, not as direct equivalents.
+- **Verdict:** CONFIRMED.
+  - Optional additions from the same rule:
+    - 60–72 hours are transferable.
+    - Associate graduates "shall generally … have junior level status".
+    - 70% learning-objective equivalence standard.
+- **Confidence achievable:** `statute` (W. Va. Code R. § 133-17-3 text read on Cornell LII). The current source_url (wvhepc.edu home page) is too generic.
+- **source_url:** https://www.law.cornell.edu/regulations/west-virginia/W-Va-C-S-R-SS-133-17-3
+  - Official alternative: WV SOS CSR 133-17.
+- **Quote:** "Under the terms of the agreement, a student may transfer up to thirty five credit hours of undergraduate coursework in the areas of English composition, communications and literature, fine arts appreciation, mathematics, natural science, and social science as general studies credits."
+- **AID: WV Invests** (kind `field_restricted`). CONFIRMED.
+  - Last-dollar tuition and mandatory fees for certificate or associate programs "in specific high-demand fields".
+  - URL: https://www.cfwv.com/financial-aid/wv-invests-grant/
+
+## WI: Wisconsin
+
+- **Current claim:** UCTA, the "72-Credit Transfer Rule". Array of ≥ 72 sem credits of core GE (not 30). Covers UW and WTCS. Tribal and private colleges may opt in. No agreement may limit transfer inside UW.
+- **Verdict:** CONFIRMED. Every element is in the statute text.
+- **Confidence achievable:** `statute` (Wis. Stat. § 36.31(2m) read on docs.legis.wisconsin.gov).
+- **source_url:** https://docs.legis.wisconsin.gov/document/statutes/36.31(2m)(b)
+- **Quotes:**
+  - "(b) … enter into and implement an agreement that identifies an array of not less than 72 credits of core general education courses and establishes policies for ensuring that, beginning in the 2022-23 academic year, credits for completing the courses are transferable and would satisfy general education requirements"
+  - "(d) … no agreement under this subsection may limit the transfer of credits for core general education courses between institutions within the system."
+- **AID: UW Wisconsin Tuition Promise, 2026-27 status.** UNVERIFIABLE.
+  - wisconsin.edu (/tuition-promise/ and /promise/) timed out or was unreachable.
+  - Secondary sources conflict:
+    - A Journal Sentinel article (Oct 2025) said it was "unclear if the program will be renewed for fall 2026".
+    - A JS search snippet (Aug 2026) mentions a return "funded by Ascendium … through 2029". The article was paywalled.
+  - UW-River Falls launched its own donor-funded "Falcon Tuition Promise" (Jan 8, 2026): first-year WI residents, income ≤ $62,000, net worth ≤ $300,000. That suggests campus-level programmes.
+  - Either way it is a UW four-year, first-year programme, not a community-college fee waiver. Keep **no** `fee_waiver` for WI.
+  - URL read: https://www.uwrf.edu/newsroom/2026/01/uw-river-falls-announces-falcon-tuition-promise
+
+## WY: Wyoming
+
+- **Current claim:** Statewide Common Course Numbering System + UW University Studies Program. No fixed block; AA/AS aligns to lower-division USP. CCNS courses transfer with identical equivalency (70% content rule). Authority: 057-4 Wyo. Code R. § 4-4.
+- **Verdict:** CORRECTED.
+  - § 4-4 only says Commission staff coordinate course numbering "consistent with the numbering system agreed to by the University of Wyoming and the community colleges". It does not contain the 70% rule or any AA → USP guarantee.
+  - The 70% rule and the AA/USP effect come from UW pages.
+  - UW says a qualifying associate degree satisfies **"most"** lower-division USP requirements, not all.
+  - Corrected sentence: "Statewide Common Course Numbering (UW + 7 community colleges; equivalence at ≥ 70% shared content and outcomes). Most Wyoming CC courses transfer with the same UW equivalency and USP credit; a qualifying associate degree satisfies most lower-division USP requirements. No fixed GE block."
+- **Confidence achievable:** `published` (UW Admissions and UW Registrar pages read; § 4-4 read on LII).
+- **source_url:** https://www.uwyo.edu/admissions/transfer/transferring-credits.html
+  - 70% rule: https://www.uwyo.edu/registrar/faculty-and-staff/ccns.html
+  - Rule: https://www.law.cornell.edu/regulations/wyoming/057-4-Wyo-Code-R-SS-4-4
+- **Quotes:**
+  - "Students who complete a qualifying Associate Degree satisfy most lower-division University Studies Program (USP) general education requirements at UW."
+  - "it must contain at tleast 70% similar content and learning outcomes" (sic)
+- **AID: Hathaway** (kind `merit`). CONFIRMED.
+  - Merit: curriculum, test score and GPA. Must start within 4 years of HS.
+  - Amounts were raised for fall 2026 (law signed Feb 27, 2026).
+  - URL: https://www.uwyo.edu/sfa/scholarships/hathaway/index.html
+  - "Wyoming's Tomorrow" was not opened.
+
+---
+
+### Not checked (out of time; all are show-only kinds or dual-enrolment notes)
+
+- Nevada Promise, SC Lottery Tuition Assistance / SC WINS, SD Build Dakota / Freedom, MO Fast Track, TN Reconnect, RI Hope (RIC), VT Free Degree Promise, WY Wyoming's Tomorrow.
+- Every `dual_enrollment` AID entry.

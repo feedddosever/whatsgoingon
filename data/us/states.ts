@@ -506,6 +506,7 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
     authority:
       'RSMo §§ 178.785–178.789; 6 CSR 10-3.020',
     source_url: 'https://dhewd.mo.gov/higher-education/academic-affairs/core-42',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://dhewd.mo.gov/higher-education/academic-affairs/core-42' },
     unit_system: 'semester',
     grade: 'A',
   },
@@ -535,19 +536,22 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
       'tribal colleges.',
     authority:
       'BoR Policy 301.10; 301.5.3; 301.5.5 (common numbering)',
-    source_url: '',
+    source_url: 'https://www.mus.edu/borpol/bor300/301-10.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.mus.edu/borpol/bor300/301-10.pdf' },
     unit_system: 'semester',
     grade: 'A−',
   },
   NC: {
     programme: 'Comprehensive Articulation Agreement — UGETC',
     guarantee:
-      'Comprehensive Articulation Agreement — UGETC. UGETC ≥ 30 within a 60–61 sem AA/AS. C ' +
-      'or better each course; 2.0 GPA; completed AA/AS → junior status; TAAP guarantees one ' +
-      'of 16 campuses, not a named one.',
+      'Comprehensive Articulation Agreement (revised, effective Spring 2026). UGETC ≥ 30 ' +
+      'within a 60–61 sem AA/AS. C− or better per course; AA/AS + 2.0 GPA gives a General ' +
+      'Education Waiver at any UNC campus that admits the student, and TAAP assured admission ' +
+      'to one of the 16 UNC institutions (not a specific campus, program or major).',
     authority:
-      'S.L. 2013-72; CAA (2014 rev.); Transfer Course List 2026.1',
-    source_url: 'https://www.nccommunitycolleges.edu/students/enrollment-and-registration/university-transfer/articulation-agreements/comprehensive-articulation-agreement/',
+      'Comprehensive Articulation Agreement (revised, effective Spring 2026)',
+    source_url: 'https://wordpress.nccommunitycolleges.edu/wp-content/uploads/2025/10/2025-CAA-Final_Oct-2025.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://wordpress.nccommunitycolleges.edu/wp-content/uploads/2025/10/2025-CAA-Final_Oct-2025.pdf' },
     unit_system: 'semester',
     grade: 'A',
   },
@@ -558,42 +562,53 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
       'codes). Completed lower-division GE or AA/AS = GE-complete at any signatory; NDUS + 5 ' +
       'tribal colleges + 1 private.',
     authority:
-      'SBHE Policy 403.7; Procedure 403.7.1',
-    source_url: '',
+      'SBHE Policy 460; NDUS Procedure 460.1',
+    source_url: 'https://s3.cdn.ndus.edu/ndus-web/media/GERTA-Guide-2026-1.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://s3.cdn.ndus.edu/ndus-web/media/GERTA-Guide-2026-1.pdf' },
     unit_system: 'semester',
     grade: 'A−',
   },
   NE: {
-    programme: 'none statutory — Nebraska Transfer Initiative',
+    programme: 'Nebraska Transfer Initiative (voluntary)',
     guarantee:
-      'No statewide general-education transfer instrument. per agreement',
+      'No statutory instrument. The voluntary Nebraska Transfer Initiative (signed 1995, ' +
+      'revised 2013) has signatories accept a 30-hour AA general-education common core (the ' +
+      'attachment lists 34 hours), passed with C or above, for direct application to degree ' +
+      'requirements. Receivers may still require institution-wide GE outside the core. No ' +
+      'admission guarantee.',
     authority:
-      'signed inter-institutional agreement',
-    source_url: '',
+      'Nebraska Transfer Initiative (voluntary, 1995, revised 2013)',
+    source_url: 'https://neb-cc.statewidecourses.org/docs/NebraskaTransferInitiativeDocument.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://neb-cc.statewidecourses.org/docs/NebraskaTransferInitiativeDocument.pdf' },
     unit_system: 'semester',
-    exists: false,
     grade: 'A price · C rest',
   },
   NH: {
-    programme: 'none — NH Transfer + dual admission',
+    programme: 'New Hampshire Transfer Guarantee (voluntary)',
     guarantee:
-      'No statewide general-education transfer instrument exists.',
+      'New Hampshire Transfer Guarantee (NEBHE/CCSNH memorandum of agreement, January 2024). ' +
+      'A CCSNH associate degree plus a GPA of 2.0, 2.5 or 3.0 (set by each receiver) gives ' +
+      'guaranteed admission, a waived application fee and transfer of associate-degree ' +
+      'credits at participating four-year colleges, subject to capacity in the major. Block ' +
+      'transfer of the 34-credit CCSNH GE core is optional per institution; receivers that ' +
+      'take it may require at most 12 more GE credits. No statutory GE instrument.',
     authority:
-      '—',
-    source_url: '',
+      'NEBHE/CCSNH New Hampshire Transfer Guarantee memorandum of agreement (January 2024)',
+    source_url: 'https://www.ccsnh.edu/transfer-guarantee-search/',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.ccsnh.edu/transfer-guarantee-search/' },
     unit_system: 'semester',
-    exists: false,
     grade: 'B',
   },
   NJ: {
     programme: 'Comprehensive State-Wide Transfer Agreement',
     guarantee:
-      'Comprehensive State-Wide Transfer Agreement (Lampitt Law). 60–64 sem block (AA 45 / AS ' +
-      '30 GE, recalled). AA/AS transfers whole as the first half of the bachelor\'s; AAS/AFA ' +
-      'generally excluded.',
+      'Comprehensive State-Wide Transfer Agreement (Lampitt Law). A 60–64 sem AA or AS ' +
+      '(general education: AA 45, AS 30) transfers whole as the first half of the bachelor\'s; ' +
+      'AAS and AFA are generally excluded.',
     authority:
       'N.J.S.A. 18A:62-46 et seq.',
-    source_url: '',
+    source_url: 'https://www.state.nj.us/highereducation/PDFs/XferAgreementOct08.pdf',
+    verified: { confidence: 'statute', as_of: '2026-10-01', source_url: 'https://www.state.nj.us/highereducation/PDFs/XferAgreementOct08.pdf' },
     unit_system: 'semester',
     grade: 'A− statute · C rest',
   },
@@ -606,18 +621,20 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
     authority:
       'NMSA 1978 ch. 21; NMAC 5.55.6 (GE), 5.55.5 (common numbering), 5.55.7 (transfer ' +
       'modules)',
-    source_url: '',
+    source_url: 'https://www.law.cornell.edu/regulations/new-mexico/N-M-Admin-Code-SS-5.55.6.10',
+    verified: { confidence: 'statute', as_of: '2026-10-01', source_url: 'https://www.law.cornell.edu/regulations/new-mexico/N-M-Admin-Code-SS-5.55.6.10' },
     unit_system: 'semester',
     grade: 'A−',
   },
   NV: {
     programme: 'NSHE transfer rules — AA/AS/AB satisfies lower-division GE',
     guarantee:
-      'NSHE transfer rules — AA/AS/AB satisfies lower-division GE. AA/AS block. includes ' +
-      'statutory US/Nevada constitutions requirement (NRS 396.500, recalled).',
+      'NSHE transfer rules — an AA, AS or AB from an NSHE institution satisfies ' +
+      'lower-division general education as a block, and includes the statutory U.S. and ' +
+      'Nevada constitutions requirement.',
     authority:
-      'NSHE Board of Regents Handbook Title 4 ch. 14 (recalled)',
-    source_url: '',
+      'NSHE Board of Regents Handbook Title 4 ch. 14 § 16.1a; constitutions requirement § 20(2)',
+    source_url: 'https://nshe.nevada.edu/regents/policies/',
     unit_system: 'semester',
     grade: 'A price · C rest',
   },
@@ -639,11 +656,14 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
   OH: {
     programme: 'Ohio Transfer 36',
     guarantee:
-      'Ohio Transfer 36. 36–40 sem. Ohio Guaranteed Transfer Pathways: associate → junior ' +
-      'standing.',
+      'Ohio Transfer 36. 36–40 sem. A completed OT36, or an AA/AS containing an identifiable ' +
+      'OT36, meets the receiving institution\'s OT36 requirements; individual approved courses ' +
+      'also transfer. Ohio Guaranteed Transfer Pathways apply an associate degree to a ' +
+      'bachelor\'s in an equivalent field.',
     authority:
       'ORC § 3333.16 ff.; Ohio Articulation & Transfer Policy (July 2025)',
-    source_url: 'https://transfercredit.ohio.gov/initiatives-upd/ohio-transfer-36',
+    source_url: 'https://transfercredit.ohio.gov/educational-partners/educational-partner-initiatives/articulation-transfer-policy-policy/articulation-transfer-policy-policy',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://transfercredit.ohio.gov/educational-partners/educational-partner-initiatives/articulation-transfer-policy-policy/articulation-transfer-policy-policy' },
     unit_system: 'semester',
     grade: 'A',
   },
@@ -653,8 +673,9 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
       'State Regents GE minimum + AA/AS transfer guarantee. 37 sem minimum. AA/AS from a ' +
       'state-system college satisfies all lower-division GE at any state-system university.',
     authority:
-      'OSRHE Academic Affairs Policy ch. 3 (rev. 2025-09-04), §§ 3.11, 3.15; 70 O.S. § 3206.1',
-    source_url: '',
+      'OSRHE Academic Affairs Policy ch. 3 § 3.11.2.D (as of 2025-09-04); 70 O.S. § 3206.1',
+    source_url: 'https://okhighered.org/wp-content/uploads/2025/09/Chapter-3-2025.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://okhighered.org/wp-content/uploads/2025/09/Chapter-3-2025.pdf' },
     unit_system: 'semester',
     grade: 'A−',
   },
@@ -667,6 +688,7 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
     authority:
       'SB 233 (2021); ORS 350.423–.429; HB 2998 (2017); OAR 715-025',
     source_url: 'https://www.oregon.gov/highered/about/transfer/pages/transfer-compass.aspx',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.oregon.gov/highered/about/transfer/pages/transfer-compass.aspx' },
     unit_system: 'quarter',
     grade: 'A',
   },
@@ -684,23 +706,26 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
   RI: {
     programme: 'Joint Admissions Agreement',
     guarantee:
-      'Joint Admissions Agreement (three institutions). ≥ 32 GE credits apply. 2.4 GPA ' +
-      'guaranteed admission; up to 30% tuition discount at 3.0+.',
+      'Joint Admissions Agreement (CCRI → RIC/URI). Enrol in JAA before earning 30 credits ' +
+      'and finish the AA within five years; ≥ 32 GE credits transfer, ≥ 60 total; a 2.4 GPA ' +
+      'guarantees admission. Tuition reduction (tuition only) at RIC is 10% at 3.0, 20% at ' +
+      '3.25 and 30% at 3.5+.',
     authority:
       'RIOPC policy S-12',
-    source_url: '',
+    source_url: 'https://riopc.edu/wp-content/uploads/2023/02/S12_jaapolicy.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://riopc.edu/wp-content/uploads/2023/02/S12_jaapolicy.pdf' },
     unit_system: 'semester',
     grade: 'A−/B',
   },
   SC: {
     programme: 'CHE Statewide Articulation Agreement — \'list of 86\' courses + Transfer Blocks',
     guarantee:
-      'CHE Statewide Articulation Agreement — \'list of 86\' courses + Transfer Blocks. course ' +
-      'list + blocks; AA/AS = ≥ 60 hrs and junior status. CHE audit: only 31 of the 86 code ' +
-      'as direct equivalents; a new statewide AA/AS GE agreement is being negotiated.',
+      'CHE Statewide Articulation Agreement — \'list of 86\' courses + Transfer Blocks. Course ' +
+      'list plus blocks; an AA/AS transfers at least 60 hours with junior status.',
     authority:
       'CHE Transfer Policy (May 2022); Proviso 117.152',
-    source_url: '',
+    source_url: 'https://che.sc.gov/sites/che/files/Documents/Meetings/2022/Commissioner%20Meetings/May/6.02.A.Transfer_Policy.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://che.sc.gov/sites/che/files/Documents/Meetings/2022/Commissioner%20Meetings/May/6.02.A.Transfer_Policy.pdf' },
     unit_system: 'semester',
     grade: 'A−/B',
   },
@@ -712,7 +737,8 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
       'campus = complete at all; technical colleges sit under a separate board.',
     authority:
       'SDBOR Policy 2.3.7; Guideline 2.3.7.A (since Fall 2017)',
-    source_url: '',
+    source_url: 'https://public.powerdms.com/SDRegents/documents/1761658',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://public.powerdms.com/SDRegents/documents/1761658' },
     unit_system: 'semester',
     grade: 'A−',
   },
@@ -723,55 +749,64 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
       'sem. Completed pathway = all lower-division GE and pre-major met.',
     authority:
       'T.C.A. § 49-7-202 (Complete College Tennessee Act, 2010)',
-    source_url: 'https://www.tntransferpathway.org/',
+    source_url: 'https://www.tn.gov/thec/for-institutions/articulation-and-transfer/tn-transfer-pathway.html',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.tn.gov/thec/for-institutions/articulation-and-transfer/tn-transfer-pathway.html' },
     unit_system: 'semester',
     grade: 'A−/B',
   },
   UT: {
     programme: 'USHE General Education',
     guarantee:
-      'USHE General Education. 30–39 sem (recalled). If the sender certifies an area ' +
-      'satisfied the receiver may not require more.',
+      'USHE General Education (Board Policy R470). 27–30 sem (12 core: written comm 6, ' +
+      'quantitative literacy 3, American Institutions 3; plus breadth). If the sending USHE ' +
+      'institution certifies a core or breadth area satisfied, the receiver may not require ' +
+      'more in that area. An AA/AS from a USHE institution meets GE at all USHE institutions ' +
+      '(R471 § 5.1.2).',
     authority:
-      'Board Policy R470; Utah Code Title 53H — § 53H-3-604 (common numbering), § 53H-3-702 ' +
-      '(prior learning); formerly 53B-16',
-    source_url: '',
+      'USHE Board Policies R470 (amended 2026-06-11) and R471',
+    source_url: 'https://public.powerdms.com/Uta7295/documents/1826311',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://public.powerdms.com/Uta7295/documents/1826311' },
     unit_system: 'semester',
     grade: 'A',
   },
   VA: {
     programme: 'Passport and Uniform Certificate of General Studies',
     guarantee:
-      'Passport and Uniform Certificate of General Studies. 16 / 30–32 sem. C or better; ' +
-      '3-year completion window; Guaranteed Admission Agreements set different GPA floors per ' +
-      'university.',
+      'Passport (15 cr by statute; VCCS offers 16) and the Uniform Certificate of General Studies (UCGS, 30 cr by statute; 30–32 at ' +
+      'VCCS). Each course transfers and satisfies a lower-division GE requirement at any ' +
+      'Virginia public institution, subject only to course-specific SCHEV waivers. Guaranteed ' +
+      'Admission Agreements set per-university GPA floors.',
     authority:
       'Code of Va. § 23.1-907',
-    source_url: 'https://www.transfervirginia.org/content/general-education-transfer-credit-agreementpassport-and-ucgs',
+    source_url: 'https://law.lis.virginia.gov/vacode/title23.1/chapter9/section23.1-907/',
+    verified: { confidence: 'statute', as_of: '2026-10-01', source_url: 'https://law.lis.virginia.gov/vacode/title23.1/chapter9/section23.1-907/' },
     unit_system: 'semester',
     grade: 'A',
   },
   VT: {
     programme: 'Vermont Transfer Guarantee',
     guarantee:
-      'Vermont Transfer Guarantee (CCV associate → partner colleges) + VSCS transfer policy. ' +
-      'CCV GE accepted as a block. CCV associate + GPA 2.0 / 2.5 / 3.0 by receiver — Vermont ' +
-      'State University 2.0, min C–; guaranteed admission, junior status, no application fee; ' +
-      'includes Champlain, Norwich, Saint Michael\'s.',
+      'Vermont Transfer Guarantee (CCV associate → partner colleges). A CCV associate plus ' +
+      'the GPA each partner sets (2.0, 2.5 or 3.0) gives guaranteed admission, junior status ' +
+      'and no application fee. Vermont State University asks a 2.0 and accepts C– courses, ' +
+      'and takes CCV general education as a block, as do Champlain and Norwich (which ask a ' +
+      'C); Saint Michael\'s does not list block acceptance.',
     authority:
       'VSCS Policy 108; CCV partnership agreements',
-    source_url: '',
+    source_url: 'https://ccv.edu/academics/transfer-from-ccv/vermont-transfer-guarantee/',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://ccv.edu/academics/transfer-from-ccv/vermont-transfer-guarantee/' },
     unit_system: 'semester',
     grade: 'A−',
   },
   WA: {
     programme: 'Direct Transfer Agreement',
     guarantee:
-      'Direct Transfer Agreement (DTA) associate. 90 QUARTER credits. 2.0 GPA (recalled); ≤ ' +
-      '15 quarter credits restricted electives.',
+      'Direct Transfer Agreement (DTA) associate. 90 QUARTER credits with a 2.0 GPA; no more ' +
+      'than 15 quarter credits of restricted electives.',
     authority:
-      'ICRC Handbook; RCW 28B.10.054',
-    source_url: 'https://www.sbctc.edu/colleges-staff/programs-services/transfer/direct-transfer-agreement.aspx',
+      'ICRC Handbook; RCW 28B.10.696',
+    source_url: 'https://wsac.wa.gov/sites/default/files/DTA-AssociateDegreeGuidelines.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://wsac.wa.gov/sites/default/files/DTA-AssociateDegreeGuidelines.pdf' },
     unit_system: 'quarter',
     grade: 'A',
   },
@@ -784,7 +819,8 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
     authority:
       'Wis. Stat. § 36.31(2m)(b) (revised 2019-11-21; in force from 2022-23); UW SYS 135; ' +
       'agreement revised Fall 2024',
-    source_url: '',
+    source_url: 'https://docs.legis.wisconsin.gov/document/statutes/36.31(2m)(b)',
+    verified: { confidence: 'statute', as_of: '2026-10-01', source_url: 'https://docs.legis.wisconsin.gov/document/statutes/36.31(2m)(b)' },
     unit_system: 'semester',
     grade: 'A',
   },
@@ -795,19 +831,22 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
       'not as direct equivalents.',
     authority:
       '133 CSR 17 / 135 CSR 17; W. Va. Code § 18B-14-2',
-    source_url: 'https://www.wvhepc.edu/',
+    source_url: 'https://www.law.cornell.edu/regulations/west-virginia/W-Va-C-S-R-SS-133-17-3',
+    verified: { confidence: 'statute', as_of: '2026-10-01', source_url: 'https://www.law.cornell.edu/regulations/west-virginia/W-Va-C-S-R-SS-133-17-3' },
     unit_system: 'semester',
     grade: 'A',
   },
   WY: {
     programme: 'Statewide Common Course Numbering System + UW University Studies Program',
     guarantee:
-      'Statewide Common Course Numbering System + UW University Studies Program. no fixed ' +
-      'block; AA/AS aligns to lower-division USP. CCNS courses transfer with identical ' +
-      'equivalency (70% content rule).',
+      'Statewide Common Course Numbering System (UW + 7 community colleges; equivalence at ≥ 70% ' +
+      'shared content and outcomes). Most Wyoming CC courses transfer with the same UW ' +
+      'equivalency and USP credit; a qualifying associate degree satisfies most ' +
+      'lower-division USP requirements. No fixed GE block.',
     authority:
       '057-4 Wyo. Code R. § 4-4',
-    source_url: '',
+    source_url: 'https://www.uwyo.edu/admissions/transfer/transferring-credits.html',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.uwyo.edu/admissions/transfer/transferring-credits.html' },
     unit_system: 'semester',
     grade: 'A−',
   },
@@ -984,9 +1023,10 @@ const AID: Partial<Record<StateCode,
   DE: {
     fee_waiver: {
       name: 'SEED and SEED+ (14 Del. C. ch. 34)',
-      kind: 'recent_grad',
+      kind: 'merit',
       note:
-        'SEED and SEED+ (14 Del. C. ch. 34).',
+        'SEED+ removed the age limit; the gate is now a 2.5 high-school GPA. Shown, never taken ' +
+        'off a price.',
         provenance: {
           source_url: '',
           as_of: '2026-09-20',
@@ -1081,9 +1121,11 @@ const AID: Partial<Record<StateCode,
   HI: {
     fee_waiver: {
       name: 'Hawaiʻi Promise',
-      kind: 'need_waiver',
+      kind: 'other',
       note:
-        'Hawaiʻi Promise.',
+        'Covers remaining community-college tuition for students with need who take at least 6 ' +
+        'credits and keep a 2.0, and is contingent on state funding. Gated, so it is shown and ' +
+        'never taken off a price.',
         provenance: {
           source_url: '',
           as_of: '2026-09-20',
@@ -1549,9 +1591,10 @@ const AID: Partial<Record<StateCode,
   MT: {
     fee_waiver: {
       name: 'American Indian tuition waiver',
-      kind: 'need_waiver',
+      kind: 'other',
       note:
-        'American Indian tuition waiver.',
+        'Tuition only, not fees, for enrolled tribal members who show financial need. Gated on ' +
+        'enrolment and need, so it is shown here and never taken off a price.',
         provenance: {
           source_url: '',
           as_of: '2026-09-20',
@@ -1792,10 +1835,11 @@ const AID: Partial<Record<StateCode,
   },
   OK: {
     fee_waiver: {
-      name: 'Oklahoma\'s Promise (enrol by grade 11)',
-      kind: 'need_waiver',
+      name: 'Oklahoma\'s Promise (apply in grades 8–12)',
+      kind: 'recent_grad',
       note:
-        'Oklahoma\'s Promise (enrol by grade 11).',
+        'Apply in grades 8 to 12, with household income limits of about $60,000–$80,000 by ' +
+        'family size. Gated, so it is shown and never taken off a price.',
         provenance: {
           source_url: '',
           as_of: '2026-09-20',
@@ -2003,9 +2047,10 @@ const AID: Partial<Record<StateCode,
   UT: {
     fee_waiver: {
       name: 'Utah Promise Grant',
-      kind: 'need_waiver',
+      kind: 'other',
       note:
-        'Utah Promise Grant.',
+        'The award depends on available state funding each year, so it cannot be counted on in ' +
+        'advance. Shown, never taken off a price.',
         provenance: {
           source_url: '',
           as_of: '2026-09-20',

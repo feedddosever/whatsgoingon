@@ -55,6 +55,7 @@ Under the repo's `VERIFICATION.md`, every row is still `needs_check` until a per
 | 22 | Study.com partnerships URL | 404 — live directory is `study.com/college/school/index.html` | pass 5 |
 | 23 | Idaho "effective catalogue year 2026-27"; NC "$1,323.25 system figure" (pass 3) | withdrawn — unsupported / one college's fees | — |
 | 24 | Statewide rows AL–MS assembled from search results | **read at source 2026-10-01**: 6 confirmed, 12 corrected, 2 partly, 3 unverifiable. Corrections include CT state-university GPA **2.0 not 2.5** and no "Section A/B"; HI AA from **any** accredited college meets UH GE; KY minimum **30** (33 is KCTCS's); MS authority **Policies 512 and 517** (no 521); MN source moved; AK and MI clauses dropped as unsupported | `data/research/VERIFIED-STATEWIDE.md` |
+| 26 | Statewide rows MO–WY assembled from search results | **read at source 2026-10-01**: 14 confirmed, 9 corrected. NE and NH **do** have voluntary statewide agreements; NC's revised CAA (Spring 2026) floor is **C−**; OH says nothing about junior standing; RI discount tiers **10/20/30% at 3.0/3.25/3.5**; UT GE **27–30**, not 30–39; VA Passport **15** and UCGS **30** by statute; WY's associate covers **most**, not all, GE. Aid: MT, OK, UT (and HI, DE from the A–M pass) are gated, now show-only | `data/research/VERIFIED-STATEWIDE.md` |
 | 25 | California exam rows (pass 1) | **A Levels clear no Cal-GETC area** (no A-Level table exists); IB English A clears 3B only; IB Visual Arts and Language B clear nothing; IB Math AI HL no credit at UC; CLEP College Composition **0 units** at CSU; AP Environmental Science **3** units; UC campus fees **$1,852** | Cal-GETC Standards v1.4; CSU PolicyStat 20781575; UCOP 2026-27 fees |
 
 ---
@@ -107,9 +108,9 @@ Under the repo's `VERIFICATION.md`, every row is still `needs_check` until a per
 | MS | 2 | IHL 30-hour core + IHL–MCCB Articulation Agreement (MATT) | IHL Board Policies 512, 521 | 30 sem (English comp 6 · algebra+ 3 · natural sci 6 · humanities & fine arts 9 · social/behavioral 6) | semester | A− |
 | MO | 2 | CORE 42 | RSMo §§ 178.785–178.789; 6 CSR 10-3.020 | 42 sem (Soc/Behavioral 9 · Written 6 · Oral 3 · Natural Sci 7 · Math 3 · Humanities & Fine Arts 9 · electives 5) | semester | A |
 | MT | 3→2 | MUS Transferable Core | BoR Policy 301.10; 301.5.3; 301.5.5 (common numbering) | 30 sem (natural sci 6 · social sci/history 6 · math 3 · communication 6 · humanities/fine arts 6 · cultural diversity 3) | semester | A− |
-| NE | 3 | none statutory — Nebraska Transfer Initiative | signed inter-institutional agreement | — | semester; Metropolitan CC (Omaha) on quarters | A price · C rest |
+| NE | 3 | Nebraska Transfer Initiative (voluntary signatory agreement) | signed inter-institutional agreement | — | semester; Metropolitan CC (Omaha) on quarters | A price · C rest |
 | NV | 3→2 | NSHE transfer rules — AA/AS/AB satisfies lower-division GE | NSHE Board of Regents Handbook Title 4 ch. 14 (recalled) | AA/AS block | semester | A price · C rest |
-| NH | 3 | none — NH Transfer + dual admission; no CCSNH–USNH merger | — | — | semester | B |
+| NH | 3 | New Hampshire Transfer Guarantee (voluntary, 2024) | — | — | semester | B |
 | NJ | 3→2 | Comprehensive State-Wide Transfer Agreement (Lampitt Law) | N.J.S.A. 18A:62-46 et seq. | 60–64 sem block (AA 45 / AS 30 GE, recalled) | semester | A− statute · C rest |
 | NM | 3→2 | New Mexico General Education Curriculum | NMSA 1978 ch. 21; NMAC 5.55.6 (GE), 5.55.5 (common numbering), 5.55.7 (transfer modules) | 31 sem = 22 fixed + 9 flexible (AAS 15) | semester | A− |
 | NY | 1 | SUNY General Education Framework + Transfer Paths; CUNY Pathways Common Core | SUNY BoT Res. 2021-48, amended by Res. 2024-64 (new students from Fall 2026); CUNY BoT (2011) | SUNY 30 sem in ≥ 7 of 10 areas (4 mandatory); CUNY 12 required + 18 flexible + 6–12 college option | semester | A− (SUNY) · B (CUNY) |
