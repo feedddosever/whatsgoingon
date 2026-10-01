@@ -1486,6 +1486,34 @@ test('Stony Brook and Binghamton take no CLEP general exam', () => {
   assert.ok(us.rules.some(r => r.institution_id === 'brooklyn-college' && r.credit_source_id === 'clep-humanities'));
 });
 
+test('New York: the campus charts we read override the system-wide mapping', () => {
+  // Verified 2026-10-01; see data/research/VERIFIED-NEW-YORK.md.
+  const rule = (inst: string, src: string) =>
+    us.rules.find(r => r.institution_id === inst && r.credit_source_id === src);
+  // No SUNY chart prints Communication for CLEP College Composition.
+  assert.deepEqual(rule('u-albany', 'clep-college-composition')?.satisfies_areas, []);
+  // Albany names a course for AP Biology only at a 5.
+  assert.equal(rule('u-albany', 'ap-biology')?.min_score, 5);
+  // City College: every CLEP exam but two is "Required Liberal Arts" — elective.
+  assert.deepEqual(rule('city-college-ny', 'clep-intro-psychology')?.satisfies_areas, []);
+  assert.deepEqual(rule('city-college-ny', 'clep-american-literature')?.satisfies_areas, ['ny-cuny-us']);
+  // City Tech takes no CLEP for math; York takes no CLEP general exam.
+  assert.equal(rule('city-tech', 'clep-college-algebra'), undefined);
+  assert.equal(rule('york-college-cuny', 'clep-humanities'), undefined);
+  // Residency is not 30 everywhere.
+  const residency = (id: string) => us.institutions.find(i => i.id === id)?.residency_min_units;
+  assert.equal(residency('binghamton'), 44);
+  assert.equal(residency('cuny-sps'), 15);
+});
+
+test('Pennsylvania: an elective-only chart row clears no area', () => {
+  const rule = (inst: string, src: string) =>
+    us.rules.find(r => r.institution_id === inst && r.credit_source_id === src);
+  assert.equal(rule('millersville', 'ap-psychology')?.min_score, 4);
+  assert.deepEqual(rule('commonwealth-u', 'ap-european-history')?.satisfies_areas, []);
+  assert.deepEqual(rule('iup', 'ap-european-history')?.satisfies_areas, ['pa-soc']);
+});
+
 test('Pennsylvania prices only the universities bound by its transfer framework', () => {
   // Penn State, Pitt and Temple accept a limited list of framework courses and
   // run their own general education. Pricing them against the six framework

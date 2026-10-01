@@ -11,8 +11,9 @@ const PA_CC_COST: Provenance = {
   confidence: 'needs_check',
   note:
     'Pennsylvania community colleges set their own rates, and the price depends on whether ' +
-    'your school district sponsors the college. For a sponsoring-district resident in 2026-27: ' +
-    'HACC $237 a credit with fees, Community College of Philadelphia $208. $220 is the middle. ' +
+    'your school district sponsors the college. For a sponsoring-district resident in 2026-27, ' +
+    'tuition plus mandatory fees runs from $167.50 a credit (Allegheny County) to about $237 ' +
+    '(HACC, Delaware County); the median of eight colleges is $219, so we use $220. ' +
     'Without a sponsoring district the rate is far higher — HACC charges $342.25.',
 };
 

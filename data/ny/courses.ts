@@ -11,14 +11,15 @@ import type { CreditSource, Provenance } from '../../src/types.ts';
  */
 
 const SUNY_CC_COST: Provenance = {
-  source_url: 'https://www.suny.edu/smarttrack/tuition-and-fees/',
+  source_url: 'https://www.sunyocc.edu/tuition',
   as_of: '2026-10-01',
   confidence: 'needs_check',
   note:
-    'SUNY community colleges set their own tuition. SUNY’s 2026-27 figure for a typical ' +
-    'community college is $5,690 a year for an in-state student — about $190 a credit over ' +
-    '30 credits — and SUNY Niagara, for one, charges $227 a credit part-time. Without a ' +
-    'certificate of residence from your county the rate is roughly doubled.',
+    'SUNY community colleges set their own tuition. For 2026-27 the part-time resident rate ' +
+    'runs $217 to $252 a credit (Erie $217, Monroe $223, Niagara $227, Onondaga $232, Nassau ' +
+    '$250, Suffolk $252); $230 is the middle of that. Full-time students pay less per credit ' +
+    '— SUNY’s typical figure is $5,690 a year. Fees are extra, and without a certificate of ' +
+    'residence from your county the rate is roughly doubled.',
 };
 
 const CUNY_CC_COST: Provenance = {
@@ -31,7 +32,7 @@ const CUNY_CC_COST: Provenance = {
     'rate by filing a Certificate of Residency.',
 };
 
-const SUNY_CC_PER_CREDIT = 190;
+const SUNY_CC_PER_CREDIT = 230;
 const CUNY_CC_PER_CREDIT = 210;
 
 const sunyCc = (id: string, name: string, credits = 3): CreditSource => ({

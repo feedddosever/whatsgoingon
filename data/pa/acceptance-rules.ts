@@ -28,10 +28,40 @@ const NO_STATE_STANDARD: Provenance = {
   ...PA_EXAM_MAPPING,
   source_url: 'https://www.iup.edu/orientation/placement-testing/equivalency-resources/clep-exam-equivalency-chart.html',
   note:
-    'The statewide standards set no minimum score for this exam, so a PASSHE university is not ' +
-    'obliged to take it. Indiana University of Pennsylvania does (CLEP Humanities counts as ' +
-    'ENGL 121 at 50); others may not. ' + PA_EXAM_MAPPING.note,
+    'The statewide standards set no minimum score for this exam. Every PASSHE chart we found ' +
+    'still takes it at 50, but at several — East Stroudsburg, PennWest, Commonwealth and ' +
+    'Kutztown — it is elective credit that fills no general-education area. Indiana ' +
+    'University of Pennsylvania counts it as ENGL 121. ' + PA_EXAM_MAPPING.note,
 };
+
+/**
+ * The statewide History standard says outright that a 3 on AP (or a 50 on CLEP)
+ * may be "a general elective at the survey level". Most charts still name a
+ * course; this note keeps the caveat on every History row.
+ */
+const HISTORY_MAPPING: Provenance = {
+  ...PA_EXAM_MAPPING,
+  source_url: 'https://collegetransfer.pa.gov/Portals/6/pafiles/pdf%27s/History%20-%20Credit%20for%20Prior%20Learning%20Standards_FINAL.pdf',
+  note:
+    'The statewide History standard lets a university treat the minimum score as a general ' +
+    'elective rather than a course in general education. Most PASSHE charts we read still ' +
+    'name a history course; Commonwealth gives a generic “History Transfer” credit for an ' +
+    'AP 3. ' + PA_EXAM_MAPPING.note,
+};
+
+const HISTORY = new Set(['ap-us-history', 'ap-european-history', 'clep-history-us-1']);
+
+/**
+ * Per-university charts that give a score only elective credit. Each entry is
+ * [university, exam, the score at which the chart names a course, or null for
+ * generic transfer credit at any score we model].
+ */
+const ELECTIVE_ONLY: ReadonlyArray<readonly [string, string, number | null]> = [
+  ['millersville', 'ap-psychology', 4],       // a 3 is "PSYC 1XX: Psychology elective"
+  ['commonwealth-u', 'ap-us-history', 4],     // a 3 is HIST 199 "History Transfer"
+  ['commonwealth-u', 'ap-european-history', null],
+  ['commonwealth-u', 'clep-american-literature', null], // ENGL 299 "English Transfer"
+];
 
 const PA_COURSE: Provenance = {
   source_url: 'https://www.passhe.edu/policies/documents/BOG_Policies/Policy%201999-01-A.pdf',
@@ -53,7 +83,7 @@ const EXAMS: ReadonlyArray<readonly [string, string, number, number]> = [
   ['ap-statistics', 'pa-math', 3, 3],
   ['ap-biology', 'pa-sci', 3, 3],
   ['ap-chemistry', 'pa-sci', 3, 3],
-  ['ap-physics-1', 'pa-sci', 3, 3],
+  ['ap-physics-1', 'pa-sci', 3, 4], // the statewide standard recommends a 4-credit course
   ['ap-psychology', 'pa-soc', 3, 3],
   ['ap-us-government', 'pa-soc', 3, 3],
   ['ap-us-history', 'pa-soc', 3, 3],
@@ -92,9 +122,13 @@ const COURSES: ReadonlyArray<readonly [string, string, number]> = [
 const rules: AcceptanceRule[] = [];
 for (const inst of pennsylvaniaInstitutions) {
   for (const [src, area, score, credits] of EXAMS) {
+    const override = ELECTIVE_ONLY.find(([u, e]) => u === inst.id && e === src);
     rules.push({
-      institution_id: inst.id, credit_source_id: src, min_score: score,
-      units_granted: credits, satisfies_areas: [area], provenance: PA_EXAM_MAPPING,
+      institution_id: inst.id, credit_source_id: src,
+      min_score: override?.[2] ?? score,
+      units_granted: credits,
+      satisfies_areas: override !== undefined && override[2] === null ? [] : [area],
+      provenance: HISTORY.has(src) ? HISTORY_MAPPING : PA_EXAM_MAPPING,
     });
   }
   rules.push({

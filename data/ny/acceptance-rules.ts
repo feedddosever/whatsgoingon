@@ -26,8 +26,9 @@ const SUNY_EXAM_MAPPING: Provenance = {
   note:
     'SUNY guarantees the credit (Policy 1300: AP 3+, CLEP subject exams) but not which SUNY ' +
     'GE area it fills — each campus decides, and the larger campuses often give an AP 3 ' +
-    'elective credit only. This mapping is the common case at a 4 or higher, not your ' +
-    'campus’s published chart. Check it before you skip a course.',
+    'elective credit only. This mapping is what the campus charts we read (Albany, New ' +
+    'Paltz, Geneseo) agree on at a 4 or higher, not your campus’s published chart. Check it ' +
+    'before you skip a course.',
 };
 
 const CUNY_EXAM_MAPPING: Provenance = {
@@ -37,8 +38,9 @@ const CUNY_EXAM_MAPPING: Provenance = {
   note:
     'CUNY guarantees the credit (Policy 1.21: AP 3+, CLEP 50+) but each college designates ' +
     'which Pathways area it fills, and Baruch gives an AP 3 elective credit only. This ' +
-    'mapping is the common case at a 4 or higher on AP, not your college’s designation. ' +
-    'Check it in CUNY’s transfer tool or with the registrar.',
+    'mapping is what the charts we read (City College, John Jay) support at a 4 or higher ' +
+    'on AP, not your college’s designation. Check it in CUNY’s transfer tool or with the ' +
+    'registrar.',
 };
 
 const SUNY_COURSE: Provenance = {
@@ -61,16 +63,35 @@ const CUNY_COURSE: Provenance = {
     'course your community college has designated for this Pathways area.',
 };
 
-/** CLEP's general exams, which two SUNY campuses we read refuse outright. */
+/** CLEP's general exams, which three campuses we read refuse outright. */
 const CLEP_GENERAL = new Set([
   'clep-college-composition', 'clep-humanities', 'clep-natural-sciences', 'clep-college-mathematics',
 ]);
-const REFUSES_CLEP_GENERAL = new Set(['stony-brook', 'binghamton']);
+const REFUSES_CLEP_GENERAL = new Set(['stony-brook', 'binghamton', 'york-college-cuny']);
+
+/** City Tech: "we do not accept CLEP for lab sciences or math courses". */
+const CITY_TECH_REFUSES = new Set([
+  'clep-college-algebra', 'clep-college-mathematics', 'clep-biology', 'clep-natural-sciences',
+]);
+
+/** Albany names a course for these only at a 5; a 3 or 4 is elective credit. */
+const ALBANY_NEEDS_5 = new Set(['ap-biology', 'ap-us-history', 'ap-european-history']);
+
+/**
+ * City College's CLEP chart prints a requirement designation for every exam, and
+ * only two of them reach Pathways; the rest are "Required Liberal Arts" — elective.
+ */
+const CCNY_CLEP: Readonly<Record<string, string>> = {
+  'clep-college-composition': 'ny-cuny-comp-1',
+  'clep-american-literature': 'ny-cuny-us',
+};
 
 /** [source, SUNY area, CUNY area, minimum score, credits]. Null = no area. */
 const EXAMS: ReadonlyArray<readonly [string, string | null, string | null, number, number]> = [
-  ['ap-english-lang', 'ny-suny-comm', 'ny-cuny-comp-1', 4, 3],
-  ['ap-english-lit', 'ny-suny-hum-arts', 'ny-cuny-comp-2', 4, 3],
+  // No SUNY chart we read prints a GE area for either AP English, and neither CUNY
+  // chart maps Literature to Composition II.
+  ['ap-english-lang', null, 'ny-cuny-comp-1', 4, 3],
+  ['ap-english-lit', null, null, 4, 3],
   ['ap-calculus-ab', 'ny-suny-math', 'ny-cuny-math', 4, 4],
   ['ap-calculus-bc', 'ny-suny-math', 'ny-cuny-math', 4, 4],
   ['ap-statistics', 'ny-suny-math', 'ny-cuny-math', 4, 3],
@@ -84,11 +105,12 @@ const EXAMS: ReadonlyArray<readonly [string, string | null, string | null, numbe
   ['ap-psychology', 'ny-suny-soc-us', 'ny-cuny-ind-soc', 4, 3],
   ['ap-macroeconomics', 'ny-suny-soc-us', 'ny-cuny-ind-soc', 4, 3],
   ['ap-microeconomics', 'ny-suny-soc-us', 'ny-cuny-ind-soc', 4, 3],
-  ['ap-human-geography', 'ny-suny-soc-us', 'ny-cuny-world', 4, 3],
+  ['ap-human-geography', 'ny-suny-soc-us', null, 4, 3], // elective at CCNY and John Jay
   ['ap-comparative-government', 'ny-suny-world', 'ny-cuny-world', 4, 3],
   ['ap-european-history', 'ny-suny-world', 'ny-cuny-world', 4, 3],
   ['ap-spanish', 'ny-suny-world', 'ny-cuny-world', 4, 3],
-  ['clep-college-composition', 'ny-suny-comm', 'ny-cuny-comp-1', 50, 3],
+  // Albany and New Paltz grant course credit but leave the GE column blank.
+  ['clep-college-composition', null, 'ny-cuny-comp-1', 50, 3],
   ['clep-college-algebra', 'ny-suny-math', 'ny-cuny-math', 50, 3],
   ['clep-college-mathematics', 'ny-suny-math', 'ny-cuny-math', 50, 3],
   ['clep-biology', 'ny-suny-nat', 'ny-cuny-lps', 50, 3],
@@ -132,10 +154,13 @@ for (const inst of newYorkInstitutions) {
   const isSuny = inst.system === 'SUNY';
   for (const [src, sunyArea, cunyArea, score, credits] of EXAMS) {
     // A refusal we can point at: no rule, and the campus's exam-policy note says why.
-    if (isSuny && REFUSES_CLEP_GENERAL.has(inst.id) && CLEP_GENERAL.has(src)) continue;
-    const area = isSuny ? sunyArea : cunyArea;
+    if (REFUSES_CLEP_GENERAL.has(inst.id) && CLEP_GENERAL.has(src)) continue;
+    if (inst.id === 'city-tech' && CITY_TECH_REFUSES.has(src)) continue;
+    let area = isSuny ? sunyArea : cunyArea;
+    if (inst.id === 'city-college-ny' && src.startsWith('clep-')) area = CCNY_CLEP[src] ?? null;
+    const min = inst.id === 'u-albany' && ALBANY_NEEDS_5.has(src) ? 5 : score;
     rules.push({
-      institution_id: inst.id, credit_source_id: src, min_score: score,
+      institution_id: inst.id, credit_source_id: src, min_score: min,
       units_granted: credits, satisfies_areas: area === null ? [] : [area],
       provenance: isSuny ? SUNY_EXAM_MAPPING : CUNY_EXAM_MAPPING,
     });
