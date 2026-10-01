@@ -2486,6 +2486,30 @@ const MAPPED: Partial<Record<StateCode, Jurisdiction>> = {
     dual_enrollment: FL_DUAL,
     third_party: THIRD_PARTY.FL,
   },
+  NY: {
+    code: 'NY',
+    name: 'New York',
+    // New York runs two frameworks; the SUNY one is the headline, and each CUNY
+    // campus plans against CUNY Pathways through its own system.
+    framework_id: 'suny-ge',
+    statewide_framework: 'yes',
+    transfer_guarantee:
+      'Two systems, two frameworks: the SUNY General Education Framework with SUNY Transfer Paths, and the CUNY Pathways Common Core. Graduate from a SUNY community college with an AA or AS and you are guaranteed a place at a SUNY four-year campus with junior standing in a parallel program — though not at the campus of your choice. Transfer to CUNY with an AA, AS or bachelor\u2019s from any accredited college and the CUNY Common Core counts as complete.',
+    transfer_provenance: {
+      source_url: 'https://www.suny.edu/attend/get-started/transfer-students/suny-transfer-policies/',
+      as_of: '2026-10-01',
+      confidence: 'published',
+      note:
+        'Authority: SUNY Board of Trustees Res. 2021-48, amended by Res. 2024-64; SUNY Policy 1007; ' +
+        'CUNY Board of Trustees Pathways resolution (2011). ' +
+        'Both are system policy rather than state statute. The SUNY guarantee is admission to A ' +
+        'SUNY four-year campus, not the one you want.',
+    },
+    // TAP is gated on income and field, so it is shown and never subtracted.
+    fee_waiver: AID.NY?.fee_waiver ?? null,
+    dual_enrollment: AID.NY?.dual_enrollment ?? null,
+    third_party: THIRD_PARTY.NY,
+  },
 };
 
 export const jurisdictions: Jurisdiction[] = (

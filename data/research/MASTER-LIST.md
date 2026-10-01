@@ -110,7 +110,7 @@ Under the repo's `VERIFICATION.md`, every row is still `needs_check` until a per
 | NH | 3 | none — NH Transfer + dual admission; no CCSNH–USNH merger | — | — | semester | B |
 | NJ | 3→2 | Comprehensive State-Wide Transfer Agreement (Lampitt Law) | N.J.S.A. 18A:62-46 et seq. | 60–64 sem block (AA 45 / AS 30 GE, recalled) | semester | A− statute · C rest |
 | NM | 3→2 | New Mexico General Education Curriculum | NMSA 1978 ch. 21; NMAC 5.55.6 (GE), 5.55.5 (common numbering), 5.55.7 (transfer modules) | 31 sem = 22 fixed + 9 flexible (AAS 15) | semester | A− |
-| NY | 2 | SUNY General Education Framework + Transfer Paths; CUNY Pathways Common Core | SUNY BoT Res. 2021-48, amended by Res. 2024-64 (new students from Fall 2026); CUNY BoT (2011) | SUNY 30 sem in ≥ 7 of 10 areas (4 mandatory); CUNY 12 required + 18 flexible + 6–12 college option | semester | A− (SUNY) · B (CUNY) |
+| NY | 1 | SUNY General Education Framework + Transfer Paths; CUNY Pathways Common Core | SUNY BoT Res. 2021-48, amended by Res. 2024-64 (new students from Fall 2026); CUNY BoT (2011) | SUNY 30 sem in ≥ 7 of 10 areas (4 mandatory); CUNY 12 required + 18 flexible + 6–12 college option | semester | A− (SUNY) · B (CUNY) |
 | NC | 2 | Comprehensive Articulation Agreement — UGETC | S.L. 2013-72; CAA (2014 rev.); Transfer Course List 2026.1 | UGETC ≥ 30 within a 60–61 sem AA/AS | semester | A |
 | ND | 3→2 | GERTA — General Education Requirements Transfer Agreement | SBHE Policy 403.7; Procedure 403.7.1 | ≥ 36 sem (ND: category codes) | semester | A− |
 | OH | 2 | Ohio Transfer 36 | ORC § 3333.16 ff.; Ohio Articulation & Transfer Policy (July 2025) | 36–40 sem | semester | A |

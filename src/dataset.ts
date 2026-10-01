@@ -30,6 +30,13 @@ import { floridaRules } from '../data/fl/acceptance-rules.ts';
 import { floridaTransferPolicies } from '../data/fl/transfer-policy.ts';
 import { floridaDegrees, floridaMajorPrep, floridaMajorPrepGaps } from '../data/fl/degree.ts';
 
+import { newYorkInstitutions } from '../data/ny/institutions.ts';
+import { sunyGeAreas, cunyPathwaysAreas } from '../data/ny/core.ts';
+import { sunyCcCourses, cunyCcCourses } from '../data/ny/courses.ts';
+import { newYorkRules } from '../data/ny/acceptance-rules.ts';
+import { newYorkTransferPolicies } from '../data/ny/transfer-policy.ts';
+import { newYorkDegrees } from '../data/ny/degree.ts';
+
 /**
  * The dataset, as typed modules rather than JSON: Metro and Node disagree about
  * JSON import syntax, and a typed module makes a malformed row a compile error
@@ -45,13 +52,13 @@ export const unitedStates: Dataset = {
   jurisdictions,
   frameworks,
   systems,
-  institutions: [...caInstitutions, ...texasInstitutions, ...floridaInstitutions],
-  areas: [...calGetcAreas, ...texasCoreAreas, ...floridaCoreAreas],
+  institutions: [...caInstitutions, ...texasInstitutions, ...floridaInstitutions, ...newYorkInstitutions],
+  areas: [...calGetcAreas, ...texasCoreAreas, ...floridaCoreAreas, ...sunyGeAreas, ...cunyPathwaysAreas],
   creditSources: [
     ...examSources, ...altCreditSources,
-    ...cccCourses, ...texasCourses, ...floridaCourses,
+    ...cccCourses, ...texasCourses, ...floridaCourses, ...sunyCcCourses, ...cunyCcCourses,
   ],
-  rules: [...caRules, ...texasRules, ...floridaRules],
+  rules: [...caRules, ...texasRules, ...floridaRules, ...newYorkRules],
 };
 
 /**
@@ -107,6 +114,7 @@ export function forState(ds: Dataset, state: StateCode): Dataset {
  */
 export const transferPolicies: TransferPolicy[] = [
   ...californiaTransferPolicies, ...texasTransferPolicies, ...floridaTransferPolicies,
+  ...newYorkTransferPolicies,
 ];
 
 export const transferPolicyFor = (system: SystemId): TransferPolicy | null =>
@@ -117,7 +125,9 @@ export const transferPolicyFor = (system: SystemId): TransferPolicy | null =>
  * each state publishes. Also outside the engine: read to the student on the
  * degree screen, never planned with.
  */
-export const systemDegrees: SystemDegree[] = [...californiaDegrees, ...texasDegrees, ...floridaDegrees];
+export const systemDegrees: SystemDegree[] = [
+  ...californiaDegrees, ...texasDegrees, ...floridaDegrees, ...newYorkDegrees,
+];
 export const majorPrep: MajorPrep[] = [...californiaMajorPrep, ...texasMajorPrep, ...floridaMajorPrep];
 export const majorPrepGaps: MajorPrepGap[] = [...texasMajorPrepGaps, ...floridaMajorPrepGaps];
 

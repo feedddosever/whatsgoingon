@@ -21,6 +21,24 @@ const CAL_GETC: Provenance = {
     'CLEP cannot be used to satisfy any Cal-GETC area.',
 };
 
+const SUNY_GE: Provenance = {
+  source_url: 'https://system.suny.edu/academic-affairs/academic-policies/general-education/suny-ge/',
+  as_of: '2026-10-01',
+  confidence: 'published',
+  note:
+    'SUNY Board of Trustees Resolution 2021-48 as amended by 2024-64. At least 30 credits of ' +
+    'SUNY GE in the first 60, across at least 7 of 10 knowledge areas, 4 of them required.',
+};
+
+const CUNY_PATHWAYS: Provenance = {
+  source_url: 'https://www.cuny.edu/about/administration/offices/undergraduate-studies/pathways/gened/',
+  as_of: '2026-10-01',
+  confidence: 'published',
+  note:
+    'CUNY Pathways Common Core, since fall 2013: 12 credits of Required Core and 18 of ' +
+    'Flexible Core, the same at every CUNY college.',
+};
+
 const TX_CORE: Provenance = {
   source_url: 'https://texas.public.law/statutes/tex._educ._code_section_61.822',
   as_of: '2026-09-19',
@@ -69,5 +87,24 @@ export const frameworks: GeFramework[] = [
     state: 'FL',
     total_units: 15,
     provenance: FL_CORE,
+  },
+  {
+    id: 'suny-ge',
+    name: 'SUNY GE',
+    full_name: 'SUNY General Education Framework',
+    state: 'NY',
+    // Seven areas priced at one 3-credit course each; SUNY's own figure is 30
+    // credits, the rest set by the campus. See data/ny/core.ts.
+    total_units: 21,
+    provenance: SUNY_GE,
+  },
+  {
+    id: 'cuny-pathways',
+    name: 'CUNY Pathways',
+    full_name: 'CUNY Pathways Common Core',
+    state: 'NY',
+    // 30 credits; the Flexible Core's sixth any-area course is not modelled.
+    total_units: 27,
+    provenance: CUNY_PATHWAYS,
   },
 ];

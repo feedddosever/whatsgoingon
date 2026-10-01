@@ -1435,3 +1435,46 @@ test('major prep names only real campuses, and never one twice', () => {
     assert.match(g.provenance.source_url, /^https?:\/\//);
   }
 });
+
+test('New York: SUNY and CUNY campuses each plan against their own framework', () => {
+  // One state, two frameworks. A Baruch student priced against SUNY GE would
+  // be told to take a "Diversity" course CUNY never asks for.
+  const stonyBrook = us.institutions.find(i => i.id === 'stony-brook');
+  const baruch = us.institutions.find(i => i.id === 'baruch');
+  assert.ok(stonyBrook && baruch);
+  assert.equal(frameworkFor(us, stonyBrook).id, 'suny-ge');
+  assert.equal(frameworkFor(us, baruch).id, 'cuny-pathways');
+  for (const r of us.rules.filter(x => x.institution_id === 'baruch')) {
+    for (const a of r.satisfies_areas) assert.match(a, /^ny-cuny-/, `${r.credit_source_id} reaches ${a}`);
+  }
+});
+
+test('New York: an exam mapping is never stronger than the campus chart we did not read', () => {
+  // SUNY 1300 and CUNY 1.21 guarantee the credit, not the requirement it fills.
+  // A course a system approved for an area is the published guarantee.
+  const ny = us.rules.filter(r => {
+    const inst = us.institutions.find(i => i.id === r.institution_id);
+    return inst !== undefined && (inst.system === 'SUNY' || inst.system === 'CUNY');
+  });
+  assert.ok(ny.length > 0);
+  for (const r of ny) {
+    const exam = /^(ap|clep)-/.test(r.credit_source_id);
+    assert.equal(
+      r.provenance.confidence, exam ? 'needs_check' : 'published',
+      `${r.institution_id} / ${r.credit_source_id}`,
+    );
+  }
+});
+
+test('Stony Brook and Binghamton take no CLEP general exam', () => {
+  // Both publish it. Brooklyn, which does take CLEP Humanities, keeps its row.
+  for (const id of ['stony-brook', 'binghamton']) {
+    for (const exam of ['clep-humanities', 'clep-college-composition']) {
+      assert.equal(
+        us.rules.some(r => r.institution_id === id && r.credit_source_id === exam), false,
+        `${id} was given a rule for ${exam}`,
+      );
+    }
+  }
+  assert.ok(us.rules.some(r => r.institution_id === 'brooklyn-college' && r.credit_source_id === 'clep-humanities'));
+});

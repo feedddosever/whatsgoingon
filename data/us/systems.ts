@@ -13,4 +13,6 @@ export const systems: System[] = [
   { id: 'CSU',       name: 'California State University',   short_name: 'CSU',    state: 'CA', framework_id: 'cal-getc' },
   { id: 'TX-PUBLIC', name: 'Texas public universities',     short_name: 'Texas public', state: 'TX', framework_id: 'tx-core' },
   { id: 'FL-SUS',    name: 'Florida State University System', short_name: 'Florida SUS', state: 'FL', framework_id: 'fl-core' },
+  { id: 'SUNY',      name: 'State University of New York',  short_name: 'SUNY',   state: 'NY', framework_id: 'suny-ge' },
+  { id: 'CUNY',      name: 'City University of New York',   short_name: 'CUNY',   state: 'NY', framework_id: 'cuny-pathways' },
 ];
