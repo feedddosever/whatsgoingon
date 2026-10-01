@@ -63,9 +63,9 @@ From a first-year at UT Austin with nothing banked:
 
 | | Do nothing | Cheapest route | Saving |
 |---|---|---|---|
-| UT Austin (Texas Core, 42 SCH) | $12,600 | $859 | **$11,741** |
+| UT Austin (Texas Core, 42 SCH) | $12,600 | $875 | **$11,725** |
 | UC Berkeley (Cal-GETC) | $17,825 | $969 | **$16,856** |
-| University of Florida (GE Core) | $2,505 | $475 | **$2,030** |
+| University of Florida (GE Core) | $2,505 | $487 | **$2,018** |
 
 Then the part that matters more than the saving: **every claim on screen carries
 its provenance** — a source URL, the date it was last read, and a confidence
@@ -248,7 +248,7 @@ One app can enter several. Enter these, in this order of expected return:
 | **Next Gen Award** | **Yes — the anchor** | Verifiable academic email on Devpost, public repo with a licence file (both already true), demo video. No store release needed. |
 | **RevenueCat Peace Prize** | **Yes** | Judged on impact / feasibility / **reach**. Lead with the three-state coverage and the statutory guarantees. Needs an in-window store release. |
 | **#BuildInPublic** | Yes, if you post | Judged on the journey you posted, not the app. Worth nothing without a posting history. |
-| **Design Award** | Yes | Judged on interface and interaction craft. The dark plan map and the amber provenance badges are the case; motion is the weak spot. |
+| **Design Award** | Yes | Judged on interface and interaction craft. The dark plan map, the amber provenance badges, the one-question-at-a-time onboarding and the salad-and-salt preparing animation are the case. |
 | **HAMM** (monetization) | No | A one-time $5-ish unlock aimed at parents will not out-monetize anything. Do not contort the product for it. |
 | **Grand Prize** | No | Judged on post-release growth numbers. Not manufacturable in the time left. Spend the hour on the video instead. |
 
