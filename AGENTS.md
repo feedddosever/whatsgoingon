@@ -86,10 +86,12 @@ framework whose areas we cannot enumerate would let the engine plan against an
 empty area list and call the result a complete plan. `engine.test.ts` asserts
 this; do not "fix" it by inventing a framework id.
 
-Everything in `STATEWIDE` is `needs_check`, because it was assembled from search
-results rather than read out of the statute. Promoting a row to `published` or
-`statute` means someone actually read the primary document — that is the whole
-distinction this project sells.
+`STATEWIDE` rows start as `needs_check`, because they were assembled from search
+results rather than read out of the statute. A row is promoted — through its
+`verified` field — only once the primary document has actually been read: that
+is the whole distinction this project sells. 41 of the 46 were promoted on
+2026-10-01 from source reads quoted in `data/research/VERIFIED-STATEWIDE.md`;
+the other five (DE, DC, HI, ID, NV) are still `needs_check`.
 
 ## Third-party credit and the two refusals
 
@@ -114,14 +116,22 @@ the statewide layer — all 51 jurisdictions with governing citations, guarantee
 conditions, pricing shape and a per-row grade (A = governing document opened and
 cross-checked, down to C = recalled). `data/us/states.ts` is generated from it.
 
-The grade is **not** a confidence level. Every row stays `needs_check` until a
-person opens the source; the grade says how much work that promotion is. Do not
+The grade is **not** a confidence level. A row stays `needs_check` until its
+source has been opened; the grade says how much work that promotion is. Do not
 promote a row because it is graded A — promote it because you read the statute.
 
-The master list also carries a corrections ledger, and it has already caught
-this repo shipping wrong data twice: Georgia's framework, and eleven Florida
-exam rows that claimed a core area they do not clear. Read § 1 and § 10 before
-trusting anything in `data/fl/`.
+The master list also carries a corrections ledger (rows 24–31 are the
+2026-10-01 verification pass, one per report). It has caught this repo shipping
+wrong data in both directions: Georgia's framework, eleven Florida exam rows
+that claimed a core area they do not clear — and Florida AP sciences priced at a
+score of 4 because "min. 4 credits" in § 10 was read as a score. Read § 1 and
+§ 10 before trusting anything in `data/fl/`.
+
+The per-state verification reports — `data/research/VERIFIED-CALIFORNIA.md`,
+`-TEXAS`, `-FLORIDA`, `-NEW-YORK`, `-PENNSYLVANIA`, `-NATIONAL` and
+`-STATEWIDE` — quote the source for every value they confirm or correct, and
+each ends with the items a person still has to check by hand. Read the one for
+a state before changing its data.
 
 ## The support address is an environment variable, once
 

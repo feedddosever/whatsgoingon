@@ -48,8 +48,8 @@ outright.
 
 The leverage is not the tuition — it is the **statewide guarantee**. Finish the
 Texas Core and the receiving university *must* substitute it. A Florida AA
-guarantees admission to a state university with junior standing. **46 of 51
-states have an instrument of some kind**, and no single campus page will tell
+guarantees admission to a state university with junior standing. **49 of 51
+jurisdictions have an instrument of some kind** (Delaware and DC do not), and no single campus page will tell
 you, because it is not any one campus's to give.
 
 **How it fails:** the guarantee has conditions that are prose and not arithmetic

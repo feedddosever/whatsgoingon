@@ -1,9 +1,9 @@
 # Privacy Policy
 
-**Last updated: 19 September 2026**
+**Last updated: 1 October 2026**
 
-Degree Route helps students plan how to clear California general-education
-requirements. This policy describes everything the app does with information.
+Degree Route helps students plan how to clear the general-education
+requirements of US public universities. This policy describes everything the app does with information.
 It is short because the app does very little.
 
 ## What stays on your device

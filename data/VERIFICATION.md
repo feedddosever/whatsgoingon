@@ -1,10 +1,32 @@
 # Dataset verification worklist
 
-**Every row in `data/ca/` is currently marked `unverified`.** They were seeded
-from model knowledge with a May 2026 cutoff, and this container's egress proxy
-blocks `assist.org`, `calstate.edu`, `universityofcalifornia.edu`,
-`clep.collegeboard.org` and `cccco.edu` — so none of it could be checked against
-a primary source here.
+## Status — 2026-10-01
+
+On 2026-10-01 every state's `needs_check` data was re-read against its primary
+sources — statutes, board and system policies, campus catalogs and equivalency
+charts — by an automated research pass that fetched each page and quoted it.
+The reports, with a URL and a verbatim quote per item, are
+`data/research/VERIFIED-*.md` (California, Texas, Florida, New York,
+Pennsylvania, national exams and providers, and the statewide layer). The
+corrections ledger in `data/research/MASTER-LIST.md` (rows 24–31) lists what
+changed.
+
+Rows were promoted to `published` or `statute` only where the page itself was
+read; anything seen only in a search snippet, behind a page that needs a
+browser, or contradicted by another page on the same site stays `needs_check`.
+Each report ends with the items a person still has to open by hand. Because
+the reading was automated, a human spot-check of the promoted rows is still
+worth doing before anyone treats this file's rule below as fully met.
+
+The sections below are the worklist as it was written, kept as a record. Where
+they describe a gap that has since closed, a note says so.
+
+---
+
+*Originally:* every row in `data/ca/` was seeded as `unverified`, from model
+knowledge with a May 2026 cutoff, because this container's egress proxy blocked
+`assist.org`, `calstate.edu`, `universityofcalifornia.edu`,
+`clep.collegeboard.org` and `cccco.edu`.
 
 The engine is built so this is **a data task, not a code task**. Fill in
 `as_of` and raise `confidence`, and the lowest-risk route lights up on its own.
@@ -47,6 +69,12 @@ plans a route *to* a four-year degree, and the CCC enrolment fee is statewide.
 | Texas | 35 public universities | Texas Core, 42 SCH | TEC 61.822: a completed core transfers as a block the receiving university **must** substitute | `needs_check` — Texas sets a statutory floor on the *score* but publishes no statewide exam-to-area table |
 | Florida | 12 (the whole SUS) | Florida GE Core, 15 SH within a 36 SH AA | 1007.23: an AA guarantees admission to *a* state university with junior standing | `needs_check` — the statewide table exists and is binding, but this environment cannot reach the PDF |
 
+> *Superseded 2026-10-01:* New York (SUNY, CUNY) and Pennsylvania (PASSHE)
+> were added, and Texas and Florida were read at source. Texas now has
+> per-campus exam charts for UT Austin, Texas A&M and Texas Tech, and Florida's
+> community-college course rows are `published` — so neither lowest-risk route
+> is empty any more. The paragraph below describes the state before that.
+
 The three states are not equally well served, and the dataset says so rather
 than levelling them up. **In Texas and Florida the lowest-risk route is empty**,
 and the app tells the student in plain words that there is nothing there it
@@ -61,8 +89,10 @@ states have a transferable lower-division core, and a pointer to go and ask.
 
 ### Two tiers, and the app never blurs them (added 2026-09-19)
 
-**Campus pricing** — California, Texas, Florida. 79 campuses, a requirement
-list, per-unit costs, acceptance rules. This is what can produce a number.
+**Campus pricing** — California, Texas, Florida, New York and Pennsylvania
+(119 universities as of 2026-10-01; 79 across the first three when this was
+written). A requirement list, per-unit costs, acceptance rules. This is what can
+produce a number.
 
 **The statewide layer** — 25 of 51 jurisdictions now carry their actual
 statewide transfer rule: Ohio Transfer 36, the Illinois Articulation Initiative,
@@ -71,8 +101,14 @@ gtPathways and the rest. A statewide guarantee applies to every public campus in
 the state at once, it is usually the single most valuable thing a student can be
 told, and — unlike per-campus tuition — it is one fact rather than four hundred.
 
-Every row in that layer is `needs_check`: assembled from search results rather
-than read out of the statute, the board policy or the agreement itself. The
+> *Superseded 2026-10-01:* the layer now covers all 46 states without campus
+> pricing; 41 rows were read at source and promoted (33 `published`, 8
+> `statute`), and 5 stay `needs_check` (DE, DC, HI, ID, NV). See
+> `data/research/VERIFIED-STATEWIDE.md`.
+
+When written, every row in that layer was `needs_check`: assembled from search
+results rather than read out of the statute, the board policy or the agreement
+itself. The
 difference between those two things is the entire product, so the note on each
 row says which it is. Confirming one is a matter of reading one document.
 
@@ -452,7 +488,8 @@ Two documents would move a whole state from `needs_check` to `published`, and
 neither is a research project:
 
 1. **Florida's credit-by-exam equivalencies list** (rule 6A-10.024, the August
-   2026 edition at `fldoe.org`). It is *one* table, it is binding on every
+   2026 edition at `fldoe.org`). *Done 2026-10-01 from the Board of Governors'
+   June 2026 copy; the adopted text is still unopened.* It is *one* table, it is binding on every
    public institution in the state, and reading it would confirm every AP and
    CLEP row in `data/fl/acceptance-rules.ts` at once. `fldoe.org` is blocked by
    this environment's egress proxy; it is not blocked from a laptop.
@@ -463,9 +500,9 @@ neither is a research project:
    `needs_check` until someone reads 35 registrar pages.
 
 Also unconfirmed out of state: the per-unit prices. Texas genuinely charges per
-semester credit hour, but designated tuition is set campus by campus ($213/SCH
-at Texas Tech, $230.11/SCH at UNT for 2025-26) and the dataset uses one
-statewide middle of $300. Florida's $167/credit is built by addition from UF's
+semester credit hour, but designated tuition is set campus by campus, and the
+dataset uses one statewide middle — $400/SCH since the 2026-10-01 check (it was
+$300). Florida's $167/credit is built by addition from UF's
 published components and deliberately **excludes** local activity, athletic and
 health fees, so it understates the baseline and therefore the saving.
 

@@ -1,25 +1,28 @@
 # Terms of Use
 
-**Last updated: 19 September 2026**
+**Last updated: 1 October 2026**
 
 ## What this app is
 
 Degree Route is a **planning tool**. It estimates what it might cost to clear
-California general-education (Cal-GETC) requirements through community-college
-courses and credit-by-exam, and shows what it could find to back each claim.
+the general-education requirements of US public universities — campus by campus
+in California, Texas, Florida, New York and Pennsylvania, and through each
+state's statewide transfer rule elsewhere — using community-college courses and
+credit-by-exam, and shows what it could find to back each claim.
 
 ## What this app is not
 
 **It is not academic advice, and it is not financial advice.** It is not
-affiliated with, endorsed by, or operated by the University of California, the
-California State University, any community college, the College Board, or any
-other institution.
+affiliated with, endorsed by, or operated by any university, university
+system, community college, state agency, the College Board, or any other
+institution.
 
 **Nothing here is a promise that any campus will award you credit.** Transfer
 and credit-by-exam policies are set by each institution, vary by campus and by
 major, and change between catalogue years. A policy page that was accurate when
-we read it may not be accurate today. Every row in the app carries the date it
-was last checked and how far we trust it, precisely because that matters.
+we read it may not be accurate today. Every row in the app shows how far we
+trust it, and the advisor packet prints the date each was last checked,
+precisely because that matters.
 
 **Confirm every item with the campus — in writing — before paying for an exam or
 a course.** The advisor packet exists for exactly that conversation. Acting on

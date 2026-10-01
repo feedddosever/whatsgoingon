@@ -1,5 +1,13 @@
 # A-slot caption variants (A/B)
 
+> **Status, 2026-10-01:** the posting window has closed. The figures in these
+> Reels are the app as it stood on the day each was drafted (Sept 19–29), and
+> several have moved since the 2026-10-01 data verification — UT Austin is now
+> $16,800 → $2,457 (not $12,600 → $859), UC Berkeley's baseline is $18,011 (not
+> $17,825), coverage is five priced states and 119 universities, and Texas's
+> lowest-risk route is no longer empty. Florida's $2,505 → $1,002 still holds.
+> Re-check any figure against `docs/DEVPOST.md` before reusing a Reel.
+
 Two captions per A-slot Reel, built on **different strategies rather than
 different wording**. If the two variants say the same thing in different words,
 the test tells you nothing.

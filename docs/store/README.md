@@ -53,6 +53,11 @@ amber — which is the thing about this app worth photographing.
 Regenerate: `npm run build:web && npm run serve:web`, then
 `node scripts/shots.mjs`.
 
+> These were captured on 2026-09-27, before the badges changed to "?" and
+> before the 2026-10-01 data verification, so they show dated "needs
+> confirming" badges and Texas figures that have since moved. Re-capture them
+> before using them in a listing.
+
 ## Marketing screenshots
 
 `docs/store/marketing/` holds six 1080×1920 images for a landing page, social
@@ -61,3 +66,14 @@ screen from the web build in a phone frame. They were captured on 2026-10-01
 from the dataset as it stood that day, so the figures in them (UC Berkeley's
 $17,042, the Florida plan) move when the data does — re-capture rather than
 edit them.
+
+## Thumbnail and link-preview card
+
+- `thumbnail-3x2.png` — 1500×1000, for Devpost and anywhere else that asks for
+  3:2. Headline, the logo, three figures from the 2026-10-01 dataset (UC
+  Berkeley $18,011 → $969, 51 states, a source on every claim) and a real
+  screen in a phone frame.
+- `og.png` — 1200×630 link-preview card, copied to `/og.png` by
+  `scripts/build-landing.mjs`. It still shows UT Austin "$12,600 → $859" from
+  before the 2026-10-01 corrections (now $16,800 → $2,457), and so does the
+  table on the landing page (`landing/index.html`). Both need re-rendering.

@@ -35,7 +35,7 @@ cannot drift between screens:
 - [x] In the footer of both printed packets.
 - [x] A separate notice on the paywall for school-age students.
 
-### 1.3 Privacy policy and terms — drafted, not yet published
+### 1.3 Privacy policy and terms — published
 - [x] `PRIVACY.md` — plans stay on the device, no accounts, no analytics, no
       advertising; what RevenueCat receives; the web-only warning that clearing
       site data destroys the only record of a purchase.
@@ -44,12 +44,10 @@ cannot drift between screens:
       took the payment.
 - [x] ~~**Both still need a real support email address**~~ Now ONE env var, `EXPO_PUBLIC_SUPPORT_EMAIL`, substituted into both at build time. Still unset — `npm run preflight` fails on it.
 - [x] ~~Host both at public URLs~~ `/privacy` and `/terms`, rendered from the Markdown by `scripts/build-landing.mjs`.
-- [ ] **CCC course articulations** — every `ccc-*` row is `needs_check`.
+- [ ] **CCC course articulations** — most `ccc-*` rows are `needs_check`
+      (only Communication Studies 1 is `published`).
       Articulation is institution-pair specific and lives on ASSIST; there is no
       shortcut. This is the largest remaining block of unconfirmed data.
-- [ ] **Residency minimums** (UC 24 / CSU 30) and the **70-unit transfer cap** —
-      unconfirmed, and deliberately carrying no source link because the
-      exam-policy page does not cover them.
 - [ ] **Per-unit tuition** — derived from annual figures. Neither UC nor CSU
       charges per unit, so the headline saving **overstates** for a student
       already enrolled full time. Either confirm a defensible figure or move to
@@ -59,12 +57,17 @@ cannot drift between screens:
       cannot tell a student whether they actually qualify. The *state* half is
       now right — a waiver-eligible Texan is no longer given a Californian
       discount — but the *student* half is still a yes/no question.
-- [ ] **Florida's credit-by-exam list: AP and CLEP audited, the rest not.** The August 2026 table corrected eleven rows (see VERIFICATION.md). IB, A Level, DSST and DLPT rows are still unaudited.
-- [ ] **Texas per-campus core lists and designated tuition.** The 42-hour block
-      transfer is statute and solid; which exam clears which component area is
-      set campus by campus, and designated tuition ranges from $213/SCH (Texas
-      Tech) to $230.11/SCH (UNT) against the $300 statewide middle the dataset
-      uses.
+- [ ] **Florida's credit-by-exam list: every row audited against the June 2026
+      copy** (2026-10-01, `data/research/VERIFIED-FLORIDA.md`). The adopted text
+      is a .docx on flrules.org that our tools could not open — open it by hand
+      before promoting any Florida exam row past `needs_check`.
+- [ ] **Texas per-campus charts beyond the big three.** UT Austin, Texas A&M and
+      Texas Tech have their own exam tables in the dataset; every other Texas
+      campus uses the common table. Tuition is a $400/SCH statewide middle.
+- [ ] **New York and Pennsylvania open items.** Oneonta's residency and
+      Oswego's two-year cap need a registrar answer; Queens residency (30 or 45);
+      several SUNY and CUNY per-exam charts sit in tools that need a browser.
+      Each report in `data/research/VERIFIED-*.md` ends with its list.
 - [ ] **AP US History / AP US Government have no California rule.** Added to the
       national exam list for Texas and Florida; a Californian student holding
       either is correctly told we have no record, which is very likely wrong.
@@ -87,26 +90,21 @@ cannot drift between screens:
 - [ ] **Out-of-state coursework cannot be entered** (`VERIFICATION.md` P2b). A
       student who studied in one state and is heading to another is told to
       retake requirements they may already hold. This got *more* pressing with
-      three states in the dataset, not less: the app can now show a student both
+      five states in the dataset, not less: the app can now show a student both
       states and still cannot connect them.
 - [ ] **No community colleges as destinations, in any state.** They are credit
       sources only. In Florida that is a real gap, because the Associate in Arts
       — not the university — is the thing the statutory guarantee attaches to.
-- [x] ~~**47 states and DC have no campuses and say nothing.**~~ 25 of 51 now
-      carry their real statewide transfer rule, and the picker offers all 51.
-      Campus-level pricing is still CA/TX/FL only, and the UI says so in those
-      words rather than implying coverage it does not have.
-- [ ] **The 25 statewide rules are all `needs_check`.** Each one is a single
-      document away from `statute` or `published`. Highest value per minute
-      after Florida's exam table: Ohio Transfer 36, Illinois IAI, Michigan MTA
-      and Missouri CORE 42 cover the largest student populations.
-- [ ] **26 jurisdictions still unconfirmed.** ECS counts at least 31 states with
-      a transferable core, so most of these have one we have not checked.
-- [ ] **No campuses outside CA/TX/FL.** They are in the dataset, and they
-      say honestly that we have not mapped them. Next most valuable by
-      enrolment: New York (SUNY/CUNY transfer policy), Illinois (IAI, a genuine
-      statewide articulation initiative), Georgia (USG core, Areas A-F),
-      North Carolina (CAA), Ohio (OTM, transfer-module guarantee).
+- [x] ~~**47 states and DC have no campuses and say nothing.**~~ Every
+      jurisdiction now carries its statewide transfer rule, or says it has none
+      (Delaware, DC). The picker offers all 51 and says full access to other
+      states is coming.
+- [ ] **5 of the 46 statewide rules are still `needs_check`** (DE, DC, HI, ID,
+      NV); the other 41 were read at source on 2026-10-01. Promote the rest the
+      same way — by reading the document, not by trusting the grade.
+- [ ] **Campus pricing is CA/TX/FL/NY/PA only.** Next most valuable by
+      enrolment: Illinois (IAI), Georgia (USG Core IMPACTS), North Carolina
+      (CAA), Ohio (Ohio Transfer 36).
 
 ## 4. Untested on real hardware
 
@@ -147,7 +145,8 @@ Run `npm run preflight` — it checks these rather than trusting this list.
 
 ## Deliberately not on this list
 
-**Expanding beyond California.** Cal-GETC is a statewide pattern created by
-AB 928; most states have no equivalent, so the engine's core assumption — one GE
-pattern, campuses varying only at the edges — would not hold. That is a redesign,
-not a data addition, and it should be a decision rather than a drift.
+**Pricing a campus against a framework it only partly uses.** Penn State, Pitt
+and Temple accept a limited list of Pennsylvania framework courses and run their
+own general education, so they are left out rather than priced against a
+requirement list their students do not follow. The same test applies to any
+future state.

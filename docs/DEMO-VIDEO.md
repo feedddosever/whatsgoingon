@@ -68,7 +68,7 @@ Florida**, tap **Price my route**. Land on the routes screen.
 
 **On screen:** Texas → UT Austin → Price my route. Hold on the hero:
 
-> **TAKE THE CHEAPEST ROUTE AND SAVE $11,741** — against $12,600
+> **TAKE THE CHEAPEST ROUTE AND SAVE $13,143** — against $16,800
 
 > **VO:** "Three ways there. Cheapest. Fastest. And lowest-risk — which is only
 > credit backed by statute or a published campus policy."
@@ -90,20 +90,20 @@ visibly change. **Do this live. Do not cut.** The re-price is the proof.
 > **VO:** "Now the bit I care about most. Every claim carries a source, a date,
 > and a confidence level."
 
-**On screen:** hold on the amber dashed badges: `Needs confirming · 2026-09-19`.
+**On screen:** hold on the amber dashed "?" badges — the rows we have not yet
+confirmed against a primary source.
 
-> **VO:** "In Texas, we don't have confirmed exam mappings. So watch what the
+> **VO:** "Anything we haven't confirmed wears a question mark. So watch what the
 > lowest-risk route does."
 
-**On screen:** back to routes, open the lowest-risk card. It is **empty**:
+**On screen:** back to routes, open the lowest-risk card. At UT Austin it clears
+**8 of the 14** Texas Core areas, using only credit UT Austin's own chart
+confirms, and prices the other six back in as courses.
 
-> We have not yet confirmed any credit for UT Austin against its own published
-> policy, so there is nothing here we would stake your money on.
-
-> **VO:** "It comes back empty, and says so. We could have made Texas look as
-> strong as California by relaxing one confidence level. A student who acts on a
-> wrong transfer-credit claim loses real money and a real semester — so the app
-> is allowed to say 'I don't know'."
+> **VO:** "It leaves requirements open rather than lean on a question mark. We
+> could have made it look complete by relaxing one confidence level. A student
+> who acts on a wrong transfer-credit claim loses real money and a real
+> semester — so the app is allowed to say 'I don't know'."
 
 > **VO:** "What we *can* promise in Texas is statute: finish the forty-two-hour
 > core anywhere in the state and the receiving university has to substitute it.
@@ -142,9 +142,9 @@ is charged — we never see your card."*
 
 ## Close — 1:55–2:00
 
-> **VO:** "Seventy-nine campuses, three states, and fifty-one states in the
-> dataset — including the forty-eight we haven't mapped, which say so. It's open
-> source. Link's below."
+> **VO:** "A hundred and nineteen universities in five states, and the
+> statewide transfer rule for every other state — including the two that have
+> none, which say so. It's open source. Link's below."
 
 **On screen:** the icon on the dark background, the repo URL, nothing else.
 
@@ -159,34 +159,34 @@ is charged — we never see your card."*
 - **One take per section, cut between.** A fumbled tap inside a section is
   cheaper to re-shoot than a 2-minute single take.
 - **Captions.** Judges scrub with sound off. Burn in the spoken numbers at
-  minimum — `$17,825 → $969`, `$2,505 → $1,002`, `$12,600 → $859`.
+  minimum — `$18,011 → $969`, `$2,505 → $1,002`, `$16,800 → $2,457`.
 - **Ignore** `ERR_TUNNEL_CONNECTION_FAILED` in the web console — that is
   RevenueCat's API blocked by the dev proxy, not the app. It will not appear in
   a screen recording, but do not open devtools on camera.
 
 ## Alternative 60-second cut
 
-If a category caps the length, keep **Cold open** → **The turn** → the empty
-lowest-risk route → the repo URL. Drop the plan map, the packet and the paywall.
+If a category caps the length, keep **Cold open** → **The turn** → the
+lowest-risk route leaving requirements open → the repo URL. Drop the plan map, the packet and the paywall.
 The contrast and the refusal-to-guess are the whole argument; everything else is
 supporting evidence.
 
 ## Verified
 
-The exact sequence above was driven through the built web bundle on 2026-09-19
-and produces these frames, unedited:
+The figures above were re-computed from the engine on **2026-10-01**, after the
+data verification pass, for the exact setup in this script (CLEP College
+Composition, College Algebra and Introductory Psychology held; no fee waiver):
 
 ```
---- COLD OPEN (UC Berkeley) ---
-against $17,825 — the Cal-GETC areas you have not cleared yet…
-UC Berkeley does not award credit for CLEP College Composition. You already hold it; it will not count here.
-UC Berkeley does not award credit for CLEP College Algebra. You already hold it; it will not count here.
-UC Berkeley does not award credit for CLEP Introductory Psychology. You already hold it; it will not count here.
-
---- THE TURN (U Florida, same 3 exams held) ---
-TAKE THE CHEAPEST ROUTE AND SAVE
-against $1,002 — the Florida GE Core areas you have not cleared yet…
+COLD OPEN  UC Berkeley        against $18,011 — none of the three CLEP exams counts
+THE TURN   U Florida          $2,505 → $1,002 — the same three clear 3 of 5 areas
+HERO       UT Austin          SAVE $13,143 against $16,800 (cheapest route $2,457)
+LOW RISK   UT Austin          clears 8 of 14 areas, 6 left as courses
 ```
+
+**The videos recorded before 2026-10-01 are out of date** on two lines: they
+say $17,825 for UC Berkeley and $12,600 / $859 for UT Austin, and they show
+Texas's lowest-risk route empty. Re-record those beats before re-cutting.
 
 The "same three exams" claim depends on one detail that is easy to break: the
 held-credit ticks survive changing state, because AP and CLEP ids are national

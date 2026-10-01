@@ -29,12 +29,12 @@ not a guarantee".
 
 | Provider | Price | Recommended by | Notes |
 |---|---|---|---|
-| **Sophia Learning** | $99 / month, unlimited courses (12-month plan ~$599) | ACE | No proctoring fee. A fast student clears several courses on one month's subscription. |
-| **Study.com** (College Saver) | $95 / month | **ACE and NCCRS** | The only dual-recommended row, which widens the set of colleges that may take it. Finals are open-book, unproctored, graded instantly. |
-| **StraighterLine** | ~$99 / month **plus** ~$79 per course | ACE | Priced differently — the arithmetic only works taking few courses slowly. Some finals proctored. Larger partner network. |
-| **Saylor Academy** | Free; ~$5 proctored final | ACE and NCCRS | Non-profit. The cheapest credit in the dataset by a wide margin. |
-| **TEEX** | Free | ACE | Texas A&M Engineering Extension Service, up to ~13 credits, unproctored. Genuinely free and genuinely narrow — fills gaps, not a degree. |
-| **Modern States** | Free | — | The odd one out and the best deal. Issues no credit itself: it gives a free prep course and a voucher covering the **CLEP exam fee**. The credit therefore arrives as CLEP on a College Board score report, judged by your college's CLEP policy rather than by any third-party transcript rule — so it works in places Sophia and Study.com do not. |
+| **Sophia Learning** | $99 / month, unlimited courses, **two at a time** | ACE (and DEAC) | No proctoring; assessments are open book. A fast student clears several courses on one month's subscription. 115+ partner schools. |
+| **Study.com** (College Saver) | $95 / month, two courses at a time | **ACE and NCCRS** | The only dual-recommended row, which widens the set of colleges that may take it. Finals are open-book and unproctored; 70% to pass. |
+| **StraighterLine** | $99 / month **plus** a course fee (typically $79, range $69–$249); or flat $699 for 4 months / $1,499 a year | ACE | No live proctoring: finals run in a lockdown browser, with Honorlock on quantitative finals. 180+ partner schools. |
+| **Saylor Academy** | Free; $5 per proctored exam attempt (up to 3) | ACE | Non-profit. The cheapest credit in the dataset by a wide margin. Its NCCRS membership ended in December 2023. |
+| **TEEX** | Free (DHS/FEMA-funded online courses) | ACE | Texas A&M Engineering Extension Service; over 100 TEEX courses are ACE-reviewed, many of them paid or in person. Genuinely free and genuinely narrow — fills gaps, not a degree. |
+| **Modern States** | Free | — | The odd one out and the best deal. Issues no credit itself: it gives a free prep course and a voucher covering the **CLEP exam fee and remote proctoring** (test-centre fees are reimbursed on request). The credit therefore arrives as CLEP on a College Board score report, judged by your college's CLEP policy rather than by any third-party transcript rule — so it works in places Sophia and Study.com do not. |
 
 Prices are mostly monthly subscriptions, so real cost depends on how fast the
 student works — something this app cannot know. Each row prices **one month**

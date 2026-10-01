@@ -68,19 +68,21 @@ closed-testing rule, which is what makes a late release feasible.
 | Navigation | None — plain state machine | Four linear screens; no router config to get wrong |
 | Theme | Dark only | |
 
-## The one thing still blocking a truthful headline number
+## What the data does not know yet
 
-`data/VERIFICATION.md` lists every unconfirmed row. The consequential ones:
+Do not answer this from memory: run `npm run gaps` (or read `data/GAPS.md`,
+which `npm run gaps:write` regenerates) for the per-state list, and see the
+verification reports in `data/research/VERIFIED-*.md` — each ends with the items
+a person has to check by hand. `data/VERIFICATION.md` explains the confidence
+levels.
 
-1. **Per-exam Cal-GETC mappings.** That AP counts toward Cal-GETC is confirmed.
-   *Which area each specific exam clears* is inferred, not read off the standard.
-   Until those are confirmed the **lowest-risk route is empty by design** — it
-   only draws on confirmed rows, and it says so rather than guessing.
-2. **Residency minimums and the 70-unit transfer cap.** Labelled
-   "needs confirming" with no source link, because linking the exam-policy page
-   would send a student somewhere that cannot answer them.
-3. **Per-unit tuition.** Derived from published annual figures. Neither UC nor
-   CSU charges per unit, so it is an estimate and the UI calls it one.
+The consequential ones, as of 2026-10-01:
 
-Confirming (1) is the highest-value hour of work available: it turns the
-lowest-risk route from empty into the app's most trustworthy screen.
+1. **Community-college course rows in California** are mostly `needs_check`:
+   articulation is per institution pair and lives on ASSIST. The lowest-risk
+   route at a UC therefore clears 8 of 10 Cal-GETC areas and prices the rest in.
+2. **Florida's exam table** was read from the June 2026 copy; the adopted text
+   has not been opened, so Florida's exam rows stay `needs_check`.
+3. **Per-unit tuition** in California is derived from published annual
+   figures. Neither UC nor CSU charges per unit, so it is an estimate and the UI
+   calls it one.
