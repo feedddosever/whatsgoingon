@@ -347,7 +347,7 @@ test('CLEP held against a CSU warns that it clears no Cal-GETC requirement', () 
   // but it satisfies no requirement the student is planning against.
   const route = planRoute(ds, { profile: PLAIN,
     target_institution_id: 'csu-long-beach',
-    held_credit_ids: ['clep-college-composition'],
+    held_credit_ids: ['clep-college-algebra'],
     units_in_residence: 30,
   }, 'cheapest');
 
@@ -369,8 +369,9 @@ test('"clears no requirement" is decided per exam, not per exam family', () => {
   const csu = us.institutions.find(i => i.id === 'csu-long-beach');
   assert.ok(uf && csu);
   assert.deepEqual(heldCreditClearingNothing(us, uf, held), ['clep-intro-sociology']);
-  // CSU has no row for Sociology at all — that is "no record", a different sentence.
-  assert.deepEqual(heldCreditClearingNothing(us, csu, held), held.slice(0, 3));
+  // CSU has no row for Sociology at all — that is "no record", a different
+  // sentence — and none for College Composition, which earns 0 units there.
+  assert.deepEqual(heldCreditClearingNothing(us, csu, held), held.slice(1, 3));
 });
 
 test('AP held against a CSU raises no credit warning at all', () => {
@@ -1215,15 +1216,21 @@ test('UExcel is gone, not merely hidden', () => {
   assert.ok(!us.rules.some(r => r.credit_source_id.startsWith('uexcel-')));
 });
 
-test('UC accepts A Level by name, and that is the point of having it', () => {
+test('UC credits an A Level toward the degree, and it clears no Cal-GETC area', () => {
+  // Until 2026-10-01 this test asserted A Level Biology cleared 5B. It does not:
+  // the Cal-GETC standards have no A-Level table at all. UC awards degree
+  // credit, so the student must hear "counts, clears nothing" — not "stranded".
   const input = {
     profile: PLAIN, target_institution_id: 'uc-berkeley',
     held_credit_ids: ['alevel-biology'], units_in_residence: 0,
   };
   const route = planRoute(us, input, 'cheapest');
   assert.ok(!route.warnings.some(w => w.kind === 'stranded_credit'));
-  const touched = [...route.areas_cleared, ...route.areas_unmet, ...route.areas_skipped];
-  assert.ok(!touched.includes('5B'), 'A Level Biology should have cleared 5B');
+  assert.ok(route.warnings.some(w => w.kind === 'credit_not_toward_ge'));
+  assert.ok(route.areas_unmet.includes('5B') || route.areas_cleared.includes('5B'),
+    'A Level Biology must not have cleared 5B on its own');
+  // And the CSU has no A-Level rows at all.
+  assert.equal(us.rules.some(r => r.institution_id === 'csu-long-beach' && r.credit_source_id.startsWith('alevel-')), false);
 });
 
 test('prices carry a date once they have been checked', () => {

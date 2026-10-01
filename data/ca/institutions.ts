@@ -5,15 +5,15 @@ import type { Institution, Provenance } from '../../src/types.ts';
  *
  *   CSU 2026-27: $6,838 systemwide tuition + ~$2,194 average campus fees
  *                = ~$9,032/yr ÷ 30 units = ~$301/unit
- *   UC  2026-27: $15,588 systemwide tuition and fees + ~$1,650 campus-based fees
- *                = ~$17,238/yr ÷ 30 units = ~$575/unit
+ *   UC  2026-27: $15,588 systemwide tuition and fees + ~$1,852 average campus fees
+ *                = ~$17,440/yr ÷ 30 units = ~$581/unit
  *
  * Neither system actually charges per unit — both charge tiered flat rates, so a
  * full-time student pays the same for 12 units as for 18. Dividing by 30 is
  * closest to true for a student adding a term's worth of GE and OVERSTATES the
  * saving for someone already enrolled full time. See data/VERIFICATION.md 8a.
  */
-const UC_PER_UNIT = 575;
+const UC_PER_UNIT = 581;
 const CSU_PER_UNIT = 301;
 
 /** Confirmed 2026-09-18. Covers exam policy ONLY — not residency, not caps. */
@@ -23,20 +23,22 @@ const UC_EXAM_POLICY: Provenance = {
   as_of: '2026-09-18',
   confidence: 'published',
   note:
-    'UC accepts only AP, IB and A-Level exams \u2014 and for general-education credit an '
-    + 'A Level must be Cambridge International, taken 2013 or later. It awards no credit '
-    + 'for CLEP, DSST or DLPT, and ' +
+    'UC accepts only AP, IB and A-Level exams. A-Levels earn degree credit (grades A\u2013C) ' +
+    'but appear nowhere in the Cal-GETC standards, so they clear no general-education area. ' +
+    'It awards no credit for CLEP, DSST or DLPT, and ' +
     'does not honour credit posted to a third-party transcript (Sophia, Study.com, ' +
     'StraighterLine, Saylor). Build a UC plan on AP/IB only.',
 };
 
 const CSU_EXAM_POLICY: Provenance = {
-  source_url: 'https://www.calstate.edu/apply/transfer/Pages/credit-by-exam.aspx',
-  as_of: '2026-09-18',
+  source_url: 'https://calstate.policystat.com/policy/20781575/latest/',
+  as_of: '2026-10-01',
   confidence: 'published',
   note:
-    'CSU accepts CLEP toward a degree, capped at 30 units, but CLEP cannot satisfy ' +
-    'Cal-GETC. AP is not counted in that cap, so AP and CLEP can stack.',
+    'CSU\u2019s systemwide external-exam chart (effective 25 June 2026): most CLEP exams earn ' +
+    'units toward a CSU degree, capped at 30 units, but CLEP cannot satisfy Cal-GETC. Some ' +
+    'earn nothing at all \u2014 College Composition and College Mathematics among them. AP ' +
+    'and IB are outside the 30-unit cap.',
 };
 
 /**
@@ -91,23 +93,26 @@ const CSU_TRANSFER_CAP: Provenance = {
  * term's worth of GE and overstates the saving for someone already full-time.
  */
 const UC_COST: Provenance = {
-  source_url: 'https://lao.ca.gov/Publications/Report/2026-27-budget-university-of-california',
-  as_of: '2026-09-18',
+  source_url: 'https://www.ucop.edu/operating-budget/_files/fees/202627/2026-27.pdf',
+  as_of: '2026-10-01',
   confidence: 'needs_check',
   note:
-    'Derived from $15,588 systemwide tuition and fees plus ~$1,650 campus-based fees, ' +
-    'divided by 30 units. UC charges a tiered flat rate, not per unit, so treat this as ' +
-    'an estimate rather than a price.',
+    'Derived: $15,588 systemwide tuition and Student Services Fee for a 2026-27 entering ' +
+    'resident (UC Office of the President), plus $1,852 average campus fees (Legislative ' +
+    'Analyst\u2019s Office), divided by 30 units. Campus fees run from about $842 (UCLA) to ' +
+    '$2,626 (Berkeley), and UC charges a flat rate rather than per unit, so this is an ' +
+    'estimate rather than a price.',
 };
 
 const CSU_COST: Provenance = {
-  source_url: 'https://lao.ca.gov/Publications/Report/2026-27-budget-california-state-university',
-  as_of: '2026-09-18',
+  source_url: 'https://www.calstate.edu/apply/paying-for-college/csu-costs/tuition-and-fees/Pages/basic-tuition-and-fees.aspx',
+  as_of: '2026-10-01',
   confidence: 'needs_check',
   note:
-    'Derived from $6,838 systemwide tuition plus ~$2,194 average campus fees, divided by ' +
-    '30 units. CSU charges a tiered flat rate, not per unit, so treat this as an estimate ' +
-    'rather than a price.',
+    'Derived: $6,838 systemwide 2026-27 tuition plus $2,194 average campus fees (CSU\u2019s own ' +
+    'figure, based on 2025-26; the Legislative Analyst assumes $2,304 for 2026-27), divided ' +
+    'by 30 units. CSU charges a flat rate rather than per unit, so this is an estimate rather ' +
+    'than a price.',
 };
 
 const uc = (id: string, name: string, tag: boolean): Institution => ({

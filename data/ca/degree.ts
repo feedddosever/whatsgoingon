@@ -17,9 +17,9 @@ const UC_SENATE: Provenance = {
 
 const BERKELEY_LS: Provenance = {
   source_url: 'https://lsadvising.berkeley.edu/degree-requirements',
-  as_of: '2026-09-28',
-  confidence: 'needs_check',
-  note: 'Read from a search summary of the Berkeley L&S advising page, not the page itself.',
+  as_of: '2026-10-01',
+  confidence: 'published',
+  note: '120 total semester units, including transfer credit and advanced high-school units.',
 };
 
 const t5 = (section: string): Provenance => ({

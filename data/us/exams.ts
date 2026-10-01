@@ -70,8 +70,7 @@ const ALEVEL_FEE = {
     'Cambridge International A Level. Entry fees are set by the exam series and collected ' +
     'by the school or the centre, not by the candidate, so the figure here is indicative ' +
     'only. UC grants credit at grade A, B or C, up to 12 quarter (8 semester) units per ' +
-    'exam \u2014 and for GENERAL EDUCATION credit the exam must be a Cambridge International A ' +
-    'Level taken in 2013 or later, not one administered by another board. Florida calls ' +
+    'exam toward the degree; A Levels clear no Cal-GETC general-education area. Florida calls ' +
     'this family AICE, after the Cambridge diploma built from these same exams.',
 };
 

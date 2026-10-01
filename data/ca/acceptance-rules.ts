@@ -47,13 +47,13 @@ const ASSIST = (note: string): Provenance => ({
 });
 
 const CLEP_POLICY: Provenance = {
-  source_url: 'https://www.calstate.edu/apply/transfer/Pages/credit-by-exam.aspx',
-  as_of: '2026-09-18',
+  source_url: 'https://calstate.policystat.com/policy/20781575/latest/',
+  as_of: '2026-10-01',
   confidence: 'published',
   note:
-    'CLEP cannot be used for Cal-GETC. CSU accepts 31 of 33 CLEP exams toward a degree ' +
-    '(capped at 30 units, some needing higher scores), but not against the GE transfer ' +
-    'pattern. UC awards no CLEP credit whatsoever.',
+    'CLEP cannot be used for Cal-GETC (Cal-GETC Standards v1.4, \u00a7 6.3). CSU\u2019s ' +
+    'external-exam chart awards units toward the degree for most CLEP exams, capped at 30 ' +
+    'units \u2014 but none for College Composition. UC awards no CLEP credit whatsoever.',
 };
 
 /**
@@ -83,7 +83,8 @@ const AP_RULES: ReadonlyArray<readonly [string, string[], number]> = [
   ['ap-biology', ['5B', '5C'], 4],
   ['ap-chemistry', ['5A', '5C'], 4],
   ['ap-physics-1', ['5A', '5C'], 4],
-  ['ap-environmental-science', ['5A', '5C'], 4],
+  // Cal-GETC allows 3 semester units for it, not 4 \u2014 which matters toward Area 5's 7.
+  ['ap-environmental-science', ['5A', '5C'], 3],
 ];
 
 /** CCC course -> area. Articulation is institution-pair specific, always. */
@@ -119,28 +120,26 @@ const CCC_RULES: ReadonlyArray<readonly [string, string[], string]> = [
  * being wrong here is a lab they still have to take.
  */
 const CAL_GETC_IB: Provenance = {
-  source_url: 'https://admission.universityofcalifornia.edu/admission-requirements/ap-exam-credits/ib-credits.html',
-  as_of: '2026-09-19',
-  confidence: 'needs_check',
+  source_url: 'https://icas-ca.org/wp-content/uploads/2026/07/Cal-GETC_Standards_1v4_Final_r.pdf',
+  as_of: '2026-10-01',
+  confidence: 'published',
   note:
-    'Cal-GETC certification requires a Higher Level score of 5 or better, and an acceptable ' +
-    'IB score counts as 3 semester units toward certification. Which AREA a given subject ' +
-    'clears has not been checked against the Cal-GETC external-exam table \u2014 confirm your ' +
-    'subject before you rely on it. Separately, UC awards 8 quarter units per HL exam ' +
+    'Cal-GETC Standards v1.4, IB table: a Higher Level score of 5 or better counts as 3 ' +
+    'semester units toward the area listed. Separately, UC awards 8 quarter units per HL exam ' +
     'toward the degree, and the IB diploma at 30+ adds 6 more: those are degree units, not ' +
     'general-education clearance, and they are not the same thing.',
 };
 
 /** DSST is accepted toward a CSU degree and satisfies no Cal-GETC area. */
 const CSU_DSST: Provenance = {
-  source_url: 'https://www.calstate.edu/apply/transfer/Pages/credit-by-exam.aspx',
-  as_of: '2026-09-19',
+  source_url: 'https://www.calstate.edu/attend/student-services/troops-to-college/applying-to-the-csu/pages/credit-for-prior-learning.aspx',
+  as_of: '2026-10-01',
   confidence: 'needs_check',
   note:
-    'CSU accepts credit by examination from testing centres including CLEP and DSST. Like ' +
-    'CLEP, DSST is not part of the Cal-GETC external-exam standard, so it is modelled here ' +
-    'as clearing nothing \u2014 confirm with the campus. The University of California awards no ' +
-    'DSST credit whatsoever, which is why no UC rows exist for it at all.',
+    'The CSU names DSST among the external exams its campuses may credit, but its systemwide ' +
+    'exam chart covers only AP, IB, CLEP and DLPT, so the score and units are each campus\u2019s ' +
+    'decision. DSST is not in the Cal-GETC standards, so it clears no area \u2014 confirm the ' +
+    'credit with the campus. The University of California awards no DSST credit whatsoever.',
 };
 
 /**
@@ -155,40 +154,38 @@ const CSU_DSST: Provenance = {
  */
 const CAL_GETC_ALEVEL: Provenance = {
   source_url: 'https://admission.universityofcalifornia.edu/admission-requirements/ap-exam-credits/a-levels.html',
-  as_of: '2026-09-19',
-  confidence: 'needs_check',
+  as_of: '2026-10-01',
+  confidence: 'published',
   note:
-    'UC grants credit at grade A, B or C, up to 12 quarter (8 semester) units per exam. ' +
-    'For general-education credit the exam must be a Cambridge International A Level taken ' +
-    'in 2013 or later \u2014 not one from another board, and not an earlier sitting. Which AREA ' +
-    'each subject clears has not been checked against the Cal-GETC external-exam table, and ' +
-    'UC says campus faculty review these awards periodically. Confirm before you rely on it.',
+    'UC grants degree credit for A Levels at grade A, B or C, up to 12 quarter (8 semester) ' +
+    'units per exam, applied as each campus decides. A Levels do not appear in the Cal-GETC ' +
+    'standards at all, so they clear no general-education area \u2014 the credit counts toward ' +
+    'your units, not your requirements.',
 };
 
-/** [source, areas cleared together, semester units]. */
-const ALEVEL_RULES: ReadonlyArray<readonly [string, string[], number]> = [
-  ['alevel-english-literature', ['1A'], 3],
-  ['alevel-english-literature', ['3B'], 3],
-  ['alevel-mathematics', ['2'], 3],
-  ['alevel-art-design', ['3A'], 3],
-  ['alevel-spanish', ['3B'], 3],
-  ['alevel-history', ['4'], 3],
-  ['alevel-economics', ['4'], 3],
-  ['alevel-psychology', ['4'], 3],
-  ['alevel-geography', ['4'], 3],
-  ['alevel-chemistry', ['5A'], 3],
-  ['alevel-physics', ['5A'], 3],
-  ['alevel-biology', ['5B'], 3],
+/**
+ * A Levels at UC: degree credit, no Cal-GETC area. They were mapped to areas
+ * here until 2026-10-01; the Cal-GETC standards have no A-Level table, and the
+ * CSU's exam chart has no A-Level rows, so there are no CSU rows at all.
+ */
+const ALEVEL_SOURCES: ReadonlyArray<string> = [
+  'alevel-english-literature', 'alevel-mathematics', 'alevel-art-design', 'alevel-spanish',
+  'alevel-history', 'alevel-economics', 'alevel-psychology', 'alevel-geography',
+  'alevel-chemistry', 'alevel-physics', 'alevel-biology',
 ];
 
-/** [source, areas cleared together, semester units]. */
+/**
+ * [source, areas cleared together, semester units], from the Cal-GETC v1.4 IB
+ * table. An empty area list is degree credit that clears no area: Visual Arts
+ * and Language B are not in the table (Language B HL counts only toward the
+ * language-other-than-English proficiency requirement). English A clears 3B and
+ * never 1A — UC says IB cannot meet the English composition requirement.
+ */
 const IB_RULES: ReadonlyArray<readonly [string, string[], number]> = [
-  ['ib-english-a-hl', ['1A'], 3],
   ['ib-english-a-hl', ['3B'], 3],
   ['ib-mathematics-aa-hl', ['2'], 3],
-  ['ib-mathematics-ai-hl', ['2'], 3],
-  ['ib-visual-arts-hl', ['3A'], 3],
-  ['ib-spanish-b-hl', ['3B'], 3],
+  ['ib-visual-arts-hl', [], 3],
+  ['ib-spanish-b-hl', [], 3],
   ['ib-history-hl', ['4'], 3],
   ['ib-economics-hl', ['4'], 3],
   ['ib-psychology-hl', ['4'], 3],
@@ -197,6 +194,13 @@ const IB_RULES: ReadonlyArray<readonly [string, string[], number]> = [
   ['ib-physics-hl', ['5A'], 3],
   ['ib-biology-hl', ['5B'], 3],
 ];
+
+/**
+ * Mathematics: Applications and Interpretation HL. The Cal-GETC table lists it
+ * for Area 2 with the warning that it "may not be at all UC", and UC's own IB page
+ * awards it no credit from 2021 on — so it clears Area 2 at a CSU only.
+ */
+const IB_MATH_AI_CSU: readonly [string, string[], number] = ['ib-mathematics-ai-hl', ['2'], 3];
 
 const rules: AcceptanceRule[] = [];
 
@@ -215,13 +219,6 @@ for (const inst of ALL_IDS) {
       provenance: CAL_GETC_IB,
     });
   }
-  for (const [src, areas, units] of ALEVEL_RULES) {
-    rules.push({
-      institution_id: inst, credit_source_id: src,
-      min_score: null, units_granted: units, satisfies_areas: [...areas],
-      provenance: CAL_GETC_ALEVEL,
-    });
-  }
   for (const [src, areas, note] of CCC_RULES) {
     rules.push({
       institution_id: inst, credit_source_id: src,
@@ -235,8 +232,31 @@ for (const inst of ALL_IDS) {
  * CLEP rows exist so the app can say what a student's CLEP credit is worth —
  * which, against Cal-GETC, is nothing. Deliberately area-clearing nothing.
  */
+// A Levels: UC degree credit only, clearing nothing.
+for (const inst of ALL_IDS.filter(id => !CSU_IDS.includes(id))) {
+  for (const src of ALEVEL_SOURCES) {
+    rules.push({
+      institution_id: inst, credit_source_id: src,
+      min_score: null, units_granted: 8, satisfies_areas: [],
+      provenance: CAL_GETC_ALEVEL,
+    });
+  }
+}
+
+// IB Mathematics AI HL clears Area 2 at a CSU, and earns nothing at UC.
 for (const inst of CSU_IDS) {
-  for (const src of ['clep-college-composition', 'clep-college-algebra', 'clep-intro-psychology']) {
+  const [src, areas, units] = IB_MATH_AI_CSU;
+  rules.push({
+    institution_id: inst, credit_source_id: src,
+    min_score: 5, units_granted: units, satisfies_areas: [...areas],
+    provenance: CAL_GETC_IB,
+  });
+}
+
+// CLEP College Composition earns 0 units at CSU, so it has no row: a row would
+// say the CSU counts it toward the degree, and the CSU chart says it does not.
+for (const inst of CSU_IDS) {
+  for (const src of ['clep-college-algebra', 'clep-intro-psychology']) {
     rules.push({
       institution_id: inst, credit_source_id: src,
       min_score: 50, units_granted: 3, satisfies_areas: [],
