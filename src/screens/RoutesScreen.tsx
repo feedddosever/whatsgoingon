@@ -28,7 +28,7 @@ import type {
   WarningKind,
 } from '../types.ts';
 import type { RoutesScreenProps } from '../ui/contracts.ts';
-import { checkedOn, isBacked, linkable, noteText } from '../ui/provenance.ts';
+import { isBacked, linkable, noteText } from '../ui/provenance.ts';
 import { confidenceColor, confidenceLabel, money, theme } from '../ui/theme.ts';
 
 const KIND_LABEL: Record<RouteKind, string> = {
@@ -283,9 +283,6 @@ function ProvenanceBadge(props: ProvenanceBadgeProps) {
   // minimum, a cap, a claim that has to be confirmed. Dropping it would turn
   // provenance back into the decoration this product refuses to make it.
   const note = noteText(provenance);
-  // checkedOn() owns the visible phrasing; the screen reader needs a whole
-  // sentence, so it asks the row itself whether anyone has opened the page.
-  const opened = provenance.as_of.trim() !== '';
 
   return (
     <View style={styles.provBlock}>
@@ -301,14 +298,9 @@ function ProvenanceBadge(props: ProvenanceBadgeProps) {
             onPress={() => openSource(source_url)}
             hitSlop={10}
             accessibilityRole="link"
-            accessibilityLabel={
-              opened
-                ? `Open the source page, last read ${checkedOn(provenance)}`
-                : 'Open the source page. Nobody has read it yet.'
-            }
+            accessibilityLabel="Open the source page"
           >
-            {/* An empty as_of means nobody has opened the page. Say it rather than hide it. */}
-            <Text style={styles.sourceLink}>source · {checkedOn(provenance)}</Text>
+            <Text style={styles.sourceLink}>source ↗</Text>
           </Pressable>
         ) : (
           // A row with no usable URL stays flat rather than pretending to be a link
@@ -656,7 +648,9 @@ export function RoutesScreen(props: RoutesScreenProps) {
     }
     if (bestWorst !== null && !isBacked(bestWorst.provenance)) {
       caveats.push(
-        `This figure leans on rows marked "${confidenceLabel(bestWorst.provenance.confidence).toLowerCase()}". Treat it as a ceiling, not a promise.`,
+        bestWorst.provenance.confidence === 'needs_check'
+          ? 'This figure leans on rows marked "?" — not yet confirmed. Treat it as a ceiling, not a promise.'
+          : `This figure leans on rows marked "${confidenceLabel(bestWorst.provenance.confidence).toLowerCase()}". Treat it as a ceiling, not a promise.`,
       );
     }
     if (best.route.areas_unmet.length > 0) {

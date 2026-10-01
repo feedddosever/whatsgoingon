@@ -6,7 +6,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { AreaChoice, GeArea, PlanItem, Provenance, StudentProfile } from '../types.ts';
 import type { PlanMapScreenProps } from '../ui/contracts.ts';
 import { confidenceColor, confidenceLabel, money, theme } from '../ui/theme.ts';
-import { checkedOn, isBacked, noteText } from '../ui/provenance.ts';
+import { isBacked, noteText } from '../ui/provenance.ts';
 import { DISCLAIMER_SHORT } from '../disclaimer.ts';
 
 /**
@@ -98,7 +98,7 @@ function Badge({ p }: { p: Provenance }): ReactElement {
   return (
     <View style={[styles.badge, { borderColor: confidenceColor(p.confidence) }, shaky && styles.badgeShaky]}>
       <Text style={[styles.badgeText, { color: confidenceColor(p.confidence) }]} numberOfLines={1}>
-        {confidenceLabel(p.confidence)} · {checkedOn(p)}
+        {confidenceLabel(p.confidence)}
       </Text>
     </View>
   );

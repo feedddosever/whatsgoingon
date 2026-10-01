@@ -11,8 +11,8 @@ import type { ReactElement } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { PlanItem, Provenance, RouteKind, RouteWarning, WarningKind } from '../types.ts';
 import type { RouteDetailScreenProps } from '../ui/contracts.ts';
-import { checkedOn, isBacked, linkable, noteText } from '../ui/provenance.ts';
-import { confidenceColor, confidenceLabel, money, theme } from '../ui/theme.ts';
+import { isBacked, linkable, noteText } from '../ui/provenance.ts';
+import { confidenceColor, confidenceLabel, confidenceSpoken, money, theme } from '../ui/theme.ts';
 
 const ROUTE_LABEL: Record<RouteKind, string> = {
   cheapest: 'Cheapest route',
@@ -130,7 +130,7 @@ function SourceBadge({ p }: { p: Provenance }): ReactElement {
       onPress={() => openSource(p.source_url)}
       hitSlop={8}
       accessibilityRole="link"
-      accessibilityLabel={`${label}, last checked ${checkedOn(p)}. Open source.`}
+      accessibilityLabel={`${confidenceSpoken(p.confidence)}. Open source.`}
       style={({ pressed }) => [
         styles.badge,
         { borderColor: color },
@@ -139,7 +139,7 @@ function SourceBadge({ p }: { p: Provenance }): ReactElement {
       ]}
     >
       <Text style={[styles.badgeText, { color }]} numberOfLines={1}>
-        {label} · {checkedOn(p)} ↗
+        {label} ↗
       </Text>
     </Pressable>
   );

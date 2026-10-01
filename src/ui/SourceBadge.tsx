@@ -11,15 +11,16 @@
 import type { ReactElement } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Provenance } from '../types.ts';
-import { checkedOn, isBacked, linkable } from './provenance.ts';
-import { confidenceColor, confidenceLabel, theme } from './theme.ts';
+import { isBacked, linkable } from './provenance.ts';
+import { confidenceColor, confidenceLabel, confidenceSpoken, theme } from './theme.ts';
 
 /** A dead or unopenable source URL must never take the screen down with it. */
 export const openSource = (url: string): void => {
   void Linking.openURL(url).catch(() => undefined);
 };
 
-export function SourceBadge({ p, compact }: { p: Provenance; compact?: boolean }): ReactElement {
+// `compact` is kept for callers; no badge prints a date any more.
+export function SourceBadge({ p }: { p: Provenance; compact?: boolean }): ReactElement {
   const color = confidenceColor(p.confidence);
   // Anything a human has not confirmed against its source is drawn as a sketch.
   const shaky = !isBacked(p);
@@ -40,7 +41,7 @@ export function SourceBadge({ p, compact }: { p: Provenance; compact?: boolean }
       onPress={() => openSource(p.source_url)}
       hitSlop={8}
       accessibilityRole="link"
-      accessibilityLabel={`${label}, last checked ${checkedOn(p)}. Open source.`}
+      accessibilityLabel={`${confidenceSpoken(p.confidence)}. Open source.`}
       style={({ pressed }) => [
         styles.badge,
         { borderColor: color },
@@ -49,8 +50,7 @@ export function SourceBadge({ p, compact }: { p: Provenance; compact?: boolean }
       ]}
     >
       <Text style={[styles.badgeText, { color }]} numberOfLines={1}>
-        {label}
-        {compact === true ? '' : ` · ${checkedOn(p)}`} ↗
+        {label} ↗
       </Text>
     </Pressable>
   );

@@ -54,7 +54,7 @@ const TX_TRANSFER_CAP: Provenance = {
   note:
     'A 66-SCH ceiling on community-college credit is widely applied in Texas but is not ' +
     'confirmed here, and it is not the same thing as the core-curriculum block transfer, ' +
-    'which is statutory. Checked 2026-09-27: we found no statewide cap in the Coordinating ' +
+    'which is statutory. We found no statewide cap in the Coordinating ' +
     'Board\u2019s transfer rules, so any limit is set campus by campus \u2014 ask yours.',
 };
 

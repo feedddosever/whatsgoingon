@@ -305,7 +305,7 @@ function StateRow(
   const chosenIsUnmapped = unmapped.some(j => j.code === selected);
   // Opens itself when the student is already standing in an unmapped state, so
   // a restored plan does not hide the row that explains what they are looking at.
-  const [showAll, setShowAll] = useState<boolean>(chosenIsUnmapped);
+  const showAll = chosenIsUnmapped;
 
   return (
     <View>
@@ -318,12 +318,8 @@ function StateRow(
             onPress={() => onSelect(j.code)}
           />
         ))}
-        <StateChip
-          label={showAll ? 'Fewer states' : 'Another state'}
-          on={chosenIsUnmapped}
-          onPress={() => setShowAll(v => !v)}
-        />
       </View>
+      <Text style={styles.moreStates}>Full access to other states is coming soon.</Text>
 
       {showAll && (
         <View style={styles.stateGrid}>
@@ -1466,6 +1462,7 @@ const styles = StyleSheet.create({
     ...theme.font.small, color: theme.color.textMuted, marginBottom: theme.space.sm,
   },
 
+  moreStates: { ...theme.font.small, color: theme.color.textMuted, marginTop: 10 },
   stateRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',

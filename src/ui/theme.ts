@@ -43,8 +43,12 @@ export const confidenceColor = (c: Confidence): string =>
 export const confidenceLabel = (c: Confidence): string =>
   c === 'statute' ? 'Guaranteed by state law'
   : c === 'published' ? 'Published policy'
-  : c === 'needs_check' ? 'Needs confirming'
+  : c === 'needs_check' ? '?'
   : 'Unverified';
+
+/** What a screen reader says for the badge — "?" alone is not a sentence. */
+export const confidenceSpoken = (c: Confidence): string =>
+  c === 'needs_check' ? 'Not yet confirmed' : confidenceLabel(c);
 
 export const money = (n: number): string =>
   `$${Math.round(n).toLocaleString('en-US')}`;
