@@ -88,7 +88,6 @@ things up helps until the field exists.
 
 ### Alabama (AL)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -101,7 +100,6 @@ things up helps until the field exists.
 
 ### Alaska (AK)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -114,7 +112,6 @@ things up helps until the field exists.
 
 ### Arizona (AZ)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -127,7 +124,6 @@ things up helps until the field exists.
 
 ### Arkansas (AR)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -139,7 +135,6 @@ things up helps until the field exists.
 
 ### Colorado (CO)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -151,7 +146,6 @@ things up helps until the field exists.
 
 ### Connecticut (CT)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -187,7 +181,6 @@ things up helps until the field exists.
 
 ### Georgia (GA)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -223,7 +216,6 @@ things up helps until the field exists.
 
 ### Illinois (IL)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -236,7 +228,6 @@ things up helps until the field exists.
 
 ### Indiana (IN)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -248,7 +239,6 @@ things up helps until the field exists.
 
 ### Iowa (IA)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -260,7 +250,6 @@ things up helps until the field exists.
 
 ### Kansas (KS)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -272,7 +261,6 @@ things up helps until the field exists.
 
 ### Kentucky (KY)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -284,7 +272,6 @@ things up helps until the field exists.
 
 ### Louisiana (LA)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -296,7 +283,6 @@ things up helps until the field exists.
 
 ### Maine (ME)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -308,7 +294,6 @@ things up helps until the field exists.
 
 ### Maryland (MD)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -320,7 +305,6 @@ things up helps until the field exists.
 
 ### Massachusetts (MA)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -332,7 +316,6 @@ things up helps until the field exists.
 
 ### Michigan (MI)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -344,7 +327,6 @@ things up helps until the field exists.
 
 ### Minnesota (MN)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.
@@ -356,7 +338,6 @@ things up helps until the field exists.
 
 ### Mississippi (MS)
 
-- [ ] The **primary document** behind the statewide rule — statute, board policy or the agreement itself — to promote it off `needs_check`. Currently assembled from secondary sources.
 - [ ] **Conditions attached to the guarantee, as structured data**: minimum GPA, minimum hours in residence at the sending college, whether it covers private institutions, and the catalogue year it takes effect. These are prose in the guarantee today, so nothing can warn on them.
 - [ ] **The requirement list**: each area, its name, its required units, and which systems require it — without this nothing can be priced.
 - [ ] **Whether the framework counts semester or quarter credits.** Our arithmetic assumes semester units throughout, so a quarter-credit state would be silently wrong by a factor of 1.5.

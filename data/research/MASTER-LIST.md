@@ -54,6 +54,8 @@ Under the repo's `VERIFICATION.md`, every row is still `needs_check` until a per
 | 21 | Saylor partners = Charter Oak, Granite State… (dated page) | current list is different — § 9 | saylor.org partner pages |
 | 22 | Study.com partnerships URL | 404 — live directory is `study.com/college/school/index.html` | pass 5 |
 | 23 | Idaho "effective catalogue year 2026-27"; NC "$1,323.25 system figure" (pass 3) | withdrawn — unsupported / one college's fees | — |
+| 24 | Statewide rows AL–MS assembled from search results | **read at source 2026-10-01**: 6 confirmed, 12 corrected, 2 partly, 3 unverifiable. Corrections include CT state-university GPA **2.0 not 2.5** and no "Section A/B"; HI AA from **any** accredited college meets UH GE; KY minimum **30** (33 is KCTCS's); MS authority **Policies 512 and 517** (no 521); MN source moved; AK and MI clauses dropped as unsupported | `data/research/VERIFIED-STATEWIDE.md` |
+| 25 | California exam rows (pass 1) | **A Levels clear no Cal-GETC area** (no A-Level table exists); IB English A clears 3B only; IB Visual Arts and Language B clear nothing; IB Math AI HL no credit at UC; CLEP College Composition **0 units** at CSU; AP Environmental Science **3** units; UC campus fees **$1,852** | Cal-GETC Standards v1.4; CSU PolicyStat 20781575; UCOP 2026-27 fees |
 
 ---
 
@@ -84,19 +86,19 @@ Under the repo's `VERIFICATION.md`, every row is still `needs_check` until a per
 | AR | 2 | State Minimum General Education Core = 15-hour Requisite Core (Act 566 of 2025) + 20 breadth hours, inside a 60-hour state minimum core curriculum. Redesign due Fall 2026, full implementation Fall 2027 | Ark. Code § 6-61-231 (Act 182 of 2009; Act 747 of 2011); Act 566 of 2025; AHECB State Minimum Core policy. § 6-61-218 reported repealed by Act 566 | 35 sem within 60 | semester | A |
 | CA | 1 | Cal-GETC v1.4 | AB 928; ICAS Cal-GETC Standards | 34 sem | semester framework; quarter campuses exist | A |
 | CO | 2 | gtPathways (GT Pathways) | CCHE Policy I-L; C.R.S. 23-1-108(7), 23-1-108.5, 23-1-125 | 31 sem (GT-CO, GT-MA1, GT-AH/HI/SS, GT-SC codes) | semester | A |
-| CT | 3→2 | Framework30 (Section A 24 + Section B 6) and Transfer Tickets | CSCU Transfer & Articulation Policy (2012); BR 24-077 / Policy 1.26 | 30 sem (+ 6 optional) | semester | A− |
+| CT | 3→2 | Framework30 (ten categories, Policy 1.26) and Transfer Tickets | CSCU Transfer & Articulation Policy (2012); BR 24-077 / Policy 1.26 | 30 sem (+ 6 optional) | semester | A− |
 | DE | 3 | none — Delaware Tech Connected Degrees (pairwise) | no statewide instrument | — | semester | B |
 | DC | 3 | none — one public university (UDC) | — | — | semester | A |
 | FL | 1 | General-education core (5 areas) inside a 36-hour GE programme; AA transfer guarantee | Fla. Stat. §§ 1007.23, 1007.24, 1007.25, 1007.27; Rule 6A-10.024; BOG Reg. 6.006, 8.005 | 15 core / 36 GE sem | semester | A |
-| GA | 2 | Core IMPACTS (USG); separate USG–TCSG guaranteed course list | BoR Policy 3.3.1; Handbook § 2.4.1 (rev. 2023-10-04; full Fall 2024) | 42 + 18 Field of Study, sem | semester | A |
-| HI | 3→2 | UH system general-education core (Foundations + Diversification) | UH Executive Policy EP 5.209 | ≈ 31 sem | semester | A− |
+| GA | 2 | Core IMPACTS (USG BoR Policy 3.3.1) | BoR Policy 3.3.1; Handbook § 2.4.1 (rev. 2023-10-04; full Fall 2024) | 42 + 18 Field of Study, sem | semester | A |
+| HI | 3→2 | UH system transfer policy (EP 5.209) | UH Executive Policy EP 5.209 | ≈ 31 sem | semester | A− |
 | ID | 3→2 | GEM — six Ways of Knowing | SBOE Governing Policies III.N, III.V | 36 sem | semester | B |
 | IL | 2 | IAI General Education Core Curriculum (GECC) | 110 ILCS 152 (P.A. 103-469, eff. 2024-01-01) | 37–41 sem / 12–13 courses | semester; quarter privates participate | A |
 | IN | 2 | Indiana College Core | IC 21-42-3; IC 21-42-5 (Core Transfer Library); SEA 204-2026 | 30 sem; six competency areas, ≥ 3 each | semester | A |
 | IA | 3 | none statutory — statewide AA/AS Articulation Agreements | Iowa Code § 260C.14(23), § 262.9(32); IAC 281—ch. 21 | ≈ 40 GE within 60–64 sem | semester | A− |
 | KS | 3→2 | Systemwide General Education (seven buckets) | KBOR Policy ch. III.A.18 (Fall 2024) | 34–35 sem | semester | A− |
 | KY | 2 | General Education Transfer Policy (category / core / full certification) | CPE policy; KRS 164.2951 (HB 160, 2010) | 33 sem | semester | A |
-| LA | 2 | Board of Regents GE + Louisiana Transfer Degree (AALT/ASLT) + Universal Transfer Pathways | R.S. 17:3161–3169 (Act 356 of 2009); Act 308 of 2022; BoR Academic Affairs Policies 2.16, 2.25 | 39 GE / 60 sem (English 6 · Math 6 · Natural Sci 9 · Humanities 9 · Fine Arts 3 · Social/Behavioral 6) | semester; Louisiana Tech quarter calendar (unconfirmed) | A− |
+| LA | 2 | Louisiana Transfer Associate Degree (AA/LT, AS/LT) | R.S. 17:3161–3169 (Act 356 of 2009); Act 308 of 2022; BoR Academic Affairs Policies 2.16, 2.25 | 39 GE / 60 sem (English 6 · Math 6 · Natural Sci 9 · Humanities 9 · Fine Arts 3 · Social/Behavioral 6) | semester; Louisiana Tech quarter calendar (unconfirmed) | A− |
 | ME | 3→2 | MCCS–UMS Block Transfer of General Education | inter-system agreement (effective Fall 2015) | 34 (UMaine) vs up to 35 (MCCS) sem | semester | B |
 | MD | 3→2 | General-education programme and transfer regulations | COMAR 13B.06.01, 13B.06.02; Transfer with Success Act (2021) | 28–36 sem | semester | A− |
 | MA | 2 | MassTransfer Gen Ed Foundation | BHE MassTransfer policy | 34 sem (STEM 28) | semester | A−/B |

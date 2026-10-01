@@ -135,6 +135,14 @@ const STATE_NAMES: Record<StateCode, string> = {
  */
 interface StatewideRule {
   programme: string;
+  /**
+   * Set only when a person has opened the governing document and checked the
+   * guarantee sentence against it — `statute` when the statute or regulation
+   * text itself was read, `published` when it was the board's or agency's own
+   * policy page. Absent, the row stays `needs_check`: assembled from search
+   * results and never read at source. See data/research/VERIFIED-STATEWIDE.md.
+   */
+  verified?: { confidence: 'published' | 'statute'; as_of: string; source_url: string };
   guarantee: string;
   /**
    * The statute, board policy or agreement that actually creates the rule.
@@ -172,53 +180,66 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
   AK: {
     programme: 'UA common general-education core',
     guarantee:
-      'UA common general-education core (one public system). ≥ 34 sem. Transfers whole within ' +
-      'UA; out-of-system minimum grade C–; an associate with ≥ 26 GE credits is GER-complete ' +
-      'at UAF.',
+      'UA common general-education core (one public system). ≥ 34 sem (Regents\' Policy ' +
+      'P10.04.040; distribution in R10.04.040). A student who completes the GE requirements ' +
+      'at one UA university or community college is considered to have completed them at all ' +
+      'UA institutions. Partial GE counts by category even where the receiving campus has no ' +
+      'matching course (P10.04.062). Credit from outside UA transfers only with C– or better ' +
+      '(R10.04.060).',
     authority:
       'UA Regents\' Policy & University Regulation ch. 10.04',
-    source_url: '',
+    source_url: 'https://www.alaska.edu/bor/policy-regulations/chapter-10-04-academic-programs.php',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.alaska.edu/bor/policy-regulations/chapter-10-04-academic-programs.php' },
     unit_system: 'semester',
     grade: 'A−',
   },
   AL: {
     programme: 'AGSC General Studies Curriculum',
     guarantee:
-      'AGSC General Studies Curriculum (Areas I–V), delivered through Alabama Transfers ' +
-      '(formerly STARS; renamed Nov 2022). 41–42 sem in Areas I–IV (I Written Composition 6 · ' +
-      'II Humanities & Fine Arts 12 · III Natural Sciences & Math 11 · IV ' +
-      'History/Social/Behavioral 12); Area V pre-major 19–23. An AGSC-approved transfer guide ' +
-      'binds the receiving public university; 6-hour sequence in literature or history; ' +
-      'public institutions only.',
+      'AGSC statewide general studies curriculum and articulation agreement (Act 94-202; Code ' +
+      'of Ala. § 16-5-8(e)). Delivered through Alabama Transfers (formerly STARS). For ' +
+      'two-year → four-year public transfer, a transfer guide prescribes the first 60–64 sem. ' +
+      'Applicable credits transferred under the agreement \'fulfill degree requirements at the ' +
+      'four-year institution as if they were earned\' there, once the student is admitted.',
     authority:
       'Act 94-202; Code of Ala. § 16-5-8(e)',
-    source_url: 'https://alabamatransfers.com/about/agsc-stars',
+    source_url: 'https://alabamatransfers.com/about/legislation',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://alabamatransfers.com/about/legislation' },
     unit_system: 'semester',
     grade: 'A−',
   },
   AR: {
     programme: 'State Minimum General Education Core = 15-hour Requisite Core',
     guarantee:
-      'State Minimum General Education Core = 15-hour Requisite Core (Act 566 of 2025) + 20 ' +
-      'breadth hours, inside a 60-hour state minimum core curriculum. Redesign due Fall 2026, ' +
-      'full implementation Fall 2027. 35 sem within 60. Completed AA/AS/AAT, or 60 hours ' +
-      'including the 35-hour core → no further lower-division GE; grade C guaranteed.',
+      'State Minimum General Education Core, 35 sem (AHECB, updated April 2026: English Comp ' +
+      '6 · Speech 0–3 · Math 3 · lab Science 8 · Fine Arts/Humanities 6–9 · U.S. History 3 · ' +
+      'American Government 3 · Social Sciences 3–6), inside a 60-hour state minimum core ' +
+      'curriculum. Act 566 of 2025 (new § 6-61-144) adds a 15–16-hour Requisite Core ' +
+      '(communication 6 · math or science 3–4 · U.S. History 3 · American Government 3) for ' +
+      'the entering class of Fall 2027. A completed AA, AS or AAT, or the completed 60-hour ' +
+      'state minimum core, must be accepted in full by a four-year public, with junior ' +
+      'standing and no additional lower-division GE (exceptions: major prerequisites, ' +
+      'discipline-specific courses, licensure requirements). Whether a D transfers is the ' +
+      'receiving university\'s decision (§ 6-61-231).',
     authority:
-      'Ark. Code § 6-61-231 (Act 182 of 2009; Act 747 of 2011); Act 566 of 2025; AHECB State ' +
-      'Minimum Core policy. § 6-61-218 reported repealed by Act 566',
-    source_url: 'https://adhe.edu/institutions/arkansas-transfer-and-articulation',
+      'Ark. Code § 6-61-231; Act 566 of 2025 (§ 6-61-144); AHECB minimum core (April 2026)',
+    source_url: 'https://arkleg.state.ar.us/Home/FTPDocument?path=%2FACTS%2F2025R%2FPublic%2FACT566.pdf',
+    verified: { confidence: 'statute', as_of: '2026-10-01', source_url: 'https://arkleg.state.ar.us/Home/FTPDocument?path=%2FACTS%2F2025R%2FPublic%2FACT566.pdf' },
     unit_system: 'semester',
     grade: 'A',
   },
   AZ: {
     programme: 'AGEC → Reimagined AGEC',
     guarantee:
-      'AGEC → Reimagined AGEC (AGEC-R) for 2026-27 catalogues; Classic AGEC for continuing ' +
-      'students. ≈ 35 sem. Assured admission at 2.5 per AZTransfer; ABOR 2-121 ' +
-      'resident/non-resident split unverified.',
+      'Arizona General Education Curriculum (AGEC). One unified AGEC from the 2026 catalog ' +
+      'year, replacing AGEC-A/-B/-S; students on an earlier catalog may still finish those. ' +
+      '32–35 sem, C or better in every course. A completed AGEC transfers as a block and ' +
+      'satisfies lower-division GE at ASU, NAU and UArizona (ABOR Policy 2-210 § C.1). With a ' +
+      '2.5 cumulative GPA it also gives assured general admission to all three.',
     authority:
-      'ABOR Policy 2-210; A.R.S. § 15-1824 (recalled)',
+      'ABOR Policy 2-210; A.R.S. § 15-1824',
     source_url: 'https://www.aztransfer.com/about/agec.html',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.aztransfer.com/about/agec.html' },
     unit_system: 'semester',
     grade: 'B',
   },
@@ -229,19 +250,25 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
       'course; guarantee lasts up to 10 years; Degrees with Designation are 60 + 60.',
     authority:
       'CCHE Policy I-L; C.R.S. 23-1-108(7), 23-1-108.5, 23-1-125',
-    source_url: 'https://highered.colorado.gov/Academics/Transfers/gtPathways/Curriculum/Courses.aspx',
+    source_url: 'https://cdhe.colorado.gov/transfer-agreements',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://cdhe.colorado.gov/transfer-agreements' },
     unit_system: 'semester',
     grade: 'A',
   },
   CT: {
     programme: 'Framework30',
     guarantee:
-      'Framework30 (Section A 24 + Section B 6) and Transfer Tickets. 30 sem (+ 6 optional). ' +
-      'Completed Transfer Ticket degree = first 60 of 120; 2.5 GPA = automatic acceptance at ' +
-      'CSCU four-years.',
+      'Framework30 (FW30): the CSCU general-education core for CT State transfer degrees, at ' +
+      'least 30 credits across ten categories (BR 12-024 / Policy 1.05; Policy 1.26, June ' +
+      '2024). A completed Transfer Ticket associate degree gives guaranteed admission and ' +
+      'junior standing at Central, Eastern, Southern and Western Connecticut State and ' +
+      'Charter Oak with a 2.0 GPA, and is designed to leave only 60 credits of the ' +
+      'bachelor\'s. Since June 2024, CT State GE-core courses map category-to-category onto ' +
+      'each CSCU four-year\'s GE core, subject to the receiving institution\'s grade rules.',
     authority:
-      'CSCU Transfer & Articulation Policy (2012); BR 24-077 / Policy 1.26',
-    source_url: '',
+      'CSCU Board of Regents Policy 1.05 (BR 12-024) and Policy 1.26',
+    source_url: 'https://www.ct.edu/policies/transfer-and-articulation-policy',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.ct.edu/policies/transfer-and-articulation-policy' },
     unit_system: 'semester',
     grade: 'A−',
   },
@@ -270,34 +297,47 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
   GA: {
     programme: 'Core IMPACTS',
     guarantee:
-      'Core IMPACTS (USG); separate USG–TCSG guaranteed course list. 42 + 18 Field of Study, ' +
-      'sem. Credit transfers by domain even if the domain is incomplete; STEM ≥ 10 hrs incl. ' +
-      '≥ 4 lab.',
+      'Core IMPACTS (USG BoR Policy 3.3.1, approved 2023-10-04, full implementation Fall ' +
+      '2024): 42 sem across seven areas (Institutional Priority ≥ 3 · Mathematics ≥ 3 · ' +
+      'Citizenship ≥ 3 · Humanities ≥ 6 · Writing ≥ 6 · STEM ≥ 7, incl. ≥ 4 lab, with 10 the ' +
+      'norm · Social Sciences ≥ 3). Courses completed in an area at one USG institution or ' +
+      'eCore transfer to the same area at any other USG institution, even if the area is ' +
+      'incomplete; excess credit is applied to another area.',
     authority:
-      'BoR Policy 3.3.1; Handbook § 2.4.1 (rev. 2023-10-04; full Fall 2024)',
-    source_url: 'https://www.usg.edu/curriculum/transfer-hub/',
+      'USG Board of Regents Policy 3.3.1',
+    source_url: 'https://www.usg.edu/policymanual/section3/C338/',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.usg.edu/policymanual/section3/C338/' },
     unit_system: 'semester',
     grade: 'A',
   },
   HI: {
     programme: 'UH system general-education core',
     guarantee:
-      'UH system general-education core (Foundations + Diversification). ≈ 31 sem. UH AA ' +
-      'satisfies the UH baccalaureate GE core; Foundations transfer systemwide.',
+      'University of Hawaiʻi system transfer policy (EP 5.209). An AA from any accredited ' +
+      'institution satisfies the general-education requirements at every UH baccalaureate ' +
+      'campus, and GE completed at one UH campus satisfies GE at any UH campus. A UH ' +
+      'Community College AA gives automatic general admission with junior standing to UH ' +
+      'Mānoa, Hilo or West Oʻahu (not to selective programs). From Fall 2027 a UH AS does the ' +
+      'same for students who declared the AS major in Fall 2025 or later. Within UH, D or ' +
+      'better transfers.',
     authority:
-      'UH Executive Policy EP 5.209',
-    source_url: '',
+      'University of Hawaiʻi Executive Policy EP 5.209',
+    source_url: 'https://www.hawaii.edu/policy/ep5.209',
     unit_system: 'semester',
     grade: 'A−',
   },
   IA: {
     programme: 'none statutory — statewide AA/AS Articulation Agreements',
     guarantee:
-      'No statewide general-education transfer instrument. AA ≥ 60 hours, 2.0 GPA → ' +
-      'lower-division GE met at the Regent universities (named exceptions)',
+      'Statewide AA articulation agreement between Iowa\'s community colleges and the three ' +
+      'Regent universities (reaffirmed 2026-04-10): an AA of ≥ 60 transferable credits (up to ' +
+      '16 CTE), including ≥ 40 GE credits, with a 2.0 GPA, meets GE at the Regent ' +
+      'universities, except world-language proficiency set by each university. Without the ' +
+      'AA, transfer is course by course.',
     authority:
       'Iowa Code § 260C.14(23), § 262.9(32); IAC 281—ch. 21',
-    source_url: '',
+    source_url: 'https://www.iowaregents.edu/media/cms/2025_report_773B8C1064A8D.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.iowaregents.edu/media/cms/2025_report_773B8C1064A8D.pdf' },
     unit_system: 'semester',
     exists: false,
     grade: 'A−',
@@ -320,7 +360,8 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
       'must maintain a complete package; completed package bars further lower-division GE.',
     authority:
       '110 ILCS 152 (P.A. 103-469, eff. 2024-01-01)',
-    source_url: 'https://itransfer.org/about/',
+    source_url: 'https://www.ilga.gov/Legislation/ILCS/Articles?ActID=3717&ChapterID=18',
+    verified: { confidence: 'statute', as_of: '2026-10-01', source_url: 'https://www.ilga.gov/Legislation/ILCS/Articles?ActID=3717&ChapterID=18' },
     unit_system: 'semester',
     grade: 'A',
   },
@@ -332,6 +373,7 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
     authority:
       'IC 21-42-3; IC 21-42-5 (Core Transfer Library); SEA 204-2026',
     source_url: 'https://transferin.net/ways-to-earn-credit/statewide-transfer-general-education-core-stgec/',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://transferin.net/ways-to-earn-credit/statewide-transfer-general-education-core-stgec/' },
     unit_system: 'semester',
     grade: 'A',
   },
@@ -342,32 +384,41 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
       'as a block; AA/AS/AFA.',
     authority:
       'KBOR Policy ch. III.A.18 (Fall 2024)',
-    source_url: '',
+    source_url: 'https://kansasregents.gov/academic_affairs/general-education/students-who-completed-ge',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://kansasregents.gov/academic_affairs/general-education/students-who-completed-ge' },
     unit_system: 'semester',
     grade: 'A−',
   },
   KY: {
     programme: 'General Education Transfer Policy',
     guarantee:
-      'General Education Transfer Policy (category / core / full certification). 33 sem. your ' +
-      'GAPS note — 15 of 33 in-system — still unchecked.',
+      'Kentucky General Education Transfer Policy (CPE, effective Fall 2012; KRS 164.2951): a ' +
+      'statewide minimum of 30 unduplicated sem hours in five categories (Communications 6–9 ' +
+      '· Quantitative Reasoning 3–6 · Arts & Humanities 6–9 · Natural Sciences 3–7 · Social & ' +
+      'Behavioral Sciences 6–9), certified at three levels (category, core, full). Graduates ' +
+      'of a council-approved AA or AS are deemed, on admission to a public university, to ' +
+      'have met all GE requirements, and are admitted with junior standing. (KCTCS\'s own GE ' +
+      'program is 33 hours, 15 of them at KCTCS for full certification.)',
     authority:
-      'CPE policy; KRS 164.2951 (HB 160, 2010)',
+      'KRS 164.2951; CPE General Education Transfer Policy (effective Fall 2012; HB 160 of 2011)',
     source_url: 'https://cpe.ky.gov/policies/academicaffairs/genedtransferpolicy.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://cpe.ky.gov/policies/academicaffairs/genedtransferpolicy.pdf' },
     unit_system: 'semester',
     grade: 'A',
   },
   LA: {
     programme: 'Board of Regents GE + Louisiana Transfer Degree',
     guarantee:
-      'Board of Regents GE + Louisiana Transfer Degree (AALT/ASLT) + Universal Transfer ' +
-      'Pathways. 39 GE / 60 sem (English 6 · Math 6 · Natural Sci 9 · Humanities 9 · Fine ' +
-      'Arts 3 · Social/Behavioral 6). No substitutions in the first 60 hours; no requirements ' +
-      'beyond native students\'; degree completion not required for pathway courses.',
+      'Louisiana Transfer Associate Degree (AA/LT, AS/LT): a 39-hour GE block (English 6 · ' +
+      'Math/Analytical Reasoning 6 · Natural Sciences 9 · Humanities 9 · Social/Behavioral 6 ' +
+      '· Fine Arts 3) plus 21 hours. With a C or better in every course, it guarantees ' +
+      'admission to a Louisiana public four-year, junior standing, transfer of all 60 hours ' +
+      'and completion of the GE block.',
     authority:
       'R.S. 17:3161–3169 (Act 356 of 2009); Act 308 of 2022; BoR Academic Affairs Policies ' +
       '2.16, 2.25',
-    source_url: 'https://www.laregents.edu/wp-content/uploads/2025/12/2024-2025-Articulation-and-Transfer-Report.pdf',
+    source_url: 'https://www.laregents.edu/wp-content/uploads/2018/06/Advisors_Guide_to_Transfer_Degree.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.laregents.edu/wp-content/uploads/2018/06/Advisors_Guide_to_Transfer_Degree.pdf' },
     unit_system: 'semester',
     grade: 'A−',
   },
@@ -379,50 +430,70 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
     authority:
       'BHE MassTransfer policy',
     source_url: 'https://www.mass.edu/masstransfer/gened/home.asp',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.mass.edu/masstransfer/gened/home.asp' },
     unit_system: 'semester',
     grade: 'A−/B',
   },
   MD: {
     programme: 'General-education programme and transfer regulations',
     guarantee:
-      'General-education programme and transfer regulations. 28–36 sem. Completed GE ' +
-      'transfers without course-by-course match; FSAW writing C–.',
+      'Maryland general-education and transfer regulations (COMAR 13B.06.01–.02). A.A./A.S. ' +
+      'general education is 28–36 credits across five areas: arts & humanities, social & ' +
+      'behavioral sciences, biological & physical sciences (one lab), mathematics, and ' +
+      'English composition with C– or better. A receiving Maryland public institution must ' +
+      'accept any completed course that met a GE requirement at the sending institution and ' +
+      'apply it to the same GE area, or failing that a GE elective, whether or not it has an ' +
+      'equivalent course.',
     authority:
-      'COMAR 13B.06.01, 13B.06.02; Transfer with Success Act (2021)',
-    source_url: '',
+      'COMAR 13B.06.01–.02',
+    source_url: 'https://regs.maryland.gov/us/md/exec/comar/13B.06.02.09',
+    verified: { confidence: 'statute', as_of: '2026-10-01', source_url: 'https://regs.maryland.gov/us/md/exec/comar/13B.06.02.09' },
     unit_system: 'semester',
     grade: 'A−',
   },
   ME: {
     programme: 'MCCS–UMS Block Transfer of General Education',
     guarantee:
-      'MCCS–UMS Block Transfer of General Education. 34 (UMaine) vs up to 35 (MCCS) sem. C– ' +
-      'or better; receiving campus may add ≈ 10–11 GE credits.',
+      'UMS–MCCS General Education Transfer Block: ≥ 34 credits of general education completed ' +
+      'at an MCCS college, with C– or better in every course, block-transfers to the GE ' +
+      'requirements at University of Maine System campuses. UMaine, for example, still ' +
+      'requires ≥ 3 credits in Human Values & Social Context, a Writing Intensive course in ' +
+      'the major, a capstone, and any GE courses the major specifies.',
     authority:
       'inter-system agreement (effective Fall 2015)',
-    source_url: '',
+    source_url: 'https://www.maine.edu/students/maine-community-college-transfer-initiatives-resources/',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.maine.edu/students/maine-community-college-transfer-initiatives-resources/' },
     unit_system: 'semester',
     grade: 'B',
   },
   MI: {
     programme: 'Michigan Transfer Agreement',
     guarantee:
-      'Michigan Transfer Agreement (MTA). 30 sem. 2.0 in each course; ≥ 1 credit-bearing ' +
-      'course at the awarding college; U-M evaluates course by course.',
+      'Michigan Transfer Agreement (MTA): ≥ 30 sem credits in a set distribution (2 English ' +
+      'composition, or 1 + 1 communications · 1 mathematics · 2 social sciences · 2 ' +
+      'humanities & fine arts · 2 natural sciences incl. 1 lab), with ≥ 2.0 in each course ' +
+      'and ≥ 1 credit at the college awarding the MTA. It fulfils a portion of the ' +
+      'lower-division GE at participating four-years; all 15 Michigan public universities are ' +
+      'listed as participating.',
     authority:
       'MACRAO MTA Guidelines (Fall 2019, ed. Feb 2020); 2012 appropriations boilerplate',
     source_url: 'https://www.mitransfer.org/michigan-transfer-agreement',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.mitransfer.org/michigan-transfer-agreement' },
     unit_system: 'semester',
     grade: 'A',
   },
   MN: {
     programme: 'Minnesota Transfer Curriculum',
     guarantee:
-      'Minnesota Transfer Curriculum (MnTC), 10 goal areas. 40 sem. 2.0 GPA; U of M honours a ' +
-      'completed MnTC by agreement.',
+      'Minnesota Transfer Curriculum (MnTC): ≥ 40 sem in 10 goal areas. Completing it at one ' +
+      'Minnesota State college or university gives credit for all lower-division GE on ' +
+      'admission to another; receivers accept MnTC courses graded A through D–, and ' +
+      'recognition of the full MnTC requires a 2.0 cumulative MnTC GPA (Board Policy 3.21; ' +
+      'Procedure 3.21.1).',
     authority:
-      'Minnesota State Board Policy 3.21 / Procedure 3.21.1',
-    source_url: 'https://www.minnstate.edu/admissions/transfer.html',
+      'Minnesota State Board Policy 3.21 and Procedure 3.21.1',
+    source_url: 'https://www.minnstate.edu/board/policy/321.html',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.minnstate.edu/board/policy/321.html' },
     unit_system: 'semester',
     grade: 'A',
   },
@@ -441,12 +512,17 @@ const STATEWIDE: Partial<Record<StateCode, StatewideRule>> = {
   MS: {
     programme: 'IHL 30-hour core + IHL–MCCB Articulation Agreement',
     guarantee:
-      'IHL 30-hour core + IHL–MCCB Articulation Agreement (MATT). 30 sem (English comp 6 · ' +
-      'algebra+ 3 · natural sci 6 · humanities & fine arts 9 · social/behavioral 6). C or ' +
-      'better in each core course; AA + core = IHL core met.',
+      'IHL 30-hour core (Board Policy 512: English Composition 6 · College Algebra, ' +
+      'Quantitative Reasoning or higher 3 · Natural Science 6 · Humanities & Fine Arts 9 · ' +
+      'Social/Behavioral Science 6). An Associate of Arts graduate of a Mississippi community ' +
+      'college who completes the core with C or better in each core course satisfies the IHL ' +
+      'core at every IHL university (Policy 517). The receiving university\'s own GE may go ' +
+      'beyond the core, and courses articulate through the IHL–MCCB Articulation Agreement ' +
+      '(MATT).',
     authority:
-      'IHL Board Policies 512, 521',
-    source_url: 'https://matttransfertool.com/',
+      'IHL Board Policies 512 and 517; IHL–MCCB Articulation Agreement',
+    source_url: 'https://www.mississippi.edu/sites/default/files/ihl/files/policiesandbylaws.pdf',
+    verified: { confidence: 'published', as_of: '2026-10-01', source_url: 'https://www.mississippi.edu/sites/default/files/ihl/files/policiesandbylaws.pdf' },
     unit_system: 'semester',
     grade: 'A−',
   },
@@ -2567,22 +2643,25 @@ export const jurisdictions: Jurisdiction[] = (
     statewide_framework: rule.exists === false ? 'none' : 'yes',
     transfer_guarantee: rule.guarantee,
     transfer_provenance: {
-      source_url: rule.source_url,
-      as_of: '2026-09-20',
-      confidence: 'needs_check',
+      source_url: rule.verified?.source_url ?? rule.source_url,
+      as_of: rule.verified?.as_of ?? '2026-09-20',
+      confidence: rule.verified?.confidence ?? 'needs_check',
       note:
         `Authority: ${rule.authority}. ` +
         (rule.unit_system === 'quarter'
           ? `${name} counts in QUARTER credits, not semester credits — multiply by two ` +
             'thirds to compare with a semester figure. '
           : '') +
-        `Research grade ${rule.grade}: ` +
-        (rule.grade === 'A'
-          ? 'the governing document was opened and cross-checked. '
-          : rule.grade === 'C'
-            ? 'recalled only, and the weakest row in this dataset. '
-            : 'read at one remove from the governing document. ') +
-        'It is still unconfirmed here until a person opens that source. We do not hold ' +
+        (rule.verified !== undefined
+          ? `Checked against the governing document on ${rule.verified.as_of}. `
+          : `Research grade ${rule.grade}: ` +
+            (rule.grade === 'A'
+              ? 'the governing document was opened and cross-checked. '
+              : rule.grade === 'C'
+                ? 'recalled only, and the weakest row in this dataset. '
+                : 'read at one remove from the governing document. ') +
+            'It is still unconfirmed here until a person opens that source. ') +
+        'We do not hold ' +
         `${name}'s campuses or its requirement list, so we cannot price a plan here — ` +
         'only tell you the rule that applies to all of them.',
     },
