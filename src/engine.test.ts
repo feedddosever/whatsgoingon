@@ -1202,11 +1202,11 @@ test('a restricted exam is never recommended, only counted', () => {
   }
   assert.ok(!optionsForArea(us, fl, 'fl-hum').some(o => o.kind === 'dlpt'));
 
-  // …but a rating already held still clears its area.
-  const held = { ...fl, held_credit_ids: ['dlpt-spanish'] };
-  const route = planRoute(us, held, 'cheapest');
-  const touched = [...route.areas_cleared, ...route.areas_unmet, ...route.areas_skipped];
-  assert.ok(!touched.includes('fl-hum'), 'a held DLPT rating should have cleared fl-hum');
+  // …but a rating already held is still counted: it is language credit, which
+  // clears no Florida core area, and the student is told so.
+  const uf = us.institutions.find(i => i.id === 'u-florida');
+  assert.ok(uf);
+  assert.deepEqual(heldCreditClearingNothing(us, uf, ['dlpt-spanish']), ['dlpt-spanish']);
 });
 
 test('UExcel is gone, not merely hidden', () => {
@@ -1306,12 +1306,24 @@ test('Florida awards credit that clears no core area, and says which', () => {
     undefined,
   );
 
-  // The AP sciences and Calculus need a 4, and award 4 credits, not 3.
+  // The AP sciences and Calculus award a 4-credit core course at a 3. An earlier
+  // version read "min. 4 credits" in the table as a minimum SCORE of 4.
   for (const id of ['ap-biology', 'ap-chemistry', 'ap-physics-1', 'ap-calculus-ab']) {
     const r = us.rules.find(x => x.institution_id === 'u-florida' && x.credit_source_id === id);
-    assert.equal(r?.min_score, 4, `${id} should need a 4 in Florida`);
+    assert.equal(r?.min_score, 3, `${id} should need a 3 in Florida`);
     assert.equal(r?.units_granted, 4, `${id} should award 4 credits in Florida`);
   }
+
+  // Where the table lets the college choose between a core course and a
+  // non-core one, the row clears nothing.
+  for (const id of ['ap-statistics', 'ib-mathematics-ai-hl', 'ib-history-hl', 'alevel-history',
+    'dsst-principles-public-speaking', 'dlpt-spanish']) {
+    const r = us.rules.find(x => x.institution_id === 'u-florida' && x.credit_source_id === id);
+    assert.deepEqual(r?.satisfies_areas, [], `${id} still claims a Florida core area`);
+  }
+  // IB Language A: Literature awards LIT X000, which is Humanities.
+  assert.deepEqual(us.rules.find(r =>
+    r.institution_id === 'u-florida' && r.credit_source_id === 'ib-english-a-hl')?.satisfies_areas, ['fl-hum']);
 });
 
 test('a gated aid programme is shown, never subtracted', () => {

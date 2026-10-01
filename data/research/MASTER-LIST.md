@@ -61,6 +61,7 @@ Under the repo's `VERIFICATION.md`, every row is still `needs_check` until a per
 | 25 | California exam rows (pass 1) | **A Levels clear no Cal-GETC area** (no A-Level table exists); IB English A clears 3B only; IB Visual Arts and Language B clear nothing; IB Math AI HL no credit at UC; CLEP College Composition **0 units** at CSU; AP Environmental Science **3** units; UC campus fees **$1,852** | Cal-GETC Standards v1.4; CSU PolicyStat 20781575; UCOP 2026-27 fees |
 | 29 | New York campus rules defaulted to 30 residency / no cap; exam rows a single "common case" | **campus pages read 2026-10-01**: residency is **44** at Binghamton (Harpur), **45** Fredonia, **40** York, **36** Plattsburgh, **32** Buffalo State, **15** CUNY SPS (Oneonta 45, snippet only); 15 campuses publish a transfer cap (60–105) where the app had none. CLEP College Composition fills **no** SUNY GE area; AP English Lit is not CUNY Comp II; AP Human Geography is elective at CUNY; City College gives Pathways credit for only 2 CLEP exams; York refuses CLEP general exams; City Tech takes no CLEP for math or lab science; SUNY CC part-time rate **$230** not $190 | VERIFIED-NEW-YORK.md |
 | 30 | Pennsylvania exam rows at every PASSHE university | **charts read 2026-10-01**: AP 3 / CLEP 50 minimums confirmed; CLEP Humanities is **accepted** everywhere a chart exists but elective-only at four; Millersville AP Psychology 3 and Commonwealth AP History 3 are elective; AP Physics 1 is **4** credits; exam caps at SRU (45), Shippensburg (30 CLEP), Cheyney (30); statute § 20-2002-C(d) is Act 55 of 2017; CC $220 confirmed (median $219) | VERIFIED-PENNSYLVANIA.md |
+| 31 | Florida exam rows, IB / A Level / DSST / DLPT "unaudited", CC price, residency | **ACC table (June 2026 BOG copy) read 2026-10-01**: AP Calculus, Biology, Chemistry, Physics 1 need a **3**, not 4 ("min. 4 credits" was read as a score) — under-claimed; AP Statistics and AP English Lit at 3 are conditional (college's choice of course); IB English A: Literature is **Humanities**; IB Math AI, History, Geography, Visual Arts, Spanish B, A-Level History/Geography/Art/Spanish, DSST Public Speaking/Substance Abuse/World Religions/Environment and all DLPT clear **no** core area; A-Level credits 6–8, IB 6 at 5+, DLPT 6; CC tuition+fees **$104** not $76; residency is the *last* 30 hours (UF/FSU/FIU), 30 of last 39 (UCF), 30 of last 60 (USF); 60 and 45 are guarantees in rule 6A-10.024, not caps | VERIFIED-FLORIDA.md |
 
 ---
 
@@ -467,6 +468,8 @@ Public-sounding but **private**: UMass Global, University of the Cumberlands, Am
 ---
 
 ## 10. Florida — row-by-row corrections to `data/fl/acceptance-rules.ts`
+
+> **Read "min N" below as a minimum number of CREDITS, not a score.** The floor score for every AP row is 3. Misreading this column made the app ask for a 4 on the AP sciences and Calculus until 2026-10-01 (ledger row 31).
 
 | Your row | Your area | What the table awards at the floor score | At higher score | Verdict |
 |---|---|---|---|---|

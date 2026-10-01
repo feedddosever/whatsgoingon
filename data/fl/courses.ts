@@ -5,17 +5,19 @@ import type { CreditSource, Provenance } from '../../src/types.ts';
  * Like Texas's TCCNS, SCNS is what lets one row stand for the whole state.
  */
 const FL_CC_COST: Provenance = {
-  source_url: 'https://www.fldoe.org/file/19874/2526-SFRF.pdf',
-  as_of: '2026-09-19',
+  source_url: 'https://www.seminolestate.edu/catalog/student-info/residency/fees',
+  as_of: '2026-10-01',
   confidence: 'needs_check',
   note:
-    'Florida College System per-credit-hour rates for Fall 2025-26 run roughly $68.53 ' +
-    'to $82.78 across colleges; $76 is the middle. If you are a dual-enrolment student, ' +
-    'Florida Statutes 1007.271 exempts you from registration, tuition and laboratory ' +
-    'fees entirely, and this row costs you nothing.',
+    'Florida College System tuition plus required fees for an in-state associate-degree ' +
+    'student, 2026-27: Daytona State $102.38 a credit, Valencia $103.06, Seminole State ' +
+    '$104.08, Miami Dade $118.22. We use $104. Tuition alone is capped by statute at $82.78, ' +
+    'but the required fees are part of what you pay. Lab and online fees are extra. If you ' +
+    'are a dual-enrolment student, Florida Statutes 1007.271 exempts you from registration, ' +
+    'tuition and laboratory fees entirely, and this row costs you nothing.',
 };
 
-const PER_CREDIT = 76;
+const PER_CREDIT = 104;
 
 const course = (id: string, name: string, hours: number): CreditSource => ({
   id, kind: 'cc_course', name, cost_usd: PER_CREDIT * hours, provenance: FL_CC_COST,

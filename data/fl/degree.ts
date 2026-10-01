@@ -28,6 +28,16 @@ const SACSCOC: Provenance = {
   note: 'SACSCOC accredits every public university in Texas and Florida.',
 };
 
+const FL_RESIDENCY_RULES: Provenance = {
+  source_url: 'https://policies.fiu.edu/files/340.065',
+  as_of: '2026-10-01',
+  confidence: 'published',
+  note:
+    'Read in each university’s catalog or policy: UF (catalog.ufl.edu), FSU ' +
+    '(bulletin.fsu.edu), USF (Arts and Sciences advising), UCF (every degree page) and FIU ' +
+    '(Policy 340.065). The other seven state universities were not read.',
+};
+
 export const floridaDegrees: SystemDegree[] = [
   {
     system: 'FL-SUS',
@@ -58,9 +68,11 @@ export const floridaDegrees: SystemDegree[] = [
         block: 'residency',
         title: 'Credit earned at the university',
         text:
-          'At least 25 percent of the hours for your degree must come from instruction at the ' +
-          'university awarding it — 30 hours of a 120-hour degree.',
-        provenance: SACSCOC,
+          'At least 30 hours at the university awarding the degree, and at the larger ' +
+          'universities they must be the last hours you take — the last 30 at UF, FSU and ' +
+          'FIU, 30 of the last 39 at UCF, 30 of the last 60 at USF. Exam credit cannot be ' +
+          'your final hours.',
+        provenance: FL_RESIDENCY_RULES,
       },
       {
         id: 'fl-lower-division',
