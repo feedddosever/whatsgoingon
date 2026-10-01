@@ -3,7 +3,7 @@
 ## What runs today, with no configuration
 
     npm install
-    npm test          # 28 engine tests
+    npm test          # engine and validation tests
     npm run typecheck
     npm run demo      # prints the CLEP-at-UC scenario to the terminal
 

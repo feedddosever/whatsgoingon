@@ -9,12 +9,6 @@
 /** The entitlement configured in the RevenueCat dashboard. */
 export const ENTITLEMENT_ID = 'collegemaps_pro';
 
-/** Product identifiers, for reference and for error messages. */
-export const PRODUCTS = {
-  lifetime: 'lifetime',
-  monthly: 'monthly',
-} as const;
-
 /**
  * Public SDK keys. Public by design — they are safe in a shipped bundle — but
  * they are PER PLATFORM and per store:

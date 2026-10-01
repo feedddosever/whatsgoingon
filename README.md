@@ -1,7 +1,28 @@
-# whatsgoingon — hackathon planning
+# Degree Route
 
-Working notes for picking and shipping hackathon entries.
-Kept in git so the context survives between sessions.
+Which college credit will your campus actually take? Degree Route takes a
+state, a campus and the credit a student already holds, prices the
+general-education requirements they still owe at that campus's own rate, and
+shows the cheapest, fastest and lowest-risk ways to clear them. Every claim
+carries a source link, the date it was read and a confidence level; anything
+not yet confirmed is marked with a "?".
+
+Built with Expo SDK 57 / React Native 0.86 / TypeScript for RevenueCat
+Shipaton 2026.
+
+- **Web app:** https://whatsgoingon-hazel.vercel.app (landing page at `/start`)
+- **Privacy / Terms:** `/privacy` and `/terms` on the same host
+
+## Run it
+
+    npm install
+    npm test            # engine and validation tests
+    npm run typecheck
+    npm run demo        # prints the CLEP-at-UC scenario
+    npm run build:web && npm run serve:web   # then open http://127.0.0.1:8080
+
+Keys and store setup: [`SETUP.md`](SETUP.md). Conventions for working in the
+code: [`AGENTS.md`](AGENTS.md).
 
 ## The Android APK is a debug build — on purpose
 
@@ -27,43 +48,20 @@ store's own key (`galx_…` / `goog_…`) in the `EXPO_PUBLIC_REVENUECAT_KEY` se
 the same workflow then builds a normal release APK. Details in
 [`docs/BUILD-APK.md`](docs/BUILD-APK.md).
 
-## Contents
+## Where things are
 
-| File | What's in it |
+| Path | What's in it |
 |---|---|
-| [`hackathons/00-source-master-list.md`](hackathons/00-source-master-list.md) | The original research sweep (Sept 17, 2026) — full tier list of ~40 events |
-| [`hackathons/01-deadline-board.md`](hackathons/01-deadline-board.md) | Deadlines ranked, what's excluded and why, verification confidence |
-| [`hackathons/02-arbitrum-singapore.md`](hackathons/02-arbitrum-singapore.md) | Oct 4 · 10 ideas · rubric = contract quality / PMF / innovation / real problem |
-| [`hackathons/03-colosseum-worlds-fair.md`](hackathons/03-colosseum-worlds-fair.md) | Oct 12 · 10 ideas · judged as a seed pitch |
-| [`hackathons/04-monad-metropolis.md`](hackathons/04-monad-metropolis.md) | Oct 13 · 10 ideas · 12 paid slots + sponsor bounties |
-| [`hackathons/05-hackcanton-s3.md`](hackathons/05-hackcanton-s3.md) | Oct 14 · 10 ideas · Daml, not Solidity |
+| `App.tsx`, `src/` | The app: screens, the planning engine (`src/engine.ts`), purchases |
+| `data/` | The dataset, as typed modules — `data/us/` national, `data/ca`, `tx`, `fl`, `ny`, `pa` per state |
+| `data/research/` | Research of record, verification reports and the corrections ledger |
+| `data/GAPS.md` | What the dataset does not know, per state (generated: `npm run gaps:write`) |
+| `docs/DEVPOST.md`, `docs/HACKATHON.md` | Shipaton submission copy and plan |
+| `docs/BUILD-APK.md` | Building the Android APK |
+| `docs/store/` | Icon, screenshots, marketing images, thumbnail |
+| `hackathons/06-…`, `07-…` | The original idea assessment and product spec |
+| `scripts/` | Landing-page build, audit, gap report, preflight, screenshots, APK patch |
 
-## The decision
+## Licence
 
-The nearest winnable deadlines are the **Oct 4 → Oct 14 cluster**. Everything
-closing sooner is either not viable (XRPL needs live mainnet volume in 4 days),
-the wrong discipline (Kaggle, ARC-AGI), or effectively closed (RevenueCat needs
-a shipped App Store release — **except** its student Next Gen Award).
-
-Two mutually exclusive paths:
-
-**Path A — the EVM stack (higher ceiling).**
-One codebase, three submissions. Build for Arbitrum (Oct 4, earliest deadline
-forces a working MVP), then extend for Colosseum (Oct 12) and Monad (Oct 13).
-Colosseum has an Arbitrum ecosystem track, so the Oct 4 work is already
-eligible. Each event needs *new in-window work* — keep a clean commit boundary
-at each deadline so the delta is provable.
-
-**Path B — HackCanton (higher probability).**
-Weakest field of the four, single narrow track, but it's Daml rather than
-Solidity and needs ~5 days of ramp-up. Doing this properly means not doing
-Path A.
-
-Doing both means doing both badly.
-
-## Caveats
-
-Deadlines and rubrics were reconstructed from **web search, not the official
-pages** — this container's egress proxy blocks every hackathon domain.
-Confidence levels are tabulated in the deadline board. **Reconfirm on the
-official page before committing build time.**
+MIT — see [`LICENSE`](LICENSE).
