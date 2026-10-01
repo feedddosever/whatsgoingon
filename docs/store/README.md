@@ -52,3 +52,12 @@ amber — which is the thing about this app worth photographing.
 
 Regenerate: `npm run build:web && npm run serve:web`, then
 `node scripts/shots.mjs`.
+
+## Marketing screenshots
+
+`docs/store/marketing/` holds six 1080×1920 images for a landing page, social
+posts or a store listing: a headline, one line of explanation, and a real
+screen from the web build in a phone frame. They were captured on 2026-10-01
+from the dataset as it stood that day, so the figures in them (UC Berkeley's
+$17,042, the Florida plan) move when the data does — re-capture rather than
+edit them.
