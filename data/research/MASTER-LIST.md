@@ -116,7 +116,7 @@ Under the repo's `VERIFICATION.md`, every row is still `needs_check` until a per
 | OH | 2 | Ohio Transfer 36 | ORC § 3333.16 ff.; Ohio Articulation & Transfer Policy (July 2025) | 36–40 sem | semester | A |
 | OK | 3→2 | State Regents GE minimum + AA/AS transfer guarantee | OSRHE Academic Affairs Policy ch. 3 (rev. 2025-09-04), §§ 3.11, 3.15; 70 O.S. § 3206.1 | 37 sem minimum | semester | A− |
 | OR | 2 | Core Transfer Map / Oregon Transfer Module / AAOT / Major Transfer Maps | SB 233 (2021); ORS 350.423–.429; HB 2998 (2017); OAR 715-025 | 30 / 45 / 90 QUARTER credits | QUARTER — all community colleges and public universities | A |
-| PA | 3→2 | 30-Credit Transfer Framework + programme-to-programme degrees | Act 114 of 2006; Act 50 of 2009; 24 P.S. § 20-2002-C(d) | 30 sem | semester | A |
+| PA | 1 | 30-Credit Transfer Framework + programme-to-programme degrees | Act 114 of 2006; Act 50 of 2009; 24 P.S. § 20-2002-C(d) | 30 sem | semester | A |
 | RI | 3 | Joint Admissions Agreement (three institutions) | RIOPC policy S-12 | ≥ 32 GE credits apply | semester | A−/B |
 | SC | 3→2 | CHE Statewide Articulation Agreement — 'list of 86' courses + Transfer Blocks | CHE Transfer Policy (May 2022); Proviso 117.152 | course list + blocks; AA/AS = ≥ 60 hrs and junior status | semester | A−/B |
 | SD | 3→2 | System General Education Requirements (six goals) | SDBOR Policy 2.3.7; Guideline 2.3.7.A (since Fall 2017) | 30 sem (written 6 · oral 3 · social sci 6 · arts & humanities 6 · math 3 · natural sci 6) | semester | A− |

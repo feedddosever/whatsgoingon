@@ -26,8 +26,8 @@ authoritative and they are local. Do not recall an API from memory when
 - The dataset lives in `data/` as **typed TS modules, not JSON** — Metro and Node
   disagree about JSON import syntax, and typed modules turn a malformed row into a
   compile error. `data/us/` is the national layer (states, systems, frameworks and
-  the AP/CLEP exams, which are the same exam everywhere); `data/ca/`, `data/tx/`
-  and `data/fl/` hold what is genuinely state-specific.
+  the AP/CLEP exams, which are the same exam everywhere); `data/ca/`, `data/tx/`,
+  `data/fl/`, `data/ny/` and `data/pa/` hold what is genuinely state-specific.
 
 ## Adding a state
 
@@ -54,6 +54,15 @@ To add a state you write four files and touch three shared ones:
    `data/us/states.ts` (it already has a row; every state does).
 4. Register the modules in `src/dataset.ts`.
 
+A state may run more than one framework: New York's SUNY campuses plan against
+SUNY GE and its CUNY campuses against CUNY Pathways, each through its own
+system. The jurisdiction names the headline one. Where a framework asks for
+"any k of n" areas, model it so it fails safe — see `data/ny/core.ts`. And do
+not price a campus against a framework it only partly uses: Pennsylvania's
+Penn State, Pitt and Temple are left out for exactly that reason. The research
+of record for those two states is `data/research/NEW-YORK.md` and
+`data/research/PENNSYLVANIA.md`.
+
 Never reuse an area id, credit-source id or institution id across states — a
 test enforces it. Reuse the *exam* ids from `data/us/exams.ts`; an exam is
 national and what differs is the acceptance rule, which is the whole point.
@@ -66,7 +75,7 @@ is the direction a wrong number never gets caught.
 
 ## Two tiers of coverage, and never blur them
 
-`data/ca/`, `data/tx/` and `data/fl/` carry campuses, requirement lists and
+`data/ca/`, `data/tx/`, `data/fl/`, `data/ny/` and `data/pa/` carry campuses, requirement lists and
 prices — enough to produce a number. Every other state carries, at most, its
 **statewide transfer rule** in `STATEWIDE` in `data/us/states.ts`: one sentence
 that applies to every public campus in the state at once.

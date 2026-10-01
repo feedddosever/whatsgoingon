@@ -39,6 +39,16 @@ const CUNY_PATHWAYS: Provenance = {
     'Flexible Core, the same at every CUNY college.',
 };
 
+const PA_TCF: Provenance = {
+  source_url: 'https://collegetransfer.pa.gov/Transfer-Information/General-Education-Courses',
+  as_of: '2026-10-01',
+  confidence: 'published',
+  note:
+    'Pennsylvania’s 30-Credit Transfer Framework under Article XX-C of the Public School Code: ' +
+    'six categories of foundation courses every participating institution must accept. ' +
+    'Planned here for the ten PASSHE universities.',
+};
+
 const TX_CORE: Provenance = {
   source_url: 'https://texas.public.law/statutes/tex._educ._code_section_61.822',
   as_of: '2026-09-19',
@@ -106,5 +116,15 @@ export const frameworks: GeFramework[] = [
     // 30 credits; the Flexible Core's sixth any-area course is not modelled.
     total_units: 27,
     provenance: CUNY_PATHWAYS,
+  },
+  {
+    id: 'pa-tcf',
+    name: 'PA Transfer Framework',
+    full_name: 'Pennsylvania 30-Credit Transfer Framework',
+    state: 'PA',
+    // Six categories priced at one course each; the framework itself runs to 30
+    // credits. See data/pa/core.ts.
+    total_units: 18,
+    provenance: PA_TCF,
   },
 ];

@@ -15,4 +15,5 @@ export const systems: System[] = [
   { id: 'FL-SUS',    name: 'Florida State University System', short_name: 'Florida SUS', state: 'FL', framework_id: 'fl-core' },
   { id: 'SUNY',      name: 'State University of New York',  short_name: 'SUNY',   state: 'NY', framework_id: 'suny-ge' },
   { id: 'CUNY',      name: 'City University of New York',   short_name: 'CUNY',   state: 'NY', framework_id: 'cuny-pathways' },
+  { id: 'PASSHE',    name: 'Pennsylvania State System of Higher Education', short_name: 'PASSHE', state: 'PA', framework_id: 'pa-tcf' },
 ];

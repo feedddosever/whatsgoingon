@@ -2510,6 +2510,31 @@ const MAPPED: Partial<Record<StateCode, Jurisdiction>> = {
     dual_enrollment: AID.NY?.dual_enrollment ?? null,
     third_party: THIRD_PARTY.NY,
   },
+  PA: {
+    code: 'PA',
+    name: 'Pennsylvania',
+    framework_id: 'pa-tcf',
+    statewide_framework: 'yes',
+    transfer_guarantee:
+      'The 30-Credit Transfer Framework: courses in six categories that every participating college and university must accept toward graduation. At a State System (PASSHE) university, 30 framework credits complete general education, and an associate degree in a parallel or program-to-program major gives junior standing with no more than 60 credits to go. Penn State, Pitt and Temple take only part of the framework and are not mapped here yet.',
+    transfer_provenance: {
+      source_url: 'https://collegetransfer.pa.gov/About-PA-College-Transfer/TAOC-Policies',
+      as_of: '2026-10-01',
+      confidence: 'published',
+      note:
+        'Authority: Article XX-C of the Public School Code (Act 114 of 2006; Act 50 of 2009); ' +
+        '24 P.S. \u00a7 20-2002-C(d); PASSHE Board Policy 1999-01-A and Procedure 2022-54. Read ' +
+        'from the Department of Education\u2019s and PASSHE\u2019s own pages; the statute text ' +
+        'itself would not load. A statewide program-to-program agreement gives junior standing ' +
+        'but does not by itself guarantee admission; PASSHE guarantees admission, subject to ' +
+        'capacity.',
+    },
+    // No statewide community-college fee waiver: Grow PA is a gated grant and the
+    // PASSHE Pledge starts in 2027 at PASSHE only.
+    fee_waiver: null,
+    dual_enrollment: AID.PA?.dual_enrollment ?? null,
+    third_party: THIRD_PARTY.PA,
+  },
 };
 
 export const jurisdictions: Jurisdiction[] = (

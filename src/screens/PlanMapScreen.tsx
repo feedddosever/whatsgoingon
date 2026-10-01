@@ -21,7 +21,7 @@ import { DISCLAIMER_SHORT } from '../disclaimer.ts';
  * knows things we do not, and the map is where they say so.
  */
 
-type Status = 'chosen' | 'included' | 'skipped' | 'unmet';
+type Status = 'chosen' | 'included' | 'held' | 'skipped' | 'unmet';
 
 interface Branch {
   area: GeArea;
@@ -34,6 +34,7 @@ interface Branch {
 const STATUS_COLOR: Record<Status, string> = {
   chosen: theme.color.accent,
   included: theme.color.accent,
+  held: theme.color.accent,
   skipped: theme.color.textMuted,
   unmet: theme.color.warn,
 };
@@ -41,6 +42,7 @@ const STATUS_COLOR: Record<Status, string> = {
 const STATUS_LABEL: Record<Status, string> = {
   chosen: 'planned',
   included: 'already covered, at no extra cost',
+  held: 'cleared by credit you already hold',
   skipped: 'you are handling this',
   unmet: 'nothing in our data clears this',
 };
@@ -174,6 +176,11 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
     }
   }
   const skipped = new Set(route.areas_skipped);
+  // The route plans only what is still open AFTER the student's own credit, so
+  // an area their credit already clears appears in none of its lists. Without
+  // this, that area read "nothing in our data clears this" — the opposite of
+  // the truth, on the one requirement the student has actually finished.
+  const planned = new Set([...route.areas_cleared, ...route.areas_unmet, ...route.areas_skipped]);
 
   const branches: Branch[] = areas
     .filter(a => a.applies_to.includes(institution.system))
@@ -186,7 +193,7 @@ export function PlanMapScreen(props: PlanMapScreenProps): ReactElement {
       const primary = item === null ? null : ownerArea.get(item.credit_source_id) ?? null;
       const status: Status = skipped.has(area.id)
         ? 'skipped'
-        : item === null ? 'unmet'
+        : item === null ? (planned.has(area.id) ? 'unmet' : 'held')
         : primary === area.id ? 'chosen' : 'included';
       const choice = choiceFor(area.id);
       return { area, status, item, edited: choice !== undefined };

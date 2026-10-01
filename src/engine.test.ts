@@ -1478,3 +1478,24 @@ test('Stony Brook and Binghamton take no CLEP general exam', () => {
   }
   assert.ok(us.rules.some(r => r.institution_id === 'brooklyn-college' && r.credit_source_id === 'clep-humanities'));
 });
+
+test('Pennsylvania prices only the universities bound by its transfer framework', () => {
+  // Penn State, Pitt and Temple accept a limited list of framework courses and
+  // run their own general education. Pricing them against the six framework
+  // categories would hand a student a requirement list their campus does not use.
+  const pa = us.institutions.filter(i => i.system === 'PASSHE');
+  assert.equal(pa.length, 10);
+  for (const inst of pa) assert.equal(frameworkFor(us, inst).id, 'pa-tcf');
+  for (const name of ['Penn State', 'Pittsburgh', 'Temple']) {
+    assert.equal(us.institutions.some(i => i.name.includes(name)), false, `${name} is priced`);
+  }
+  const jur = us.jurisdictions.find(j => j.code === 'PA');
+  assert.equal(jur?.fee_waiver, null, 'Pennsylvania has no statewide community-college waiver');
+  assert.match(jur?.transfer_guarantee ?? '', /Penn State, Pitt and Temple/);
+});
+
+test('third-party providers survive the New York and Pennsylvania slices too', () => {
+  for (const code of ['NY', 'PA'] as const) {
+    assert.ok(forState(us, code).creditSources.some(c => c.kind === 'alt_provider'), code);
+  }
+});

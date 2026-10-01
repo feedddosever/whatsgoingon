@@ -37,6 +37,13 @@ import { newYorkRules } from '../data/ny/acceptance-rules.ts';
 import { newYorkTransferPolicies } from '../data/ny/transfer-policy.ts';
 import { newYorkDegrees } from '../data/ny/degree.ts';
 
+import { pennsylvaniaInstitutions } from '../data/pa/institutions.ts';
+import { paFrameworkAreas } from '../data/pa/core.ts';
+import { paCourses } from '../data/pa/courses.ts';
+import { pennsylvaniaRules } from '../data/pa/acceptance-rules.ts';
+import { pennsylvaniaTransferPolicies } from '../data/pa/transfer-policy.ts';
+import { pennsylvaniaDegrees } from '../data/pa/degree.ts';
+
 /**
  * The dataset, as typed modules rather than JSON: Metro and Node disagree about
  * JSON import syntax, and a typed module makes a malformed row a compile error
@@ -52,13 +59,15 @@ export const unitedStates: Dataset = {
   jurisdictions,
   frameworks,
   systems,
-  institutions: [...caInstitutions, ...texasInstitutions, ...floridaInstitutions, ...newYorkInstitutions],
-  areas: [...calGetcAreas, ...texasCoreAreas, ...floridaCoreAreas, ...sunyGeAreas, ...cunyPathwaysAreas],
+  institutions: [...caInstitutions, ...texasInstitutions, ...floridaInstitutions, ...newYorkInstitutions,
+    ...pennsylvaniaInstitutions],
+  areas: [...calGetcAreas, ...texasCoreAreas, ...floridaCoreAreas, ...sunyGeAreas, ...cunyPathwaysAreas,
+    ...paFrameworkAreas],
   creditSources: [
     ...examSources, ...altCreditSources,
-    ...cccCourses, ...texasCourses, ...floridaCourses, ...sunyCcCourses, ...cunyCcCourses,
+    ...cccCourses, ...texasCourses, ...floridaCourses, ...sunyCcCourses, ...cunyCcCourses, ...paCourses,
   ],
-  rules: [...caRules, ...texasRules, ...floridaRules, ...newYorkRules],
+  rules: [...caRules, ...texasRules, ...floridaRules, ...newYorkRules, ...pennsylvaniaRules],
 };
 
 /**
@@ -114,7 +123,7 @@ export function forState(ds: Dataset, state: StateCode): Dataset {
  */
 export const transferPolicies: TransferPolicy[] = [
   ...californiaTransferPolicies, ...texasTransferPolicies, ...floridaTransferPolicies,
-  ...newYorkTransferPolicies,
+  ...newYorkTransferPolicies, ...pennsylvaniaTransferPolicies,
 ];
 
 export const transferPolicyFor = (system: SystemId): TransferPolicy | null =>
@@ -126,7 +135,7 @@ export const transferPolicyFor = (system: SystemId): TransferPolicy | null =>
  * degree screen, never planned with.
  */
 export const systemDegrees: SystemDegree[] = [
-  ...californiaDegrees, ...texasDegrees, ...floridaDegrees, ...newYorkDegrees,
+  ...californiaDegrees, ...texasDegrees, ...floridaDegrees, ...newYorkDegrees, ...pennsylvaniaDegrees,
 ];
 export const majorPrep: MajorPrep[] = [...californiaMajorPrep, ...texasMajorPrep, ...floridaMajorPrep];
 export const majorPrepGaps: MajorPrepGap[] = [...texasMajorPrepGaps, ...floridaMajorPrepGaps];
